@@ -1,0 +1,22 @@
+{
+    "name": "lucas-vigneron/sage-tools",
+    "description": "Tools for Sage WordPress Theme, made by Lucas Vigneron",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "LucasVigneron\\SageTools\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Lucas Vigneron",
+            "email": "hello@lucasvigneron.fr"
+        }
+    ],
+    "require": {
+        "php": ">=8.2",
+        "vinkla/extended-acf": "^14.0",
+        "roots/acorn": "^3.3"
+    }
+}
