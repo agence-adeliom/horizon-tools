@@ -1,5 +1,5 @@
 # Introducing WordPress Sage Tools 🚀
-
+---
 Unleash the power of WordPress with WordPress Sage Tools, your ultimate toolkit for elevating your development experience!
 ## Easy Installation
 
@@ -7,9 +7,9 @@ Get started with WordPress Sage Tools in just a few simple steps:
 
 1. **Add Repository**: Incorporate our package into your project by adding our repository to your `composer.json`.
 ```json
-{
-  "type": "vcs",
-  "url": "git@github.com:LucasVigneron/sage-tools.git"
+{  
+  "type": "vcs",  
+  "url": "git@github.com:LucasVigneron/sage-tools.git"  
 }
 ```
 
@@ -91,6 +91,17 @@ Experience the magic of WordPress Sage Tools and revolutionize your WordPress de
 - **Exclusion Elegance**: Exclude IDs effortlessly with `addIdNotIn`.
 - **Result Retrieval**: Retrieve meticulously crafted `WP_Query` instances with ease using `getQuery`.
 - **Singular or Null**: Obtain singular results or null if none exist effortlessly with `getOneOrNull`.
+- **Meta Magic**: Unlock the power of metadata manipulation with the dynamic `addMetaQuery` method, seamlessly accepting instances of the `MetaQuery` class. 🌟
+
+### MetaQuery
+- **Dynamic Class**: Harness the power of metadata manipulation with the versatile `MetaQuery` class, empowering your QueryBuilder experience.
+- **Nested Query Nirvana**: Seamlessly nest MetaQueries using the `add` method within the `MetaQuery` class, for unparalleled query flexibility.
+- **Parametric Precision**: Customize your queries effortlessly with the `add` method, featuring parameters such as:
+    - `nameOrMetaQuery`: Key of the meta or an instance of `MetaQuery`.
+    - `value`: Value to be tested.
+    - `comparator`: Comparator for the query.
+    - `type`: Value type for comparison.
+- **Relation Refinement**: Fine-tune query relations with the `setRelation` method, defining the `AND` or `OR` aspect of the MetaQuery for enhanced query precision.
 
 ### Menus
 

@@ -9,7 +9,7 @@ class QueryBuilder
 	private array $postTypes = [];
 	private array $idIn = [];
 	private array $idNotIn = [];
-	private array $metaQuery = [];
+	private array $metaQueries = [];
 	private ?int $perPage = null;
 	private ?int $page = null;
 
@@ -88,9 +88,11 @@ class QueryBuilder
 		return $this;
 	}
 
-	public function addMeta()
+	public function addMetaQuery(MetaQuery $metaQuery): self
 	{
+		$this->metaQueries[] = $metaQuery;
 
+		return $this;
 	}
 
 	public function setPage(?int $page): self
@@ -127,6 +129,14 @@ class QueryBuilder
 			$args['posts_per_page'] = $this->perPage;
 			$args['offset'] = ($this->page - 1) * $this->perPage;
 			$args['page'] = $this->page;
+		}
+
+		if ([] !== $this->metaQueries) {
+			foreach ($this->metaQueries as $metaQuery) {
+				if ($metaQuery instanceof MetaQuery) {
+					$args['meta_query'][] = $metaQuery->generateMetaQueryArray();
+				}
+			}
 		}
 
 		return new \WP_Query($args);
