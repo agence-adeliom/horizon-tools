@@ -62,7 +62,7 @@ class PostTypeServiceProvider extends SageServiceProvider
 	{
 		$classes = get_declared_classes();
 
-		foreach (FileService::getClassesPathsFromPath(__DIR__ . '/../Taxonomies') as $classPath) {
+		foreach (FileService::getClassesPathsFromPath(get_template_directory() . '/app/Taxonomies') as $classPath) {
 			require_once $classPath;
 		}
 
