@@ -128,6 +128,16 @@ Experience the versatility of WordPress Sage Tools as you tailor your developmen
   - `type`: Value type for comparison.
 - **Relation Refinement**: Fine-tune query relations with the `setRelation` method, defining the `AND` or `OR` aspect of the MetaQuery for enhanced query precision.
 
+### TaxQuery
+- **Dynamic Class**: Harness the power of taxonomy manipulation with the versatile `TaxQuery` class, empowering your QueryBuilder experience.
+- **Nested Query Nirvana**: Seamlessly nest TaxQueries using the `add` method within the `TaxQuery` class, for unparalleled query flexibility.
+- **Parametric Precision**: Customize your queries effortlessly with the `add` method, featuring parameters such as:
+  - `taxonomyOrTaxQuery`: Taxonomy name or an instance of `TaxQuery`.
+  - `field`: Field to query (`term_id`, `name`, `slug`, etc.).
+  - `terms`: String, int or array of term param to be tested.
+  - `operator`: Operator for the query (`IN`, `NOT IN`, etc.).
+- **Relation Refinement**: Fine-tune query relations with the `setRelation` method, defining the `AND` or `OR` aspect of the TaxQuery for enhanced query precision.
+
 ### Menus
 
 - **Dynamic Retrieval**: Retrieve dynamic `MenuViewModel` instances effortlessly.
