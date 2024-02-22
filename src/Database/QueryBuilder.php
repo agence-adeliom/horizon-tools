@@ -10,6 +10,7 @@ class QueryBuilder
 	private array $idIn = [];
 	private array $idNotIn = [];
 	private array $metaQueries = [];
+	private array $taxQueries = [];
 	private ?int $perPage = null;
 	private ?int $page = null;
 
@@ -90,7 +91,18 @@ class QueryBuilder
 
 	public function addMetaQuery(MetaQuery $metaQuery): self
 	{
-		$this->metaQueries[] = $metaQuery;
+		if ($metaQuery->getQuery()) {
+			$this->metaQueries[] = $metaQuery;
+		}
+
+		return $this;
+	}
+
+	public function addTaxQuery(TaxQuery $taxQuery): self
+	{
+		if ([] !== $taxQuery->getQuery()) {
+			$this->taxQueries[] = $taxQuery;
+		}
 
 		return $this;
 	}
@@ -139,6 +151,14 @@ class QueryBuilder
 			}
 		}
 
+		if ([] !== $this->taxQueries) {
+			foreach ($this->taxQueries as $taxQuery) {
+				if ($taxQuery instanceof TaxQuery) {
+					$args['tax_query'][] = $taxQuery->generateTaxQueryArray();
+				}
+			}
+		}
+
 		return new \WP_Query($args);
 	}
 
@@ -148,7 +168,7 @@ class QueryBuilder
 	public function get(): array
 	{
 		$results = $this->getQuery()
-			->get_posts();
+			->posts;
 
 		return $results;
 	}
