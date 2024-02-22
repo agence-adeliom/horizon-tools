@@ -85,6 +85,7 @@ Experience the versatility of WordPress Sage Tools as you tailor your developmen
 - **Field Flexibility**: Rearrange field positions effortlessly with `getFieldsPosition`.
 - **Streamlined Editing**: Add fields directly to the Post edit sidebar using the dynamic `getFields` method (powered by Vinkla).
 - **Field Location Control**: Customize or add field locations seamlessly with `getFieldsLocation` for enhanced flexibility.
+- **Automatic Registration**: Automatically register classes within the `app/PostTypes` directory.
 
 ### Taxonomies
 
@@ -95,6 +96,7 @@ Experience the versatility of WordPress Sage Tools as you tailor your developmen
 - **Custom Field Mastery**: Personalize the custom field space title with finesse using `getFieldsTitle`.
 - **Enhanced Customization**: Add custom ACF fields effortlessly with `getFields`.
 - **Flexible Field Positioning**: Modify or append custom field locations with flair using `getFieldsLocation`.
+- **Automatic Registration**: Automatically register classes within the `app/Taxonomies` directory.
 
 ### Blocks
 
@@ -105,6 +107,7 @@ Experience the versatility of WordPress Sage Tools as you tailor your developmen
 - **Category Flexibility**: Customize block categories effortlessly with `getBlockCategory`.
 - **Dynamic Rendering**: Execute code dynamically during block rendering using `renderBlockCallback`.
 - **Contextual Enhancement**: Elevate blocks with enhanced context dynamics using `addToContext`.
+- **Automatic Registration**: Automatically register classes within the `app/Blocks` directory.
 
 ### QueryBuilder
 
@@ -142,3 +145,9 @@ Experience the versatility of WordPress Sage Tools as you tailor your developmen
 
 - **Dynamic Retrieval**: Retrieve dynamic `MenuViewModel` instances effortlessly.
 - **Customized Charm**: Experience custom fields retrieval and child items seamlessly with `MenuItemViewModel`.
+
+### Hooks
+
+- **Classy Hook Handling**: Seamlessly manage hooks in separate classes using `AbstractHook`.
+- **Init Method**:  Use the `init` method with calls to `add_filter` or `add_action`.
+- **Automatic Registration**: Automatically register classes within the `app/Hooks` directory.
