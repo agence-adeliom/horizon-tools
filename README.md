@@ -1,23 +1,23 @@
 # Introducing WordPress Sage Tools 🚀
----
+---  
 Unleash the power of WordPress with WordPress Sage Tools, your ultimate toolkit for elevating your development experience!
 ## Easy Installation
 
 Get started with WordPress Sage Tools in just a few simple steps:
 
 1. **Add Repository**: Incorporate our package into your project by adding our repository to your `composer.json`.
-```json
+```json  
 {  
   "type": "vcs",  
   "url": "git@github.com:LucasVigneron/sage-tools.git"  
-}
-```
+}  
+```  
 
 2. **Run Composer**: Execute the following command in your terminal to install WordPress Sage Tools:
 
-```bash
-composer require lucas-vigneron/sage-tools
-```
+```bash  
+composer require lucas-vigneron/sage-tools  
+```  
 
 3. **Voilà!** 🎉 WordPress Sage Tools is now seamlessly integrated into your project, ready to supercharge your development process.
 
@@ -29,26 +29,51 @@ Unlock the full potential of WordPress Sage Tools by ensuring your project meets
 - Sage theme
 - Acorn installed
 
-Once you've met these prerequisites, head to your template folder's `composer.json` file. Confirm that the `extra` section includes these providers:
+Once you've met these prerequisites, head to your template folder's `composer.json` file. Confirm that the `extra` section includes the Sage Tools provider :
+
+```json  
+{  
+  "extra": {  
+    "acorn": {  
+      "providers": [  
+        ...  
+        "LucasVigneron\\SageTools\\Providers\\SageToolsServiceProvider"  
+      ]    }  
+  }  
+}  
+  
+```  
+
+Experience the magic of WordPress Sage Tools and revolutionize your WordPress development workflow today! 🌟
+
+## Activate Features Individually
+
+While unlocking the full potential of WordPress Sage Tools is fantastic, sometimes you may want to enable specific features tailored to your project's needs. Fear not, as Sage Tools offers the flexibility to activate features on a case-by-case basis using the following providers:
+
+- **AdminServiceProvider:** Facilitates the creation of custom administration pages within WordPress, integrating Advanced Custom Fields (ACF) to streamline the process of building and managing custom admin interfaces.
+- **BlockServiceProvider:** Unleashes the power of Gutenberg blocks within your Sage theme, allowing you to create rich and dynamic content layouts effortlessly.
+- **CommentsServiceProvider:** Provides the functionality to disable the WordPress commenting system entirely, allowing you to manage comments externally or implement alternative commenting solutions.
+- **PostTypeServiceProvider:** Facilitates the management and customization of custom post types, enabling you to create and manage various content types seamlessly.
+
+To activate specific features, simply include the corresponding provider within your `composer.json` file in the `extra` section, like so:
 
 ```json
 {
-	"extra": {  
-	  "acorn": {  
-	    "providers": [  
-		      ...
-		      "LucasVigneron\\SageTools\\Providers\\AdminServiceProvider",  
-		      "LucasVigneron\\SageTools\\Providers\\BlockServiceProvider",  
-		      "LucasVigneron\\SageTools\\Providers\\CommentsServiceProvider",  
-		      "LucasVigneron\\SageTools\\Providers\\PostTypeServiceProvider"  
-		    ]
-	    }  
-	}
+  "extra": {
+    "acorn": {
+      "providers": [
+        ...
+        "LucasVigneron\\SageTools\\Providers\\AdminServiceProvider",
+        "LucasVigneron\\SageTools\\Providers\\BlockServiceProvider",
+        "LucasVigneron\\SageTools\\Providers\\CommentsServiceProvider",
+        "LucasVigneron\\SageTools\\Providers\\PostTypeServiceProvider"
+      ]
+    }
+  }
 }
-
 ```
 
-Experience the magic of WordPress Sage Tools and revolutionize your WordPress development workflow today! 🌟
+Experience the versatility of WordPress Sage Tools as you tailor your development workflow to suit your project's specific requirements! 🚀
 
 ## Power-Packed Features Showcase 💥
 
@@ -97,10 +122,10 @@ Experience the magic of WordPress Sage Tools and revolutionize your WordPress de
 - **Dynamic Class**: Harness the power of metadata manipulation with the versatile `MetaQuery` class, empowering your QueryBuilder experience.
 - **Nested Query Nirvana**: Seamlessly nest MetaQueries using the `add` method within the `MetaQuery` class, for unparalleled query flexibility.
 - **Parametric Precision**: Customize your queries effortlessly with the `add` method, featuring parameters such as:
-    - `nameOrMetaQuery`: Key of the meta or an instance of `MetaQuery`.
-    - `value`: Value to be tested.
-    - `comparator`: Comparator for the query.
-    - `type`: Value type for comparison.
+  - `nameOrMetaQuery`: Key of the meta or an instance of `MetaQuery`.
+  - `value`: Value to be tested.
+  - `comparator`: Comparator for the query.
+  - `type`: Value type for comparison.
 - **Relation Refinement**: Fine-tune query relations with the `setRelation` method, defining the `AND` or `OR` aspect of the MetaQuery for enhanced query precision.
 
 ### Menus
