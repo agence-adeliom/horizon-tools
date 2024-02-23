@@ -8,6 +8,7 @@ use Extended\ACF\Location;
 use LucasVigneron\SageTools\Blocks\AbstractBlock;
 use LucasVigneron\SageTools\Services\ClassService;
 use LucasVigneron\SageTools\Services\FileService;
+use Roots\Acorn\Exceptions\SkipProviderException;
 use Roots\Acorn\Sage\SageServiceProvider;
 
 class BlockServiceProvider extends SageServiceProvider
@@ -41,24 +42,30 @@ class BlockServiceProvider extends SageServiceProvider
 					if (is_subclass_of($class, AbstractBlock::class)) {
 						if (function_exists('register_extended_field_group')) {
 							register_extended_field_group([
-								'title' => $class->getBlockTitle(),
+								'title' => $class::$title,
 								'fields' => $class->getBlockFields() ? iterator_to_array($class->getBlockFields(), false) : [],
 								'location' => [
-									Location::where('block', 'acf/' . $class->getBlockName()),
+									Location::where('block', 'acf/' . $class::$slug),
 								],
 							]);
 
 							acf_register_block([
-								'name' => $class->getBlockName(),
-								'title' => $class->getBlockTitle(),
-								'category' => $class->getBlockCategory(),
+								'name' => $class::$slug,
+								'title' => $class::$title,
+								'category' => $class::$category,
 								'description' => null,
 								'render_callback' => function ($block) use ($class) {
-									echo view('blocks/' . $class->getBlockCategory() . '/' . str_replace('acf/', '', $block['name']), [
-										'block' => $block,
-										'fields' => get_fields(),
-										'context' => $class->addToContext(),
-									]);
+									$template = 'blocks/' . $class::$category . '/' . str_replace('acf/', '', $block['name']);
+									if (file_exists(get_template_directory() . '/resources/views/' . $template . '.blade.php')) {
+										echo view('blocks/' . $class::$category . '/' . str_replace('acf/', '', $block['name']), [
+											'block' => $block,
+											'fields' => get_fields(),
+											'context' => $class->addToContext(),
+										]);
+									} else {
+										throw new SkipProviderException('Template not found: ' . $template . '.blade.php');
+									}
+
 								}
 							]);
 
@@ -82,7 +89,7 @@ class BlockServiceProvider extends SageServiceProvider
 		});
 
 		return array_values(array_map(function ($class) {
-			return 'acf/' . $class::getBlockName();
+			return 'acf/' . $class::$slug;
 		}, $classes));
 	}
 }
