@@ -14,6 +14,7 @@ class AdminServiceProvider extends SageServiceProvider
 	public function boot(): void
 	{
 		$this->initAdmins();
+		$this->moveMenuFromAppearance();
 	}
 
 	private function initAdmins(): void
@@ -52,5 +53,22 @@ class AdminServiceProvider extends SageServiceProvider
 				}
 			}
 		}
+	}
+
+	private function moveMenuFromAppearance(): void
+	{
+		add_action('admin_menu', function () {
+			remove_submenu_page('themes.php', 'nav-menus.php');
+
+			add_menu_page(
+				'Menus',
+				'Menus',
+				'edit_theme_options',
+				'nav-menus.php',
+				'',
+				'dashicons-list-view',
+				68
+			);
+		});
 	}
 }
