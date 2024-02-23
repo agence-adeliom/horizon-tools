@@ -151,3 +151,7 @@ Experience the versatility of WordPress Sage Tools as you tailor your developmen
 - **Classy Hook Handling**: Seamlessly manage hooks in separate classes using `AbstractHook`.
 - **Init Method**:  Use the `init` method with calls to `add_filter` or `add_action`.
 - **Automatic Registration**: Automatically register classes within the `app/Hooks` directory.
+
+### Commanding with Style
+
+- With Acorn, just whip up a class extending `Roots\Acorn\Console\Commands\Command` within the `App\Console\Commands` namespace, and voilà! You're ready to rock it via Acorn's CLI.
