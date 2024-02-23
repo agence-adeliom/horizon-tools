@@ -4,25 +4,35 @@ declare(strict_types=1);
 
 namespace LucasVigneron\SageTools\Blocks;
 
+use Roots\Acorn\Exceptions\SkipProviderException;
+
 abstract class AbstractBlock
 {
-	abstract public function getBlockTitle(): string;
+	public static ?string $title = null;
 
-	abstract public static function getBlockName(): string;
+	public static ?string $slug = null;
+
+	public static string $category = 'common';
+
+	public function __construct()
+	{
+		if (null === $this::$slug) {
+			throw new SkipProviderException(static::class . ' : You must define a slug for your block');
+		}
+
+		if (null === $this::$title) {
+			throw new SkipProviderException(static::class . ' : You must define a title for your block');
+		}
+	}
 
 	final public static function getFullBlockName(): string
 	{
-		return 'acf/' . static::getBlockName();
+		return 'acf/' . self::$slug;
 	}
 
 	public function getBlockFields(): ?iterable
 	{
 		return null;
-	}
-
-	public function getBlockCategory(): string
-	{
-		return 'common';
 	}
 
 	public function renderBlockCallback(): void

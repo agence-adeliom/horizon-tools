@@ -5,17 +5,25 @@ declare(strict_types=1);
 namespace LucasVigneron\SageTools\Taxonomies;
 
 use Extended\ACF\Location;
+use Roots\Acorn\Exceptions\SkipProviderException;
 
 abstract class AbstractTaxonomy
 {
-	abstract public static function getSlug(): string;
+	public static ?string $slug = null;
+
+	public function __construct()
+	{
+		if (null === $this::$slug) {
+			throw new SkipProviderException(static::class . ' : You must define a slug for your taxonomy');
+		}
+	}
 
 	abstract public function getPostTypes(): array;
 
 	public function getConfig(array $config = []): array
 	{
 		return array_merge_recursive([
-			'taxonomy' => $this->getSlug(),
+			'taxonomy' => $this::$slug,
 			'object_type' => $this->getPostTypes(),
 			'args' => [
 				'public' => true,
@@ -28,7 +36,7 @@ abstract class AbstractTaxonomy
 
 	public function getFieldsTitle(): string
 	{
-		return sprintf('Champs additionnels (%s)', $this->getSlug());
+		return sprintf('Champs additionnels (%s)', $this::$slug);
 	}
 
 	public function getFields(): ?iterable
@@ -38,6 +46,6 @@ abstract class AbstractTaxonomy
 
 	public function getFieldsLocation(): iterable
 	{
-		yield Location::where('taxonomy', $this->getSlug());
+		yield Location::where('taxonomy', $this::$slug);
 	}
 }

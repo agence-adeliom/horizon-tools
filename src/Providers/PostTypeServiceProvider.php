@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace LucasVigneron\SageTools\Providers;
 
+use App\PostTypes\Customer;
 use LucasVigneron\SageTools\PostTypes\AbstractPostType;
 use LucasVigneron\SageTools\Services\ClassService;
 use LucasVigneron\SageTools\Services\FileService;
@@ -47,7 +48,7 @@ class PostTypeServiceProvider extends SageServiceProvider
 										'title' => $class->getFieldsTitle(),
 										'fields' => $customFields,
 										'location' => iterator_to_array($class->getFieldsLocation(), false),
-										'position' => $class->getFieldsPosition(),
+										'position' => $class::$fieldsPosition,
 									]);
 								}
 							}
