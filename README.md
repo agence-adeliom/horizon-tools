@@ -38,7 +38,8 @@ Once you've met these prerequisites, head to your template folder's `composer.js
       "providers": [  
         ...  
         "LucasVigneron\\SageTools\\Providers\\SageToolsServiceProvider"  
-      ]    }  
+      ]
+    }  
   }  
 }  
   
