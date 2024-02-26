@@ -14,6 +14,8 @@ abstract class AbstractBlock
 
 	public static string $category = 'common';
 
+	public static ?string $icon = null;
+
 	public function __construct()
 	{
 		if (null === $this::$slug) {
