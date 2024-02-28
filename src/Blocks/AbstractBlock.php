@@ -29,7 +29,7 @@ abstract class AbstractBlock
 
 	final public static function getFullBlockName(): string
 	{
-		return 'acf/' . self::$slug;
+		return 'acf/' . static::$slug;
 	}
 
 	public function getBlockFields(): ?iterable
