@@ -7,6 +7,7 @@ namespace LucasVigneron\SageTools\Database;
 class QueryBuilder
 {
 	private const ORDER_BY_META_KEY = 'meta_value';
+	private const ORDER_BY_META_KEY_NUM = 'meta_value_num';
 
 	private array $postTypes = [];
 	private array $idIn = [];
@@ -172,7 +173,7 @@ class QueryBuilder
 		$args['orderby'] = $this->orderBy;
 		$args['order'] = $this->order;
 
-		if ($this->orderBy === self::ORDER_BY_META_KEY) {
+		if (in_array($this->orderBy, [self::ORDER_BY_META_KEY, self::ORDER_BY_META_KEY_NUM])) {
 			$args['meta_key'] = $this->orderMetaKey;
 		}
 
@@ -209,14 +210,19 @@ class QueryBuilder
 		return $this->getQuery()->found_posts;
 	}
 
-	public function orderBy(string $order = 'DESC', string $orderBy = 'date', bool $isMeta = false): self
+	public function orderBy(string $order = 'DESC', string $orderBy = 'date', bool $isMeta = false, bool $isMetaNumeric = false): self
 	{
 		$this->order = $order;
 
 		if (!$isMeta) {
 			$this->orderBy = $orderBy;
 		} else {
-			$this->orderBy = self::ORDER_BY_META_KEY;
+			if ($isMetaNumeric) {
+				$this->orderBy = self::ORDER_BY_META_KEY_NUM;
+			} else {
+				$this->orderBy = self::ORDER_BY_META_KEY;
+			}
+
 			$this->orderMetaKey = $orderBy;
 		}
 
