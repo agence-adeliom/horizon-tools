@@ -19,6 +19,7 @@ class QueryBuilder
 	private string $orderBy = 'date';
 	private string $order = 'DESC';
 	private ?string $orderMetaKey = null;
+	private ?string $status = 'publish';
 
 	public function postType(string|array $postType): self
 	{
@@ -127,9 +128,22 @@ class QueryBuilder
 		return $this;
 	}
 
+	public function setStatus(string $status): self
+	{
+		if (in_array($status, ['any', 'publish', 'pending', 'draft', 'future', 'auto-draft', 'private', 'inherit', 'trash'])) {
+			$this->status = $status;
+		}
+
+		return $this;
+	}
+
 	public function getQuery(): \WP_Query
 	{
 		$args = [];
+
+		if ($this->status) {
+			$args['post_status'] = $this->status;
+		}
 
 		if ($this->postTypes) {
 			$args['post_type'] = $this->postTypes;
