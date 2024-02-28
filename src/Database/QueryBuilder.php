@@ -6,13 +6,18 @@ namespace LucasVigneron\SageTools\Database;
 
 class QueryBuilder
 {
+	private const ORDER_BY_META_KEY = 'meta_value';
+
 	private array $postTypes = [];
 	private array $idIn = [];
 	private array $idNotIn = [];
 	private array $metaQueries = [];
 	private array $taxQueries = [];
 	private ?int $perPage = null;
-	private ?int $page = null;
+	private int $page = 1;
+	private string $orderBy = 'date';
+	private string $order = 'DESC';
+	private ?string $orderMetaKey = null;
 
 	public function postType(string|array $postType): self
 	{
@@ -107,7 +112,7 @@ class QueryBuilder
 		return $this;
 	}
 
-	public function setPage(?int $page): self
+	public function setPage(int $page): self
 	{
 		$this->page = $page;
 
@@ -137,10 +142,15 @@ class QueryBuilder
 			$args['post__not_in'] = $this->idNotIn;
 		}
 
-		if ($this->perPage && $this->page) {
-			$args['posts_per_page'] = $this->perPage;
-			$args['offset'] = ($this->page - 1) * $this->perPage;
+		if ($this->page) {
 			$args['page'] = $this->page;
+
+			if ($this->perPage) {
+				$args['posts_per_page'] = $this->perPage;
+				$args['offset'] = ($this->page - 1) * $this->perPage;
+			} else {
+				$args['offset'] = 0;
+			}
 		}
 
 		if ([] !== $this->metaQueries) {
@@ -157,6 +167,13 @@ class QueryBuilder
 					$args['tax_query'][] = $taxQuery->generateTaxQueryArray();
 				}
 			}
+		}
+
+		$args['orderby'] = $this->orderBy;
+		$args['order'] = $this->order;
+
+		if ($this->orderBy === self::ORDER_BY_META_KEY) {
+			$args['meta_key'] = $this->orderMetaKey;
 		}
 
 		return new \WP_Query($args);
@@ -185,5 +202,24 @@ class QueryBuilder
 		}
 
 		return null;
+	}
+
+	public function getCount(): ?int
+	{
+		return $this->getQuery()->found_posts;
+	}
+
+	public function orderBy(string $order = 'DESC', string $orderBy = 'date', bool $isMeta = false): self
+	{
+		$this->order = $order;
+
+		if (!$isMeta) {
+			$this->orderBy = $orderBy;
+		} else {
+			$this->orderBy = self::ORDER_BY_META_KEY;
+			$this->orderMetaKey = $orderBy;
+		}
+
+		return $this;
 	}
 }
