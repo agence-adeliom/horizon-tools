@@ -14,7 +14,7 @@ class QueryBuilder
 	private ?int $perPage = null;
 	private ?int $page = null;
 
-	public function addPostType(string|array $postType): self
+	public function postType(string|array $postType): self
 	{
 		if (is_string($postType)) {
 			$postType = [$postType];
@@ -29,7 +29,7 @@ class QueryBuilder
 		return $this;
 	}
 
-	public function addIdIn(int|array $ids): self
+	public function whereIdIn(int|array $ids): self
 	{
 		if (is_int($ids)) {
 			$ids = [$ids];
@@ -59,7 +59,7 @@ class QueryBuilder
 		return $this;
 	}
 
-	public function addIdNotIn(int|array $ids): self
+	public function whereIdNotIn(int|array $ids): self
 	{
 		if (is_int($ids)) {
 			$ids = [$ids];

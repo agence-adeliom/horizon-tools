@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace LucasVigneron\SageTools\Providers;
 
-use App\PostTypes\Customer;
 use LucasVigneron\SageTools\PostTypes\AbstractPostType;
 use LucasVigneron\SageTools\Services\ClassService;
 use LucasVigneron\SageTools\Services\FileService;
