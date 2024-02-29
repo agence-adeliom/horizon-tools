@@ -6,6 +6,7 @@ namespace LucasVigneron\SageTools\Providers;
 
 use Extended\ACF\Location;
 use LucasVigneron\SageTools\Blocks\AbstractBlock;
+use LucasVigneron\SageTools\Enum\BlockCategoriesEnum;
 use LucasVigneron\SageTools\Services\ClassService;
 use LucasVigneron\SageTools\Services\FileService;
 use Roots\Acorn\Exceptions\SkipProviderException;
@@ -14,6 +15,7 @@ use Roots\Acorn\Sage\SageServiceProvider;
 class BlockServiceProvider extends SageServiceProvider
 {
 	public const UNREGISTER_DEFAULT_BLOCKS = true;
+	private const THEME_BLOCK_CATEGORIES_CLASS = 'App\Enum\BlockCategoriesEnum';
 
 	public function boot(): void
 	{
@@ -21,6 +23,7 @@ class BlockServiceProvider extends SageServiceProvider
 
 		if (self::UNREGISTER_DEFAULT_BLOCKS) {
 			add_filter('allowed_block_types_all', [$this, 'unregisterBlocks'], 10, 2);
+			add_filter('block_categories_all', [$this, 'registerCustomBlockCategories'], 10, 2);
 		}
 	}
 
@@ -92,5 +95,43 @@ class BlockServiceProvider extends SageServiceProvider
 		return array_values(array_map(function ($class) {
 			return 'acf/' . $class::$slug;
 		}, $classes));
+	}
+
+	public function registerCustomBlockCategories($categories, $post): array
+	{
+		$this->registerCategoriesFromCases(BlockCategoriesEnum::class, $categories);
+
+		if (class_exists(self::THEME_BLOCK_CATEGORIES_CLASS)) {
+			$this->registerCategoriesFromCases(self::THEME_BLOCK_CATEGORIES_CLASS, $categories);
+		}
+
+
+		return $categories;
+	}
+
+	private function registerCategoriesFromCases($enum, &$categories)
+	{
+		if (method_exists($enum, 'cases')) {
+			foreach ($enum::cases() as $case) {
+				$icon = 'admin-post';
+				$title = $case->value;
+				$association = null;
+
+				if (defined($enum . '::ASSOCIATIONS')) {
+					if (isset($enum::ASSOCIATIONS[$case->value]) && $association = $enum::ASSOCIATIONS[$case->value]) {
+						if (isset($association['title'], $association['icon'])) {
+							$title = $association['title'];
+							$icon = $association['icon'];
+						}
+					}
+				}
+
+				$categories[] = [
+					'slug' => $case->value,
+					'title' => $title,
+					'icon' => $icon,
+				];
+			}
+		}
 	}
 }
