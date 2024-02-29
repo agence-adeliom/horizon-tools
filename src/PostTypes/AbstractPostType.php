@@ -22,7 +22,7 @@ abstract class AbstractPostType
 
 	public function getConfig(array $config = []): array
 	{
-		return array_merge_recursive([
+		return array_replace_recursive([
 			'post_type' => $this::$slug,
 			'args'=> [
 				'public'=>true,

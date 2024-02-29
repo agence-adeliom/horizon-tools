@@ -22,7 +22,7 @@ abstract class AbstractTaxonomy
 
 	public function getConfig(array $config = []): array
 	{
-		return array_merge_recursive([
+		return array_replace_recursive([
 			'taxonomy' => $this::$slug,
 			'object_type' => $this->getPostTypes(),
 			'args' => [
