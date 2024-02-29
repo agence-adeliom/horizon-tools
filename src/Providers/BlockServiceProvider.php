@@ -29,56 +29,54 @@ class BlockServiceProvider extends SageServiceProvider
 
 	private function initBlocks(): void
 	{
-		$classes = get_declared_classes();
-
 		foreach (FileService::getClassesPathsFromPath(get_template_directory() . '/app/Blocks') as $classPath) {
 			require_once $classPath;
 		}
 
-		$blockClasses = array_values(array_diff(get_declared_classes(), $classes));
+		$blockClasses = array_filter(get_declared_classes(), function ($class) {
+			return is_subclass_of($class, AbstractBlock::class);
+		});
 
 		foreach ($blockClasses as $blockClass) {
 			if ($className = ClassService::getClassNameFromFullName($blockClass)) {
 				if (!str_starts_with($className, 'Abstract')) {
 					$class = new $blockClass();
 
-					if (is_subclass_of($class, AbstractBlock::class)) {
-						if (function_exists('register_extended_field_group')) {
-							register_extended_field_group([
-								'title' => $class::$title,
-								'fields' => $class->getBlockFields() ? iterator_to_array($class->getBlockFields(), false) : [],
-								'location' => [
-									Location::where('block', 'acf/' . $class::$slug),
-								],
-							]);
+					if (function_exists('register_extended_field_group')) {
+						register_extended_field_group([
+							'title' => $class::$title,
+							'fields' => $class->getBlockFields() ? iterator_to_array($class->getBlockFields(), false) : [],
+							'location' => [
+								Location::where('block', 'acf/' . $class::$slug),
+							],
+						]);
 
-							acf_register_block([
-								'name' => $class::$slug,
-								'title' => $class::$title,
-								'category' => $class::$category,
-								'description' => null,
-								'icon' => $class::$icon,
-								'render_callback' => function ($block) use ($class) {
-									$template = 'blocks/' . $class::$category . '/' . str_replace('acf/', '', $block['name']);
-									if (file_exists(get_template_directory() . '/resources/views/' . $template . '.blade.php')) {
-										echo view('blocks/' . $class::$category . '/' . str_replace('acf/', '', $block['name']), [
-											'block' => $block,
-											'fields' => get_fields(),
-											'context' => $class->addToContext(),
-										]);
-									} else {
-										throw new SkipProviderException('Template not found: ' . $template . '.blade.php');
-									}
-
+						acf_register_block([
+							'name' => $class::$slug,
+							'title' => $class::$title,
+							'category' => $class::$category,
+							'description' => null,
+							'icon' => $class::$icon,
+							'render_callback' => function ($block) use ($class) {
+								$template = 'blocks/' . $class::$category . '/' . str_replace('acf/', '', $block['name']);
+								if (file_exists(get_template_directory() . '/resources/views/' . $template . '.blade.php')) {
+									echo view('blocks/' . $class::$category . '/' . str_replace('acf/', '', $block['name']), [
+										'block' => $block,
+										'fields' => get_fields(),
+										'context' => $class->addToContext(),
+									]);
+								} else {
+									throw new SkipProviderException('Template not found: ' . $template . '.blade.php');
 								}
-							]);
 
-							add_filter(sprintf('render_block_%s', $class->getFullBlockName()), function ($blockContent) use ($class) {
-								$class->renderBlockCallback();
+							}
+						]);
 
-								return $blockContent;
-							});
-						}
+						add_filter(sprintf('render_block_%s', $class->getFullBlockName()), function ($blockContent) use ($class) {
+							$class->renderBlockCallback();
+
+							return $blockContent;
+						});
 					}
 				}
 			}

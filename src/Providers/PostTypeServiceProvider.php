@@ -20,36 +20,35 @@ class PostTypeServiceProvider extends SageServiceProvider
 
 	private function initPostTypes(): void
 	{
-		$classes = get_declared_classes();
-
 		foreach (FileService::getClassesPathsFromPath(get_template_directory() . '/app/PostTypes') as $classPath) {
 			require_once $classPath;
 		}
 
-		$postTypeClasses = array_values(array_diff(get_declared_classes(), $classes));
+		$postTypeClasses = array_filter(get_declared_classes(), function ($class) {
+			return is_subclass_of($class, AbstractPostType::class);
+		});
 
 		foreach ($postTypeClasses as $postTypeClass) {
 			if ($className = ClassService::getClassNameFromFullName($postTypeClass)) {
 				if (!str_starts_with($className, 'Abstract')) {
 					$class = new $postTypeClass();
-
-					if (is_subclass_of($class, AbstractPostType::class)) {
-						if ($config = $class->getConfig()) {
-							if (isset($config['post_type'])) {
-								register_post_type($config['post_type'], $config['args']);
-							}
+					
+					if ($config = $class->getConfig()) {
+						if (isset($config['post_type'])) {
+							register_post_type($config['post_type'], $config['args']);
 						}
+					}
 
-						if (function_exists('register_extended_field_group')) {
-							if ($fields = $class->getFields()) {
-								if ($customFields = iterator_to_array($fields, false)) {
-									register_extended_field_group([
-										'title' => $class->getFieldsTitle(),
-										'fields' => $customFields,
-										'location' => iterator_to_array($class->getFieldsLocation(), false),
-										'position' => $class::$fieldsPosition,
-									]);
-								}
+					if (function_exists('register_extended_field_group')) {
+						if ($fields = $class->getFields()) {
+							if ($customFields = iterator_to_array($fields, false)) {
+								register_extended_field_group([
+									'title' => $class->getFieldsTitle(),
+									'fields' => $customFields,
+									'style' => 'default',
+									'location' => iterator_to_array($class->getFieldsLocation(), false),
+									'position' => $class::$fieldsPosition,
+								]);
 							}
 						}
 					}
@@ -60,13 +59,13 @@ class PostTypeServiceProvider extends SageServiceProvider
 
 	private function initTaxonomies(): void
 	{
-		$classes = get_declared_classes();
-
 		foreach (FileService::getClassesPathsFromPath(get_template_directory() . '/app/Taxonomies') as $classPath) {
 			require_once $classPath;
 		}
 
-		$taxonomyClasses = array_values(array_diff(get_declared_classes(), $classes));
+		$taxonomyClasses = array_filter(get_declared_classes(), function ($class) {
+			return is_subclass_of($class, AbstractTaxonomy::class);
+		});
 
 		foreach ($taxonomyClasses as $taxonomyClass) {
 			if ($className = ClassService::getClassNameFromFullName($taxonomyClass)) {

@@ -18,23 +18,21 @@ class HooksServiceProvider extends SageServiceProvider
 
 	private function initHooks(): void
 	{
-		$classes = get_declared_classes();
-
 		foreach (FileService::getClassesPathsFromPath(get_template_directory() . '/app/Hooks') as $classPath) {
 			require_once $classPath;
 		}
 
-		$hookClasses = array_values(array_diff(get_declared_classes(), $classes));
+		$hookClasses = array_filter(get_declared_classes(), function ($class) {
+			return is_subclass_of($class, AbstractHook::class);
+		});
 
 		foreach ($hookClasses as $hookClass) {
 			if ($className = ClassService::getClassNameFromFullName($hookClass)) {
 				if (!str_starts_with($className, 'Abstract')) {
 					$class = new $hookClass();
 
-					if (is_subclass_of($class, AbstractHook::class)) {
-						if (method_exists($class, 'init')) {
-							$class->init();
-						}
+					if (method_exists($class, 'init')) {
+						$class->init();
 					}
 				}
 			}
