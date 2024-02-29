@@ -15,15 +15,15 @@ class Request
 
 	private int $page = 1;
 
-	public int $perPage = 9;
+	private int $perPage = 9;
 
 
-	public function __construct()
+	public function __construct(?int $page = null, ?int $perPage = null)
 	{
 		$this->request = new BaseRequest($_GET, $_POST, [], $_COOKIE, $_FILES, $_SERVER);
 
-		$this->setPage();
-		$this->setPerPage();
+		$this->setPage($page);
+		$this->setPerPage($perPage);
 	}
 
 	public function getParamsByKey(string $key): mixed
@@ -35,9 +35,11 @@ class Request
 		return null;
 	}
 
-	public function setPage(): self
+	public function setPage(?int $page = null): self
 	{
-		if ($page = $this->getParamsByKey(self::FIELD_PAGE)) {
+		if (null !== $page) {
+			$this->page = $page;
+		} else if ($page = $this->getParamsByKey(self::FIELD_PAGE)) {
 			if (is_numeric($page)) {
 				$this->page = (int)$page;
 			}
@@ -51,9 +53,11 @@ class Request
 		return $this->page;
 	}
 
-	public function setPerPage(): self
+	public function setPerPage(?int $perPage = null): self
 	{
-		if ($perPage = $this->getParamsByKey(self::FIELD_PER_PAGE)) {
+		if (null !== $perPage) {
+			$this->perPage = $perPage;
+		} else if ($perPage = $this->getParamsByKey(self::FIELD_PER_PAGE)) {
 			if (is_numeric($perPage)) {
 				$this->perPage = (int)$perPage;
 			}
