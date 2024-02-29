@@ -109,18 +109,21 @@ Experience the versatility of WordPress Sage Tools as you tailor your developmen
 - **Dynamic Rendering**: Execute code dynamically during block rendering using `renderBlockCallback`.
 - **Contextual Enhancement**: Elevate blocks with enhanced context dynamics using `addToContext`.
 - **Automatic Registration**: Automatically register classes within the `app/Blocks` directory.
+- **Categories:** Populate the `category` property with some default categories from `BlockCategoriesEnum` like `BlockCategoriesEnum::OTHERS->value`
 
 ### QueryBuilder
 
 - **Interactive Generation**: Generate `WP_Query` instances interactively with the powerful `QueryBuilder`.
-- **PostType Addition**: Seamlessly add PostTypes with the intuitive `addPostType` method.
+- **PostType Addition**: Seamlessly add PostTypes with the intuitive `postType` method.
 - **Page Precision**: Set desired pages with pinpoint precision using `setPage`.
 - **Pagination Perfection**: Define pagination effortlessly via `setPerPage` for optimal control.
-- **ID Constraint Mastery**: Apply ID constraints effortlessly with `addIdIn`.
-- **Exclusion Elegance**: Exclude IDs effortlessly with `addIdNotIn`.
+- **ID Constraint Mastery**: Apply ID constraints effortlessly with `whereIdIn`.
+- **Exclusion Elegance**: Exclude IDs effortlessly with `whereIdNotIn`.
 - **Result Retrieval**: Retrieve meticulously crafted `WP_Query` instances with ease using `getQuery`.
 - **Singular or Null**: Obtain singular results or null if none exist effortlessly with `getOneOrNull`.
 - **Meta Magic**: Unlock the power of metadata manipulation with the dynamic `addMetaQuery` method, seamlessly accepting instances of the `MetaQuery` class. 🌟
+- **Count:** Retrieve the total count of queries posts by using the `getCount` method
+- **Order:** Retrieve posts ordered by default or custom meta, string or numeric with the `orderBy` method
 
 ### MetaQuery
 - **Dynamic Class**: Harness the power of metadata manipulation with the versatile `MetaQuery` class, empowering your QueryBuilder experience.
