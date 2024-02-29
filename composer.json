@@ -17,6 +17,6 @@
     "require": {
         "php": ">=8.2",
         "vinkla/extended-acf": "^14.0",
-        "roots/acorn": "^3.3"
+        "roots/acorn": "^4.0"
     }
 }
