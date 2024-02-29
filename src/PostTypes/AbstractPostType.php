@@ -25,10 +25,10 @@ abstract class AbstractPostType
 		return array_replace_recursive([
 			'post_type' => $this::$slug,
 			'args'=> [
-				'public'=>true,
-				'show_in_menu'=>true,
-				'show_in_rest'=>true,
-				'show_in_nav_menus'=>true,
+				'public' => true,
+				'show_in_menu' => true,
+				'show_in_rest' => true,
+				'show_in_nav_menus' => true,
 			]
 		], $config);
 	}
