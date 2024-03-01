@@ -23,7 +23,7 @@ class MiddlewareServiceProvider extends SageServiceProvider
 				$instance = new $middleware();
 
 				if (method_exists($instance, 'handle')) {
-					$instance->handle(new Request());
+					$instance->handle(new Request($_GET, $_POST, [], $_COOKIE, $_FILES, $_SERVER));
 				} else {
 					throw new SkipProviderException($middleware . ' : You must define a handle method for your middleware');
 				}
