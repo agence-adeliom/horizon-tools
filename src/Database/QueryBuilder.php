@@ -265,7 +265,7 @@ class QueryBuilder
 		return $results;
 	}
 
-	public function getOneOrNull(?string $viewModelClassName): mixed
+	public function getOneOrNull(?string $viewModelClassName = null): mixed
 	{
 		$query = clone $this->getQuery();
 
