@@ -26,6 +26,11 @@ class Request
 		$this->setPerPage($perPage);
 	}
 
+	public function getRequest(): BaseRequest
+	{
+		return $this->request;
+	}
+
 	public function getParamsByKey(string $key): mixed
 	{
 		if ($value = $this->request->query->get($key)) {
