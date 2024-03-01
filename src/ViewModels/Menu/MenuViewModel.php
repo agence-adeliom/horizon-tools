@@ -14,13 +14,13 @@ class MenuViewModel
 	public function __construct(\WP_Term|string $menu)
 	{
 		if (is_string($menu)) {
-			$menus = wp_get_nav_menus([
-				'menu' => $menu,
-			]);
+			if ($menuInstance = wp_get_nav_menu_object($menu)) {
+				if ($menuInstance instanceof \WP_Term) {
+					$menu = $menuInstance;
+				}
+			}
 
-			if (isset($menus[0]) && $menus[0] instanceof \WP_Term) {
-				$menu = $menus[0];
-			} else {
+			if (is_string($menu)) {
 				throw new \Exception('Menu not found');
 			}
 		}
