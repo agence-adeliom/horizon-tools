@@ -20,9 +20,17 @@ class QueryBuilder
 	private string $order = 'DESC';
 	private ?string $orderMetaKey = null;
 	private ?string $status = 'publish';
+	private ?\WP_Query $WP_Query = null;
+
+	private function triggerChange(): void
+	{
+		$this->WP_Query = null;
+	}
 
 	public function postType(string|array $postType): self
 	{
+		$this->triggerChange();
+
 		if (is_string($postType)) {
 			$postType = [$postType];
 		}
@@ -38,6 +46,8 @@ class QueryBuilder
 
 	public function whereIdIn(int|array $ids): self
 	{
+		$this->triggerChange();
+
 		if (is_int($ids)) {
 			$ids = [$ids];
 		}
@@ -53,6 +63,8 @@ class QueryBuilder
 
 	public function removeIdIn(int|array $ids): self
 	{
+		$this->triggerChange();
+
 		if (is_int($ids)) {
 			$ids = [$ids];
 		}
@@ -68,6 +80,8 @@ class QueryBuilder
 
 	public function whereIdNotIn(int|array $ids): self
 	{
+		$this->triggerChange();
+
 		if (is_int($ids)) {
 			$ids = [$ids];
 		}
@@ -83,6 +97,8 @@ class QueryBuilder
 
 	public function removeIdNotIn(int|array $ids): self
 	{
+		$this->triggerChange();
+
 		if (is_int($ids)) {
 			$ids = [$ids];
 		}
@@ -98,6 +114,8 @@ class QueryBuilder
 
 	public function addMetaQuery(MetaQuery $metaQuery): self
 	{
+		$this->triggerChange();
+
 		if ($metaQuery->getQuery()) {
 			$this->metaQueries[] = $metaQuery;
 		}
@@ -107,6 +125,8 @@ class QueryBuilder
 
 	public function addTaxQuery(TaxQuery $taxQuery): self
 	{
+		$this->triggerChange();
+
 		if ([] !== $taxQuery->getQuery()) {
 			$this->taxQueries[] = $taxQuery;
 		}
@@ -116,6 +136,8 @@ class QueryBuilder
 
 	public function setPage(int $page): self
 	{
+		$this->triggerChange();
+
 		$this->page = $page;
 
 		return $this;
@@ -123,6 +145,8 @@ class QueryBuilder
 
 	public function setPerPage(?int $perPage): self
 	{
+		$this->triggerChange();
+
 		$this->perPage = $perPage;
 
 		return $this;
@@ -130,6 +154,8 @@ class QueryBuilder
 
 	public function setStatus(string $status): self
 	{
+		$this->triggerChange();
+
 		if (in_array($status, ['any', 'publish', 'pending', 'draft', 'future', 'auto-draft', 'private', 'inherit', 'trash'])) {
 			$this->status = $status;
 		}
@@ -137,95 +163,10 @@ class QueryBuilder
 		return $this;
 	}
 
-	public function getQuery(): \WP_Query
-	{
-		$args = [];
-
-		if ($this->status) {
-			$args['post_status'] = $this->status;
-		}
-
-		if ($this->postTypes) {
-			$args['post_type'] = $this->postTypes;
-		}
-
-		if ($this->idIn) {
-			$args['post__in'] = $this->idIn;
-		}
-
-		if ($this->idNotIn) {
-			$args['post__not_in'] = $this->idNotIn;
-		}
-
-		if ($this->page) {
-			$args['page'] = $this->page;
-
-			if ($this->perPage) {
-				$args['posts_per_page'] = $this->perPage;
-				$args['offset'] = ($this->page - 1) * $this->perPage;
-			} else {
-				$args['offset'] = 0;
-			}
-		}
-
-		if ([] !== $this->metaQueries) {
-			foreach ($this->metaQueries as $metaQuery) {
-				if ($metaQuery instanceof MetaQuery) {
-					$args['meta_query'][] = $metaQuery->generateMetaQueryArray();
-				}
-			}
-		}
-
-		if ([] !== $this->taxQueries) {
-			foreach ($this->taxQueries as $taxQuery) {
-				if ($taxQuery instanceof TaxQuery) {
-					$args['tax_query'][] = $taxQuery->generateTaxQueryArray();
-				}
-			}
-		}
-
-		$args['orderby'] = $this->orderBy;
-		$args['order'] = $this->order;
-
-		if (in_array($this->orderBy, [self::ORDER_BY_META_KEY, self::ORDER_BY_META_KEY_NUM])) {
-			$args['meta_key'] = $this->orderMetaKey;
-		}
-
-		return new \WP_Query($args);
-	}
-
-	/**
-	 * @return \WP_Post[]
-	 */
-	public function get(): array
-	{
-		$results = $this->getQuery()
-			->posts;
-
-		return $results;
-	}
-
-	public function getOneOrNull(): ?\WP_Post
-	{
-		$query = $this->getQuery();
-
-		$query->query['posts_per_page'] = 1;
-		$query->set('posts_per_page', 1);
-
-		if ($results = $query->get_posts()) {
-			return $results[0];
-		}
-
-		return null;
-	}
-
-	public function getCount(): ?int
-	{
-		return $this->getQuery()->found_posts;
-	}
-
 	public function orderBy(string $order = 'DESC', string $orderBy = 'date', bool $isMeta = false, bool $isMetaNumeric = false): self
 	{
+		$this->triggerChange();
+
 		$this->order = $order;
 
 		if (!$isMeta) {
@@ -241,5 +182,97 @@ class QueryBuilder
 		}
 
 		return $this;
+	}
+
+	public function getQuery(): \WP_Query
+	{
+		if (null === $this->WP_Query) {
+			$args = [];
+
+			if ($this->status) {
+				$args['post_status'] = $this->status;
+			}
+
+			if ($this->postTypes) {
+				$args['post_type'] = $this->postTypes;
+			}
+
+			if ($this->idIn) {
+				$args['post__in'] = $this->idIn;
+			}
+
+			if ($this->idNotIn) {
+				$args['post__not_in'] = $this->idNotIn;
+			}
+
+			if ($this->page) {
+				$args['page'] = $this->page;
+
+				if ($this->perPage) {
+					$args['posts_per_page'] = $this->perPage;
+					$args['offset'] = ($this->page - 1) * $this->perPage;
+				} else {
+					$args['offset'] = 0;
+				}
+			}
+
+			if ([] !== $this->metaQueries) {
+				foreach ($this->metaQueries as $metaQuery) {
+					if ($metaQuery instanceof MetaQuery) {
+						$args['meta_query'][] = $metaQuery->generateMetaQueryArray();
+					}
+				}
+			}
+
+			if ([] !== $this->taxQueries) {
+				foreach ($this->taxQueries as $taxQuery) {
+					if ($taxQuery instanceof TaxQuery) {
+						$args['tax_query'][] = $taxQuery->generateTaxQueryArray();
+					}
+				}
+			}
+
+			$args['orderby'] = $this->orderBy;
+			$args['order'] = $this->order;
+
+			if (in_array($this->orderBy, [self::ORDER_BY_META_KEY, self::ORDER_BY_META_KEY_NUM])) {
+				$args['meta_key'] = $this->orderMetaKey;
+			}
+
+			$this->WP_Query = new \WP_Query($args);
+		}
+
+
+		return $this->WP_Query;
+	}
+
+	/**
+	 * @return \WP_Post[]
+	 */
+	public function get(): array
+	{
+		$results = $this->getQuery()
+			->posts;
+
+		return $results;
+	}
+
+	public function getOneOrNull(): ?\WP_Post
+	{
+		$query = clone $this->getQuery();
+
+		$query->query['posts_per_page'] = 1;
+		$query->set('posts_per_page', 1);
+
+		if ($results = $query->get_posts()) {
+			return $results[0];
+		}
+
+		return null;
+	}
+
+	public function getCount(): ?int
+	{
+		return $this->getQuery()->found_posts;
 	}
 }
