@@ -21,5 +21,6 @@ class SageToolsServiceProvider extends SageServiceProvider
 		(new CommentsServiceProvider($this->app))->boot();
 		(new PostTypeServiceProvider($this->app))->boot();
 		(new HooksServiceProvider($this->app))->boot();
+		(new MiddlewareServiceProvider($this->app))->boot();
 	}
 }
