@@ -57,6 +57,7 @@ class BlockServiceProvider extends SageServiceProvider
 							'category' => $class::$category,
 							'description' => null,
 							'icon' => $class::$icon,
+							'post_types' => $class->getPostTypes(),
 							'render_callback' => function ($block) use ($class) {
 								$template = 'blocks/' . $class::$category . '/' . str_replace('acf/', '', $block['name']);
 								if (file_exists(get_template_directory() . '/resources/views/' . $template . '.blade.php')) {

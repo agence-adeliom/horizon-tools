@@ -37,6 +37,11 @@ abstract class AbstractBlock
 		return null;
 	}
 
+	public function getPostTypes(): ?array
+	{
+		return null;
+	}
+
 	public function renderBlockCallback(): void
 	{
 		// do nothing
