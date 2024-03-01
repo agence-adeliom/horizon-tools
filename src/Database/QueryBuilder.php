@@ -251,15 +251,21 @@ class QueryBuilder
 	/**
 	 * @return \WP_Post[]
 	 */
-	public function get(): array
+	public function get(?string $viewModelClassName = null): array
 	{
 		$results = $this->getQuery()
 			->posts;
 
+		if ($viewModelClassName) {
+			$results = array_map(function ($post) use ($viewModelClassName) {
+				return new $viewModelClassName($post);
+			}, $results);
+		}
+
 		return $results;
 	}
 
-	public function getOneOrNull(): ?\WP_Post
+	public function getOneOrNull(?string $viewModelClassName): mixed
 	{
 		$query = clone $this->getQuery();
 
@@ -267,6 +273,10 @@ class QueryBuilder
 		$query->set('posts_per_page', 1);
 
 		if ($results = $query->get_posts()) {
+			if ($viewModelClassName) {
+				return new $viewModelClassName($results[0]);
+			}
+
 			return $results[0];
 		}
 
