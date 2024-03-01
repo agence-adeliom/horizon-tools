@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace LucasVigneron\SageTools\Database;
 
+use LucasVigneron\SageTools\Http\Request\Request;
+
 class QueryBuilder
 {
 	private const ORDER_BY_META_KEY = 'meta_value';
@@ -283,5 +285,14 @@ class QueryBuilder
 		}
 
 		return null;
+	}
+
+	public function getPaginationData(Request $request): array
+	{
+		return [
+			'count' => $this->getCount(),
+			'pages' => $this->getPagesCount(),
+			'current' => $request->getPage(),
+		];
 	}
 }
