@@ -275,4 +275,13 @@ class QueryBuilder
 	{
 		return $this->getQuery()->found_posts;
 	}
+
+	public function getPagesCount(): ?int
+	{
+		if ($pages = $this->getQuery()?->max_num_pages) {
+			return intval($pages);
+		}
+
+		return null;
+	}
 }
