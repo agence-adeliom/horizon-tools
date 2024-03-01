@@ -286,13 +286,4 @@ class QueryBuilder
 
 		return null;
 	}
-
-	public function getPaginationData(Request $request): array
-	{
-		return [
-			'count' => $this->getCount(),
-			'pages' => $this->getPagesCount(),
-			'current' => $request->getPage(),
-		];
-	}
 }
