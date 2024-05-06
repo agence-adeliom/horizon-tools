@@ -44,6 +44,7 @@ class BlockServiceProvider extends SageServiceProvider
 
 					if (function_exists('register_extended_field_group')) {
 						register_extended_field_group([
+						        'key' => $class::$slug,
 							'title' => $class::$title,
 							'fields' => $class->getBlockFields() ? iterator_to_array($class->getBlockFields(), false) : [],
 							'location' => [
