@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace LucasVigneron\SageTools\Providers;
 
+use Extended\ACF\Location;
 use LucasVigneron\SageTools\PostTypes\AbstractPostType;
 use LucasVigneron\SageTools\Services\ClassService;
 use LucasVigneron\SageTools\Services\FileService;
@@ -43,11 +44,18 @@ class PostTypeServiceProvider extends SageServiceProvider
 						if ($fields = $class->getFields()) {
 							if ($customFields = iterator_to_array($fields, false)) {
 								register_extended_field_group([
+									'key' => 'group_' . $class::$slug,
 									'title' => $class->getFieldsTitle(),
 									'fields' => $customFields,
-									'style' => 'default',
-									'location' => iterator_to_array($class->getFieldsLocation(), false),
-									'position' => $class::$fieldsPosition,
+									'style' => $class->getStyle(),
+									'location' => [
+										Location::where('post_type', $class::$slug)
+									],
+									'position' => $class->getPosition(),
+									'label_placement' => $class->getLabelPlacement(),
+									'instruction_placement' => $class->getInstructionPlacement(),
+									'hide_on_screen' => $class->getHideOnScreen(),
+									'menu_order' => $class->getMenuOrder(),
 								]);
 							}
 						}
@@ -67,6 +75,7 @@ class PostTypeServiceProvider extends SageServiceProvider
 			return is_subclass_of($class, AbstractTaxonomy::class);
 		});
 
+
 		foreach ($taxonomyClasses as $taxonomyClass) {
 			if ($className = ClassService::getClassNameFromFullName($taxonomyClass)) {
 				if (!str_starts_with($className, 'Abstract')) {
@@ -82,9 +91,18 @@ class PostTypeServiceProvider extends SageServiceProvider
 						if (function_exists('register_extended_field_group')) {
 							if ($class->getFields() && $customFields = iterator_to_array($class->getFields(), false)) {
 								register_extended_field_group([
+									'key' => 'group_' . $class::$slug,
 									'title' => $class->getFieldsTitle(),
 									'fields' => $customFields,
-									'location' => iterator_to_array($class->getFieldsLocation(), false),
+									'style' => $class->getStyle(),
+									'location' => [
+										Location::where('taxonomy', $class::$slug)
+									],
+									'position' => $class->getPosition(),
+									'label_placement' => $class->getLabelPlacement(),
+									'instruction_placement' => $class->getInstructionPlacement(),
+									'hide_on_screen' => $class->getHideOnScreen(),
+									'menu_order' => $class->getMenuOrder(),
 								]);
 							}
 						}

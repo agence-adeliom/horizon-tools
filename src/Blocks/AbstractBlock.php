@@ -10,9 +10,13 @@ abstract class AbstractBlock
 {
 	public static ?string $title = null;
 
+	public static ?string $description = null;
+
 	public static ?string $slug = null;
 
 	public static string $category = 'common';
+
+	public static ?string $mode = "edit";
 
 	public static ?string $icon = null;
 
@@ -27,12 +31,12 @@ abstract class AbstractBlock
 		}
 	}
 
-	final public static function getFullBlockName(): string
+	final public static function getFullName(): string
 	{
 		return 'acf/' . static::$slug;
 	}
 
-	public function getBlockFields(): ?iterable
+	public function getFields(): ?iterable
 	{
 		return null;
 	}
@@ -50,5 +54,27 @@ abstract class AbstractBlock
 	public function addToContext(): array
 	{
 		return [];
+	}
+
+	public function getSupports(): array
+	{
+		return [
+			'align' => false,
+			'anchor' => false,
+			'className' => false,
+			'customClassName' => false,
+ 			'jsx' => false,
+			'renaming' => false
+		];
+	}
+
+	public function getExample(): array
+	{
+		return [
+			'attributes' => [
+				'mode' => 'preview',
+				'data' => ['_is_preview' => true]
+			]
+		];
 	}
 }

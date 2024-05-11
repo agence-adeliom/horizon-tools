@@ -16,4 +16,10 @@ class ClassService
 
 		return null;
 	}
+
+	public static function getFolderNameFromFullName(string $fullName): ?string
+	{
+		$string = explode('\\', $fullName);
+		return strtolower($string[count($string) - 2]);
+	}
 }

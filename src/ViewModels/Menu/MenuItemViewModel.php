@@ -10,6 +10,7 @@ class MenuItemViewModel
 	public string $title;
 	public string $url;
 	public int $parentId;
+	public array $classes = [];
 	public array $children = [];
 	public bool $hasChildren = false;
 	public false|array $customFields = [];
@@ -19,6 +20,7 @@ class MenuItemViewModel
 		$this->id = $menuItem->ID;
 		$this->title = $menuItem->title;
 		$this->url = $menuItem->url;
+		$this->classes = $menuItem->classes;
 		$this->parentId = (int)$menuItem->menu_item_parent;
 
 		if ($customFields = get_fields($menuItem)) {

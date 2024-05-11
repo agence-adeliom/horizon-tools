@@ -38,8 +38,13 @@ class AdminServiceProvider extends SageServiceProvider
 								register_extended_field_group([
 									'title' => $class::$title,
 									'fields' => $customFields,
-									'style' => 'default',
+									'style' => $class->getStyle(),
 									'location' => iterator_to_array($class->getLocation(), false),
+									'position' => $class->getPosition(),
+									'label_placement' => $class->getLabelPlacement(),
+									'instruction_placement' => $class->getInstructionPlacement(),
+									'hide_on_screen' => $class->getHideOnScreen(),
+									'menu_order' => $class->getMenuOrder(),
 								]);
 							}
 						}

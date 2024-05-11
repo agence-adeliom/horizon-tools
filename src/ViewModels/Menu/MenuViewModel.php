@@ -14,10 +14,9 @@ class MenuViewModel
 	public function __construct(\WP_Term|string $menu)
 	{
 		if (is_string($menu)) {
-			if ($menuInstance = wp_get_nav_menu_object($menu)) {
-				if ($menuInstance instanceof \WP_Term) {
-					$menu = $menuInstance;
-				}
+
+			if (($locations = get_nav_menu_locations()) && isset($locations[$menu])) {
+				$menu = get_term($locations[$menu]);
 			}
 
 			if (is_string($menu)) {
@@ -40,7 +39,7 @@ class MenuViewModel
 
 		$parentId = $parent ? $parent->id : 0;
 
-		foreach ($flatItems as $key => $flatItem) {
+		foreach ($flatItems as $flatItem) {
 			if ($flatItem->menu_item_parent == $parentId) {
 				$item = new MenuItemViewModel($flatItem);
 

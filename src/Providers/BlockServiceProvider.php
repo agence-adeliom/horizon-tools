@@ -43,26 +43,38 @@ class BlockServiceProvider extends SageServiceProvider
 					$class = new $blockClass();
 
 					if (function_exists('register_extended_field_group')) {
+
+						$category = ClassService::getFolderNameFromFullName($blockClass);
+
 						register_extended_field_group([
-						        'key' => $class::$slug,
+							'key' => $class::$slug,
 							'title' => $class::$title,
-							'fields' => $class->getBlockFields() ? iterator_to_array($class->getBlockFields(), false) : [],
+							'fields' => $class->getFields() ? iterator_to_array($class->getFields(), false) : [],
 							'location' => [
 								Location::where('block', 'acf/' . $class::$slug),
 							],
 						]);
 
-						acf_register_block([
+						acf_register_block_type([
 							'name' => $class::$slug,
 							'title' => $class::$title,
-							'category' => $class::$category,
-							'description' => null,
+							'category' => $category,
+							'mode' => $class::$mode,
+							'description' => $class::$description,
 							'icon' => $class::$icon,
 							'post_types' => $class->getPostTypes(),
-							'render_callback' => function ($block) use ($class) {
-								$template = 'blocks/' . $class::$category . '/' . str_replace('acf/', '', $block['name']);
+							'render_callback' => function ($block) use ($class, $category) {
+
+								$template = 'blocks/' . $category . '/' . str_replace('acf/', '', $block['name']);
+
 								if (file_exists(get_template_directory() . '/resources/views/' . $template . '.blade.php')) {
-									echo view('blocks/' . $class::$category . '/' . str_replace('acf/', '', $block['name']), [
+
+									if(isset($block['data']['_is_preview'])) {
+										echo "<img style='width:100%' src='". get_template_directory_uri() . '/resources/images/admin/blocks/' . $category . "/" . $class::$slug . ".jpg' alt='Preview'>";
+										return;
+									}
+									
+									echo view('blocks/' . $category . '/' . str_replace('acf/', '', $block['name']), [
 										'block' => $block,
 										'fields' => get_fields(),
 										'context' => $class->addToContext(),
@@ -70,11 +82,12 @@ class BlockServiceProvider extends SageServiceProvider
 								} else {
 									throw new SkipProviderException('Template not found: ' . $template . '.blade.php');
 								}
-
-							}
+							},
+							'supports' => $class->getSupports(),
+							'example' => $class->getExample(),
 						]);
-
-						add_filter(sprintf('render_block_%s', $class->getFullBlockName()), function ($blockContent) use ($class) {
+				
+						add_filter(sprintf('render_block_%s', $class->getFullName()), function ($blockContent) use ($class, $category) {
 							$class->renderBlockCallback();
 
 							return $blockContent;
