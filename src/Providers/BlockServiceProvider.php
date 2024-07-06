@@ -64,7 +64,6 @@ class BlockServiceProvider extends SageServiceProvider
 							'icon' => $class::$icon,
 							'post_types' => $class->getPostTypes(),
 							'render_callback' => function ($block) use ($class, $category) {
-
 								$template = 'blocks/' . $category . '/' . str_replace('acf/', '', $block['name']);
 
 								if (file_exists(get_template_directory() . '/resources/views/' . $template . '.blade.php')) {
@@ -73,7 +72,7 @@ class BlockServiceProvider extends SageServiceProvider
 										echo "<img style='width:100%' src='". get_template_directory_uri() . '/resources/images/admin/blocks/' . $category . "/" . $class::$slug . ".jpg' alt='Preview'>";
 										return;
 									}
-									
+
 									echo view('blocks/' . $category . '/' . str_replace('acf/', '', $block['name']), [
 										'block' => $block,
 										'fields' => get_fields(),
@@ -86,7 +85,7 @@ class BlockServiceProvider extends SageServiceProvider
 							'supports' => $class->getSupports(),
 							'example' => $class->getExample(),
 						]);
-				
+
 						add_filter(sprintf('render_block_%s', $class->getFullName()), function ($blockContent) use ($class, $category) {
 							$class->renderBlockCallback();
 

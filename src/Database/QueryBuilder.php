@@ -251,15 +251,19 @@ class QueryBuilder
 	/**
 	 * @return \WP_Post[]
 	 */
-	public function get(?string $viewModelClassName = null): array
+	public function get(?string $asClass = null, ?callable $callback = null): array
 	{
 		$results = $this->getQuery()
 			->posts;
 
-		if ($viewModelClassName) {
-			$results = array_map(function ($post) use ($viewModelClassName) {
-				return new $viewModelClassName($post);
+		if (null !== $asClass && class_exists($asClass)) {
+			$results = array_map(function ($post) use ($asClass, $callback) {
+				return null !== $callback ? $callback(new $asClass($post)) : new $asClass($post);
 			}, $results);
+		} else {
+			if (null !== $callback) {
+				$results = array_map($callback, $results);
+			}
 		}
 
 		return $results;
@@ -295,5 +299,17 @@ class QueryBuilder
 		}
 
 		return null;
+	}
+
+	public function getPaginatedData(?string $asClass = null, ?callable $callback = null): array
+	{
+		$items = $this->get(asClass: $asClass, callback: $callback);
+
+		return [
+			'items' => $items,
+			'pages' => $this->getPagesCount(),
+			'total' => $this->getCount(),
+			'current' => $this->page,
+		];
 	}
 }
