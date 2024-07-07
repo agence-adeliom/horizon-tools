@@ -104,9 +104,13 @@ class BlockServiceProvider extends SageServiceProvider
 			return str_starts_with($class, 'App\Blocks') && $class !== 'App\Blocks\AbstractBlock';
 		});
 
-		return array_values(array_map(function ($class) {
+		$blocks = array_values(array_map(function ($class) {
 			return 'acf/' . $class::$slug;
 		}, $classes));
+
+		$blocks[] = 'core/block';
+
+		return $blocks;
 	}
 
 	public function registerCustomBlockCategories($categories, $post): array
@@ -116,7 +120,6 @@ class BlockServiceProvider extends SageServiceProvider
 		if (class_exists(self::THEME_BLOCK_CATEGORIES_CLASS)) {
 			$this->registerCategoriesFromCases(self::THEME_BLOCK_CATEGORIES_CLASS, $categories);
 		}
-
 
 		return $categories;
 	}
