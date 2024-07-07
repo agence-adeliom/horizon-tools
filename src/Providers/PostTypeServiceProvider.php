@@ -5,22 +5,89 @@ declare(strict_types=1);
 namespace LucasVigneron\SageTools\Providers;
 
 use Extended\ACF\Location;
+use LucasVigneron\SageTools\Blocks\AbstractBlock;
 use LucasVigneron\SageTools\PostTypes\AbstractPostType;
 use LucasVigneron\SageTools\Services\ClassService;
 use LucasVigneron\SageTools\Services\FileService;
 use LucasVigneron\SageTools\Taxonomies\AbstractTaxonomy;
+use LucasVigneron\SageTools\Templates\AbstractTemplate;
 use Roots\Acorn\Sage\SageServiceProvider;
 
 class PostTypeServiceProvider extends SageServiceProvider
 {
+	private ?array $templates = null;
+
 	public function boot(): void
 	{
+		add_filter('register_post_type_args', [$this, 'test'], accepted_args: 2);
+
 		$this->initPostTypes();
 		$this->initTaxonomies();
 	}
 
+	public function getTemplates(): array
+	{
+		if (null === $this->templates) {
+			$this->templates = $this->getTemplatesPerPostType();
+		}
+
+		return $this->templates;
+	}
+
+	public function test($args, $postType)
+	{
+		$this->getTemplates();
+
+		if (!isset($args['template'])) {
+			if (isset($this->getTemplates()[$postType])) {
+				$args['template'] = $this->getTemplates()[$postType];
+			}
+		}
+
+		return $args;
+	}
+
+	private function getTemplatesPerPostType(): array
+	{
+		$data = [];
+		foreach (FileService::getClassesPathsFromPath(get_template_directory() . '/app/Templates') as $classPath) {
+			require_once $classPath;
+		}
+
+		$templateClasses = array_filter(get_declared_classes(), function ($class) {
+			return is_subclass_of($class, AbstractTemplate::class);
+		});
+
+		foreach ($templateClasses as $templateClass) {
+			if ($className = ClassService::getClassNameFromFullName($templateClass)) {
+				if (!str_starts_with($className, 'Abstract')) {
+					$class = new $templateClass();
+
+					if ($class->getPostTypes() && $class->getBlocks()) {
+						foreach ($class->getPostTypes() as $postType) {
+							$template = [];
+
+							foreach ($class->getBlocks() as $block => $fields) {
+								$blockClass = new $block();
+								if ($blockClass instanceof AbstractBlock) {
+									$template[] = ['acf/' . $blockClass::$slug, $fields];
+								}
+							}
+
+							$data[$postType] = $template;
+						}
+					}
+				}
+			}
+		}
+
+		return $data;
+	}
+
 	private function initPostTypes(): void
 	{
+		$templates = $this->getTemplatesPerPostType();
+
 		foreach (FileService::getClassesPathsFromPath(get_template_directory() . '/app/PostTypes') as $classPath) {
 			require_once $classPath;
 		}
@@ -33,7 +100,7 @@ class PostTypeServiceProvider extends SageServiceProvider
 			if ($className = ClassService::getClassNameFromFullName($postTypeClass)) {
 				if (!str_starts_with($className, 'Abstract')) {
 					$class = new $postTypeClass();
-					
+
 					if ($config = $class->getConfig()) {
 						if (isset($config['post_type'])) {
 							register_post_type($config['post_type'], $config['args']);
