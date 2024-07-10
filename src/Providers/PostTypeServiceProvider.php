@@ -164,7 +164,7 @@ class PostTypeServiceProvider extends SageServiceProvider
 							if (function_exists('register_extended_field_group')) {
 								if ($class->getFields() && $customFields = iterator_to_array($class->getFields(), false)) {
 									register_extended_field_group([
-										'key' => 'group_' . $class::$slug,
+										'key' => 'group_taxonomy_' . $class::$slug,
 										'title' => $class->getFieldsTitle(),
 										'fields' => $customFields,
 										'style' => $class->getStyle(),
