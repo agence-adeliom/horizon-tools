@@ -11,7 +11,10 @@ class QueryBuilder
 	private const ORDER_BY_META_KEY = 'meta_value';
 	private const ORDER_BY_META_KEY_NUM = 'meta_value_num';
 
+	private bool $isPostType = true;
+	private bool $isTaxonomy = false;
 	private array $postTypes = [];
+	private array $taxonomies = [];
 	private array $idIn = [];
 	private array $idNotIn = [];
 	private array $metaQueries = [];
@@ -23,15 +26,19 @@ class QueryBuilder
 	private ?string $orderMetaKey = null;
 	private ?string $status = 'publish';
 	private ?\WP_Query $WP_Query = null;
+	private ?\WP_Term_Query $WP_Term_Query = null;
 
 	private function triggerChange(): void
 	{
 		$this->WP_Query = null;
+		$this->WP_Term_Query = null;
 	}
 
 	public function postType(string|array $postType): self
 	{
 		$this->triggerChange();
+		$this->isTaxonomy = false;
+		$this->isPostType = true;
 
 		if (is_string($postType)) {
 			$postType = [$postType];
@@ -40,6 +47,25 @@ class QueryBuilder
 		foreach ($postType as $item) {
 			if (!in_array($item, $this->postTypes)) {
 				$this->postTypes[] = $item;
+			}
+		}
+
+		return $this;
+	}
+
+	public function taxonomy(string|array $taxonomy): self
+	{
+		$this->triggerChange();
+		$this->isPostType = false;
+		$this->isTaxonomy = true;
+
+		if (is_string($taxonomy)) {
+			$taxonomy = [$taxonomy];
+		}
+
+		foreach ($taxonomy as $item) {
+			if (!in_array($item, $this->taxonomies)) {
+				$this->taxonomies[] = $item;
 			}
 		}
 
@@ -186,7 +212,7 @@ class QueryBuilder
 		return $this;
 	}
 
-	public function getQuery(): \WP_Query
+	private function getWpQuery(): \WP_Query
 	{
 		if (null === $this->WP_Query) {
 			$args = [];
@@ -248,17 +274,62 @@ class QueryBuilder
 		return $this->WP_Query;
 	}
 
+	private function getWpTaxQuery(): \WP_Term_Query
+	{
+		if (null === $this->WP_Term_Query) {
+			$args = [];
+
+			if ($this->taxonomies) {
+				$args['taxonomy'] = $this->taxonomies;
+			}
+
+			if ($this->page) {
+				$args['offset'] = ($this->page - 1) * $this->perPage;
+			}
+
+			if ($this->perPage) {
+				$args['number'] = $this->perPage;
+			}
+
+			if ($this->idNotIn) {
+				$args['exclude'] = $this->idNotIn;
+			}
+
+			if ($this->idIn) {
+				$args['include'] = $this->idIn;
+			}
+
+			$this->WP_Term_Query = new \WP_Term_Query($args);
+		}
+
+		return $this->WP_Term_Query;
+	}
+
+	public function getQuery(): \WP_Query|\WP_Term_Query
+	{
+		if ($this->isPostType) {
+			return $this->getWpQuery();
+		} elseif ($this->isTaxonomy) {
+			return $this->getWpTaxQuery();
+		}
+	}
+
 	/**
 	 * @return \WP_Post[]
 	 */
 	public function get(?string $asClass = null, ?callable $callback = null): array
 	{
-		$results = $this->getQuery()
-			->posts;
+		if ($this->isPostType) {
+			$results = $this->getQuery()
+				->posts;
+		} elseif ($this->isTaxonomy) {
+			$results = $this->getQuery()
+				->terms;
+		}
 
 		if (null !== $asClass && class_exists($asClass)) {
-			$results = array_map(function ($post) use ($asClass, $callback) {
-				return null !== $callback ? $callback(new $asClass($post)) : new $asClass($post);
+			$results = array_map(function ($postOrTerm) use ($asClass, $callback) {
+				return null !== $callback ? $callback(new $asClass($postOrTerm)) : new $asClass($postOrTerm);
 			}, $results);
 		} else {
 			if (null !== $callback) {
