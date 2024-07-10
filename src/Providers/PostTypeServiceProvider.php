@@ -12,6 +12,7 @@ use LucasVigneron\SageTools\Services\FileService;
 use LucasVigneron\SageTools\Taxonomies\AbstractTaxonomy;
 use LucasVigneron\SageTools\Templates\AbstractTemplate;
 use Roots\Acorn\Sage\SageServiceProvider;
+use Roots\Acorn\Exceptions\SkipProviderException;
 
 class PostTypeServiceProvider extends SageServiceProvider
 {
@@ -19,7 +20,7 @@ class PostTypeServiceProvider extends SageServiceProvider
 
 	public function boot(): void
 	{
-		add_filter('register_post_type_args', [$this, 'test'], accepted_args: 2);
+		add_filter('register_post_type_args', [$this, 'setTemplates'], accepted_args: 2);
 
 		$this->initPostTypes();
 		$this->initTaxonomies();
@@ -34,7 +35,7 @@ class PostTypeServiceProvider extends SageServiceProvider
 		return $this->templates;
 	}
 
-	public function test($args, $postType)
+	public function setTemplates($args, $postType)
 	{
 		$this->getTemplates();
 
@@ -86,96 +87,104 @@ class PostTypeServiceProvider extends SageServiceProvider
 
 	private function initPostTypes(): void
 	{
-		$templates = $this->getTemplatesPerPostType();
+		try {
+			$templates = $this->getTemplatesPerPostType();
 
-		foreach (FileService::getClassesPathsFromPath(get_template_directory() . '/app/PostTypes') as $classPath) {
-			require_once $classPath;
-		}
+			foreach (FileService::getClassesPathsFromPath(get_template_directory() . '/app/PostTypes') as $classPath) {
+				require_once $classPath;
+			}
 
-		$postTypeClasses = array_filter(get_declared_classes(), function ($class) {
-			return is_subclass_of($class, AbstractPostType::class);
-		});
+			$postTypeClasses = array_filter(get_declared_classes(), function ($class) {
+				return is_subclass_of($class, AbstractPostType::class);
+			});
 
-		foreach ($postTypeClasses as $postTypeClass) {
-			if ($className = ClassService::getClassNameFromFullName($postTypeClass)) {
-				if (!str_starts_with($className, 'Abstract')) {
-					$class = new $postTypeClass();
+			foreach ($postTypeClasses as $postTypeClass) {
+				if ($className = ClassService::getClassNameFromFullName($postTypeClass)) {
+					if (!str_starts_with($className, 'Abstract')) {
+						$class = new $postTypeClass();
 
-					if ($config = $class->getConfig()) {
-						if (isset($config['post_type'])) {
-							register_post_type($config['post_type'], $config['args']);
+						if ($config = $class->getConfig()) {
+							if (isset($config['post_type'])) {
+								register_post_type($config['post_type'], $config['args']);
+							}
 						}
-					}
 
-					if (function_exists('register_extended_field_group')) {
-						if ($fields = $class->getFields()) {
-							if ($customFields = iterator_to_array($fields, false)) {
-								register_extended_field_group([
-									'key' => 'group_' . $class::$slug,
-									'title' => $class->getFieldsTitle(),
-									'fields' => $customFields,
-									'style' => $class->getStyle(),
-									'location' => [
-										Location::where('post_type', $class::$slug)
-									],
-									'position' => $class->getPosition(),
-									'label_placement' => $class->getLabelPlacement(),
-									'instruction_placement' => $class->getInstructionPlacement(),
-									'hide_on_screen' => $class->getHideOnScreen(),
-									'menu_order' => $class->getMenuOrder(),
-								]);
+						if (function_exists('register_extended_field_group')) {
+							if ($fields = $class->getFields()) {
+								if ($customFields = iterator_to_array($fields, false)) {
+									register_extended_field_group([
+										'key' => 'group_' . $class::$slug,
+										'title' => $class->getFieldsTitle(),
+										'fields' => $customFields,
+										'style' => $class->getStyle(),
+										'location' => [
+											Location::where('post_type', $class::$slug)
+										],
+										'position' => $class->getPosition(),
+										'label_placement' => $class->getLabelPlacement(),
+										'instruction_placement' => $class->getInstructionPlacement(),
+										'hide_on_screen' => $class->getHideOnScreen(),
+										'menu_order' => $class->getMenuOrder(),
+									]);
+								}
 							}
 						}
 					}
 				}
 			}
+		} catch (\Exception $e) {
+			throw new SkipProviderException($e->getMessage());
 		}
 	}
 
 	private function initTaxonomies(): void
 	{
-		foreach (FileService::getClassesPathsFromPath(get_template_directory() . '/app/Taxonomies') as $classPath) {
-			require_once $classPath;
-		}
+		try {
+			foreach (FileService::getClassesPathsFromPath(get_template_directory() . '/app/Taxonomies') as $classPath) {
+				require_once $classPath;
+			}
 
-		$taxonomyClasses = array_filter(get_declared_classes(), function ($class) {
-			return is_subclass_of($class, AbstractTaxonomy::class);
-		});
+			$taxonomyClasses = array_filter(get_declared_classes(), function ($class) {
+				return is_subclass_of($class, AbstractTaxonomy::class);
+			});
 
 
-		foreach ($taxonomyClasses as $taxonomyClass) {
-			if ($className = ClassService::getClassNameFromFullName($taxonomyClass)) {
-				if (!str_starts_with($className, 'Abstract')) {
-					$class = new $taxonomyClass;
+			foreach ($taxonomyClasses as $taxonomyClass) {
+				if ($className = ClassService::getClassNameFromFullName($taxonomyClass)) {
+					if (!str_starts_with($className, 'Abstract')) {
+						$class = new $taxonomyClass;
 
-					if (is_subclass_of($class, AbstractTaxonomy::class)) {
-						if ($config = $class->getConfig()) {
-							if (isset($config['taxonomy'])) {
-								register_taxonomy($config['taxonomy'], $config['object_type'], $config['args']);
+						if (is_subclass_of($class, AbstractTaxonomy::class)) {
+							if ($config = $class->getConfig()) {
+								if (isset($config['taxonomy'])) {
+									register_taxonomy($config['taxonomy'], $config['object_type'], $config['args']);
+								}
 							}
-						}
 
-						if (function_exists('register_extended_field_group')) {
-							if ($class->getFields() && $customFields = iterator_to_array($class->getFields(), false)) {
-								register_extended_field_group([
-									'key' => 'group_' . $class::$slug,
-									'title' => $class->getFieldsTitle(),
-									'fields' => $customFields,
-									'style' => $class->getStyle(),
-									'location' => [
-										Location::where('taxonomy', $class::$slug)
-									],
-									'position' => $class->getPosition(),
-									'label_placement' => $class->getLabelPlacement(),
-									'instruction_placement' => $class->getInstructionPlacement(),
-									'hide_on_screen' => $class->getHideOnScreen(),
-									'menu_order' => $class->getMenuOrder(),
-								]);
+							if (function_exists('register_extended_field_group')) {
+								if ($class->getFields() && $customFields = iterator_to_array($class->getFields(), false)) {
+									register_extended_field_group([
+										'key' => 'group_' . $class::$slug,
+										'title' => $class->getFieldsTitle(),
+										'fields' => $customFields,
+										'style' => $class->getStyle(),
+										'location' => [
+											Location::where('taxonomy', $class::$slug)
+										],
+										'position' => $class->getPosition(),
+										'label_placement' => $class->getLabelPlacement(),
+										'instruction_placement' => $class->getInstructionPlacement(),
+										'hide_on_screen' => $class->getHideOnScreen(),
+										'menu_order' => $class->getMenuOrder(),
+									]);
+								}
 							}
 						}
 					}
 				}
 			}
+		} catch (\Exception $e) {
+			throw new SkipProviderException($e->getMessage());
 		}
 	}
 }
