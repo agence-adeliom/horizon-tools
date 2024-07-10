@@ -365,8 +365,10 @@ class QueryBuilder
 
 	public function getPagesCount(): ?int
 	{
-		if ($pages = $this->getQuery()?->max_num_pages) {
-			return intval($pages);
+		if ($this->isPostType) {
+			if ($pages = $this->getQuery()?->max_num_pages) {
+				return intval($pages);
+			}
 		}
 
 		return null;
@@ -375,11 +377,25 @@ class QueryBuilder
 	public function getPaginatedData(?string $asClass = null, ?callable $callback = null): array
 	{
 		$items = $this->get(asClass: $asClass, callback: $callback);
+		$total = 0;
+		$pages = 0;
+
+		if ($this->isPostType) {
+			$total = $this->getCount();
+			$pages = $this->getPagesCount();
+		} elseif ($this->isTaxonomy) {
+			$clone = clone $this;
+			$clone->setPerPage(null);
+			$total = $clone->get();
+
+			$total = count($total);
+			$pages = intval(ceil($total / $this->perPage));
+		}
 
 		return [
 			'items' => $items,
-			'pages' => $this->getPagesCount(),
-			'total' => $this->getCount(),
+			'pages' => $pages,
+			'total' => $total,
 			'current' => $this->page,
 		];
 	}
