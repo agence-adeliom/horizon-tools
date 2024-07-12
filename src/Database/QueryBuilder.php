@@ -25,6 +25,7 @@ class QueryBuilder
 	private string $order = 'DESC';
 	private ?string $orderMetaKey = null;
 	private ?string $status = 'publish';
+	private bool $hideEmpty = true;
 	private ?\WP_Query $WP_Query = null;
 	private ?\WP_Term_Query $WP_Term_Query = null;
 
@@ -191,6 +192,14 @@ class QueryBuilder
 		return $this;
 	}
 
+	public function fetchEmptyTaxonomies(bool $fetchEmpty = true): self
+	{
+		$this->triggerChange();
+		$this->hideEmpty = !$fetchEmpty;
+
+		return $this;
+	}
+
 	public function orderBy(string $order = 'DESC', string $orderBy = 'date', bool $isMeta = false, bool $isMetaNumeric = false): self
 	{
 		$this->triggerChange();
@@ -299,6 +308,17 @@ class QueryBuilder
 				$args['include'] = $this->idIn;
 			}
 
+			$args['hide_empty'] = $this->hideEmpty;
+
+			if ([] !== $this->metaQueries) {
+				foreach ($this->metaQueries as $metaQuery) {
+					if ($metaQuery instanceof MetaQuery) {
+						$args['meta_query'][] = $metaQuery->generateMetaQueryArray();
+					}
+				}
+			}
+
+
 			$this->WP_Term_Query = new \WP_Term_Query($args);
 		}
 
@@ -337,7 +357,7 @@ class QueryBuilder
 			}
 		}
 
-		return $results;
+		return null !== $results ? $results : [];
 	}
 
 	public function getOneOrNull(?string $viewModelClassName = null): mixed
