@@ -364,10 +364,20 @@ class QueryBuilder
 	{
 		$query = clone $this->getQuery();
 
-		$query->query['posts_per_page'] = 1;
-		$query->set('posts_per_page', 1);
+		$results = null;
 
-		if ($results = $query->get_posts()) {
+		if ($this->isPostType) {
+			$query->query['posts_per_page'] = 1;
+			$query->set('posts_per_page', 1);
+
+			$results = $query->get_posts();
+		} elseif ($this->isTaxonomy) {
+			$query->query['number'] = 1;
+
+			$results = $query->get_terms();
+		}
+
+		if ($results) {
 			if ($viewModelClassName) {
 				return new $viewModelClassName($results[0]);
 			}
