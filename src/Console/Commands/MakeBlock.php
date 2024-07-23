@@ -79,12 +79,14 @@ class MakeBlock extends Command
 			'%%PARENT_NAMESPACE%%',
 			'%%PARENT%%',
 			'%%SLUG%%',
+			'%%BLOCK_NAME%%',
 		], [
 			'App\Blocks' . ($namespaceEnd ? '\\' . $namespaceEnd : ''),
 			$className,
 			AbstractBlock::class,
 			ClassService::getClassNameFromFullName(AbstractBlock::class),
 			$slug,
+			$className,
 		], $this->getTemplate()));
 
 		file_put_contents($templatePath . $slug . '.blade.php', str_replace([

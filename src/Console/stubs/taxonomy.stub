@@ -18,7 +18,7 @@ class %%CLASS%% extends %%PARENT%%
     public function getConfig(array $config = []): array
     {
         $config['args']= [
-            'label'=> 'Nom de ma taxo',
+            'label'=> '%%TAXONOMY_NAME%%',
             'labels'=> [
                 'add_new_item'=> 'Ajouter un nouvel élément',
                 'edit_item'=> 'Modifier l’élément',

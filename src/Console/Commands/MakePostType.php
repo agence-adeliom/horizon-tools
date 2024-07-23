@@ -61,12 +61,14 @@ class MakePostType extends Command
 			'%%PARENT_NAMESPACE%%',
 			'%%PARENT%%',
 			'%%SLUG%%',
+			'%%CPT_NAME%%',
 		], [
 			'App\PostTypes' . ($namespaceEnd ? '\\' . $namespaceEnd : ''),
 			$className,
 			AbstractPostType::class,
 			ClassService::getClassNameFromFullName(AbstractPostType::class),
 			$slug,
+			$className,
 		], $this->getTemplate()));
 
 		$this->info('PostType created successfully at ' . $filepath);

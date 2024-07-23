@@ -13,11 +13,11 @@ class %%CLASS%% extends %%PARENT%%
     public function getConfig(array $config = []): array
     {
         $config['args'] =[
-            'label'=> 'Nom de mon CPT',
+            'label'=> '%%CPT_NAME%%',
             'labels'=>[
-                'name'=> 'Nom de mon CPT',
-                'singular_name'=> 'Nom de mon CPT',
-                'menu_name'=> 'Nom de mon CPT',
+                'name'=> '%%CPT_NAME%%',
+                'singular_name'=> '%%CPT_NAME%%',
+                'menu_name'=> '%%CPT_NAME%%',
                 'add_new'=> 'Ajouter un élément',
                 'add_new_item'=> 'Ajouter un nouvel élément',
                 'edit_item'=> 'Modifier l’élément',

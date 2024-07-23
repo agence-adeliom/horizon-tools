@@ -61,12 +61,14 @@ class MakeTaxonomy extends Command
 			'%%PARENT_NAMESPACE%%',
 			'%%PARENT%%',
 			'%%SLUG%%',
+			'%%TAXONOMY_NAME%%',
 		], [
 			'App\Taxonomies' . ($namespaceEnd ? '\\' . $namespaceEnd : ''),
 			$className,
 			AbstractTaxonomy::class,
 			ClassService::getClassNameFromFullName(AbstractTaxonomy::class),
 			$slug,
+			$className,
 		], $this->getTemplate()));
 
 		$this->info('Taxonomy created successfully at ' . $filepath);
