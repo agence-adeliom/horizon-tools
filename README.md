@@ -159,3 +159,9 @@ Experience the versatility of WordPress Sage Tools as you tailor your developmen
 ### Commanding with Style
 
 - With Acorn, just whip up a class extending `Roots\Acorn\Console\Commands\Command` within the `App\Console\Commands` namespace, and voilà! You're ready to rock it via Acorn's CLI.
+
+#### Create elements with commands
+
+- **Create a PostType**: Generate a new PostType class with the `make:posttype` command.
+- **Create a Taxonomy**: Create a new Taxonomy class with the `make:taxonomy` command.
+- **Create a Block**: Craft a new Block class with the `make:block` command.

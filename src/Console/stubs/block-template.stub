@@ -1,0 +1,4 @@
+<div>
+    <div>Block : %%BLOCK_PATH%%</div>
+    <div>Template:  %%TEMPLATE_PATH%%</div>
+</div>

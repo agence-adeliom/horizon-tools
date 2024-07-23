@@ -1,0 +1,50 @@
+<?php
+
+declare(strict_types=1);
+
+namespace %%NAMESPACE%%;
+
+use %%PARENT_NAMESPACE%%;
+
+class %%CLASS%% extends %%PARENT%%
+{
+    public static ?string $slug = '%%SLUG%%';
+
+    public function getConfig(array $config = []): array
+    {
+        $config['args'] =[
+            'label'=> 'Nom de mon CPT',
+            'labels'=>[
+                'name'=> 'Nom de mon CPT',
+                'singular_name'=> 'Nom de mon CPT',
+                'menu_name'=> 'Nom de mon CPT',
+                'add_new'=> 'Ajouter un élément',
+                'add_new_item'=> 'Ajouter un nouvel élément',
+                'edit_item'=> 'Modifier l’élément',
+                'new_item'=> 'Nouvel élément',
+                'view_item'=> 'Voir l’élément',
+                'view_items'=> 'Voir les éléments',
+                'search_items'=> 'Rechercher un élément',
+                'not_found'=> 'Aucun élément trouvé',
+                'not_found_in_trash'=> 'Aucun élément trouvé dans la corbeille',
+                'all_items'=> 'Tous les éléments',
+                'archives'=> 'Archives des éléments',
+            ],
+            'menu_icon'=> 'dashicons-calendar-alt',
+            'supports'=> ['title', 'editor'],
+            // 'rewrite'=> ['slug'=> 'custom'],
+        ];
+
+        return parent::getConfig($config);
+    }
+
+    public function getFields(): ?iterable
+    {
+        return null;
+    }
+
+    public function getPosition(): string
+    {
+        return 'side';
+    }
+}

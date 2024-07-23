@@ -22,4 +22,9 @@ class ClassService
 		$string = explode('\\', $fullName);
 		return strtolower($string[count($string) - 2]);
 	}
+
+	public static function slugifyClassName(string $className): string
+	{
+		return strtolower(preg_replace('/(?<!^)[A-Z]/', '-$0', $className));
+	}
 }

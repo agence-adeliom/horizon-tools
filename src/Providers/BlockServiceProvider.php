@@ -44,8 +44,11 @@ class BlockServiceProvider extends SageServiceProvider
 						$class = new $blockClass();
 
 						if (function_exists('register_extended_field_group')) {
-
-							$category = ClassService::getFolderNameFromFullName($blockClass);
+							$category = null;
+							
+							if ($blockClass !== 'App\\Blocks\\' . ClassService::getClassNameFromFullName($blockClass)) {
+								$category = ClassService::getFolderNameFromFullName($blockClass);
+							}
 
 							register_extended_field_group([
 								'key' => $class::$slug,
@@ -65,7 +68,7 @@ class BlockServiceProvider extends SageServiceProvider
 								'icon' => $class::$icon,
 								'post_types' => $class->getPostTypes(),
 								'render_callback' => function ($block) use ($class, $category) {
-									$template = 'blocks/' . $category . '/' . str_replace('acf/', '', $block['name']);
+									$template = 'blocks/' . ($category ? $category . '/' : '') . str_replace('acf/', '', $block['name']);
 
 									if (file_exists(get_template_directory() . '/resources/views/' . $template . '.blade.php')) {
 
