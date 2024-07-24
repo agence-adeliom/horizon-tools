@@ -6,11 +6,9 @@ namespace LucasVigneron\SageTools\Providers;
 
 use Extended\ACF\Location;
 use LucasVigneron\SageTools\Blocks\AbstractBlock;
-use LucasVigneron\SageTools\PostTypes\AbstractPostType;
 use LucasVigneron\SageTools\Services\ClassService;
 use LucasVigneron\SageTools\Services\FileService;
 use LucasVigneron\SageTools\Taxonomies\AbstractTaxonomy;
-use LucasVigneron\SageTools\Templates\AbstractTemplate;
 use Roots\Acorn\Sage\SageServiceProvider;
 use Roots\Acorn\Exceptions\SkipProviderException;
 
@@ -55,11 +53,7 @@ class PostTypeServiceProvider extends SageServiceProvider
 			require_once $classPath;
 		}
 
-		$templateClasses = array_filter(get_declared_classes(), function ($class) {
-			return is_subclass_of($class, AbstractTemplate::class);
-		});
-
-		foreach ($templateClasses as $templateClass) {
+		foreach (ClassService::getAllCustomTemplateClasses() as $templateClass) {
 			if ($className = ClassService::getClassNameFromFullName($templateClass)) {
 				if (!str_starts_with($className, 'Abstract')) {
 					$class = new $templateClass();
@@ -94,11 +88,7 @@ class PostTypeServiceProvider extends SageServiceProvider
 				require_once $classPath;
 			}
 
-			$postTypeClasses = array_filter(get_declared_classes(), function ($class) {
-				return is_subclass_of($class, AbstractPostType::class);
-			});
-
-			foreach ($postTypeClasses as $postTypeClass) {
+			foreach (ClassService::getAllCustomPostTypeClasses() as $postTypeClass) {
 				if ($className = ClassService::getClassNameFromFullName($postTypeClass)) {
 					if (!str_starts_with($className, 'Abstract')) {
 						$class = new $postTypeClass();
@@ -144,12 +134,7 @@ class PostTypeServiceProvider extends SageServiceProvider
 				require_once $classPath;
 			}
 
-			$taxonomyClasses = array_filter(get_declared_classes(), function ($class) {
-				return is_subclass_of($class, AbstractTaxonomy::class);
-			});
-
-
-			foreach ($taxonomyClasses as $taxonomyClass) {
+			foreach (ClassService::getAllCustomTaxonomyClasses() as $taxonomyClass) {
 				if ($className = ClassService::getClassNameFromFullName($taxonomyClass)) {
 					if (!str_starts_with($className, 'Abstract')) {
 						$class = new $taxonomyClass;

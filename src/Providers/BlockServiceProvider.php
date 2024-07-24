@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace LucasVigneron\SageTools\Providers;
 
 use Extended\ACF\Location;
-use LucasVigneron\SageTools\Blocks\AbstractBlock;
 use LucasVigneron\SageTools\Enum\BlockCategoriesEnum;
 use LucasVigneron\SageTools\Services\ClassService;
 use LucasVigneron\SageTools\Services\FileService;
@@ -34,18 +33,14 @@ class BlockServiceProvider extends SageServiceProvider
 				require_once $classPath;
 			}
 
-			$blockClasses = array_filter(get_declared_classes(), function ($class) {
-				return is_subclass_of($class, AbstractBlock::class);
-			});
-
-			foreach ($blockClasses as $blockClass) {
+			foreach (ClassService::getAllCustomBlockClasses() as $blockClass) {
 				if ($className = ClassService::getClassNameFromFullName($blockClass)) {
 					if (!str_starts_with($className, 'Abstract')) {
 						$class = new $blockClass();
 
 						if (function_exists('register_extended_field_group')) {
 							$category = null;
-							
+
 							if ($blockClass !== 'App\\Blocks\\' . ClassService::getClassNameFromFullName($blockClass)) {
 								$category = ClassService::getFolderNameFromFullName($blockClass);
 							}

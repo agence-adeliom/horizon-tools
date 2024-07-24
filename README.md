@@ -165,3 +165,9 @@ Experience the versatility of WordPress Sage Tools as you tailor your developmen
 - **Create a PostType**: Generate a new PostType class with the `make:posttype` command.
 - **Create a Taxonomy**: Create a new Taxonomy class with the `make:taxonomy` command.
 - **Create a Block**: Craft a new Block class with the `make:block` command.
+
+#### List elements with commands
+
+- **List PostTypes**: Retrieve a list of all PostTypes with the `list:posttypes` command.
+- **List Taxonomies**: Obtain a list of all Taxonomies with the `list:taxonomies` command.
+- **List Blocks**: Retrieve a list of all Blocks with the `list:blocks` command.
