@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace LucasVigneron\SageTools\Providers;
 
-use Illuminate\Console\Command;
-use LucasVigneron\SageTools\Services\FileService;
-use Roots\Acorn\Console\Commands\AcornInitCommand;
+use LucasVigneron\SageTools\Console\Commands\MakeBlock;
+use LucasVigneron\SageTools\Console\Commands\MakePostType;
+use LucasVigneron\SageTools\Console\Commands\MakeTaxonomy;
 use Roots\Acorn\Exceptions\SkipProviderException;
 use Roots\Acorn\Sage\SageServiceProvider;
 
@@ -15,17 +15,11 @@ class CommandsServiceProvider extends SageServiceProvider
 	public function boot()
 	{
 		try {
-			$path = __DIR__ . '/../Console/Commands';
-
-			foreach (FileService::getClassesPathsFromPath($path) as $classPath) {
-				require_once $classPath;
-			}
-
-			$commandsClasses = array_filter(get_declared_classes(), function ($class) {
-				return is_subclass_of($class, Command::class);
-			});
-
-			$this->commands($commandsClasses);
+			$this->commands([
+				MakeBlock::class,
+				MakePostType::class,
+				MakeTaxonomy::class,
+			]);
 		} catch (\Exception $e) {
 			throw new SkipProviderException($e->getMessage());
 		}
