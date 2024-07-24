@@ -1,3 +1,6 @@
+{{-- Fields are stored inside $fields --}}
+{{-- AddToContext values are stored inside $context --}}
+
 <div>
     <div>Block : %%BLOCK_PATH%%</div>
     <div>Template:  %%TEMPLATE_PATH%%</div>
