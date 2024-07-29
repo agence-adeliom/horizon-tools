@@ -12,7 +12,7 @@ class BasePostViewModel
 	public ?string $post_title = null;
 	public ?string $post_excerpt = null;
 	public ?string $slug= null;
-	public ?array $fields = null;
+	public null|false|array $fields = null;
 
 	public function __construct(\WP_Post $post, bool $withFields = true)
 	{
