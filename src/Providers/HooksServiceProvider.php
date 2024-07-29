@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace LucasVigneron\SageTools\Providers;
 
 use LucasVigneron\SageTools\Hooks\AbstractHook;
+use LucasVigneron\SageTools\Hooks\PostHooks;
 use LucasVigneron\SageTools\Services\ClassService;
 use LucasVigneron\SageTools\Services\FileService;
 use Roots\Acorn\Sage\SageServiceProvider;
@@ -24,11 +25,16 @@ class HooksServiceProvider extends SageServiceProvider
 				require_once $classPath;
 			}
 
+			$defaultClasses = [
+				PostHooks::class,
+			];
+
 			$hookClasses = array_filter(get_declared_classes(), function ($class) {
 				return is_subclass_of($class, AbstractHook::class);
 			});
 
-			foreach ($hookClasses as $hookClass) {
+
+			foreach (array_merge($hookClasses, $defaultClasses) as $hookClass) {
 				if ($className = ClassService::getClassNameFromFullName($hookClass)) {
 					if (!str_starts_with($className, 'Abstract')) {
 						$class = new $hookClass();
