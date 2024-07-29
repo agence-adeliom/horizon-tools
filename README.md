@@ -171,3 +171,15 @@ Experience the versatility of WordPress Sage Tools as you tailor your developmen
 - **List PostTypes**: Retrieve a list of all PostTypes with the `list:posttypes` command.
 - **List Taxonomies**: Obtain a list of all Taxonomies with the `list:taxonomies` command.
 - **List Blocks**: Retrieve a list of all Blocks with the `list:blocks` command.
+
+#### Customize posts
+
+- **Add custom prefix**: Allow to customize posts URL prefix inside `/web/app/{theme}/config/posts.php`
+
+```php
+<?php
+
+return [
+    'prefix' => 'articles',
+];
+```
