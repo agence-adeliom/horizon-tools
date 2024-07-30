@@ -19,6 +19,7 @@ class QueryBuilder
 	private array $idNotIn = [];
 	private array $metaQueries = [];
 	private array $taxQueries = [];
+	private ?string $asClass = null;
 	private ?int $perPage = null;
 	private int $page = 1;
 	private string $orderBy = 'date';
@@ -334,11 +335,20 @@ class QueryBuilder
 		}
 	}
 
+	public function as(?string $class = null): self
+	{
+		$this->asClass = $class;
+
+		return $this;
+	}
+
 	/**
 	 * @return \WP_Post[]
 	 */
-	public function get(?string $asClass = null, ?callable $callback = null): array
+	public function get(?callable $callback = null): array
 	{
+		$results = null;
+
 		if ($this->isPostType) {
 			$results = $this->getQuery()
 				->posts;
@@ -347,9 +357,9 @@ class QueryBuilder
 				->terms;
 		}
 
-		if (null !== $asClass && class_exists($asClass)) {
-			$results = array_map(function ($postOrTerm) use ($asClass, $callback) {
-				return null !== $callback ? $callback(new $asClass($postOrTerm)) : new $asClass($postOrTerm);
+		if (!empty($this->asClass) && class_exists($this->asClass)) {
+			$results = array_map(function ($postOrTerm) use ($callback) {
+				return null !== $callback ? $callback(new $this->asClass($postOrTerm)) : new $this->asClass($postOrTerm);
 			}, $results);
 		} else {
 			if (null !== $callback) {
@@ -360,7 +370,7 @@ class QueryBuilder
 		return null !== $results ? $results : [];
 	}
 
-	public function getOneOrNull(?string $viewModelClassName = null): mixed
+	public function getOneOrNull(): mixed
 	{
 		$query = clone $this->getQuery();
 
@@ -378,8 +388,8 @@ class QueryBuilder
 		}
 
 		if ($results) {
-			if ($viewModelClassName) {
-				return new $viewModelClassName($results[0]);
+			if (!empty($this->asClass)) {
+				return new $this->asClass($results[0]);
 			}
 
 			return $results[0];
@@ -404,9 +414,9 @@ class QueryBuilder
 		return null;
 	}
 
-	public function getPaginatedData(?string $asClass = null, ?callable $callback = null): array
+	public function getPaginatedData(?callable $callback = null): array
 	{
-		$items = $this->get(asClass: $asClass, callback: $callback);
+		$items = $this->get(callback: $callback);
 		$total = 0;
 		$pages = 0;
 
