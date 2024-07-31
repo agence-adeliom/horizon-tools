@@ -8,6 +8,10 @@ class SeoService
 {
 	public static function isRankMathActive(): bool
 	{
-		return is_plugin_active('seo-by-rank-math/rank-math.php');
+		if (function_exists('is_plugin_active')) {
+			return is_plugin_active('seo-by-rank-math/rank-math.php');
+		}
+
+		return false;
 	}
 }
