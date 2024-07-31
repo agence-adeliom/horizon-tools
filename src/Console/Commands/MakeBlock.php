@@ -41,7 +41,13 @@ class MakeBlock extends Command
 		$templatePath = $this->getTemplatesPath();
 		$folders = explode('/', $this->argument('name'));
 		$className = last($folders);
+
 		array_pop($folders);
+
+		// If $className ends by Block, remove it
+		if (substr($className, -5) === 'Block') {
+			$className = substr($className, 0, -5);
+		}
 
 		$filepath = $path . $this->argument('name') . '.php';
 
@@ -86,11 +92,11 @@ class MakeBlock extends Command
 			'%%BLOCK_NAME%%',
 		], [
 			'App\Blocks' . ($namespaceEnd ? '\\' . $namespaceEnd : ''),
-			$className,
+			$className.'Block',
 			AbstractBlock::class,
 			ClassService::getClassNameFromFullName(AbstractBlock::class),
 			$slug,
-			$className,
+			$className.'Block',
 		], $this->getTemplate()));
 
 		file_put_contents($templatePath . $slug . '.blade.php', str_replace([
