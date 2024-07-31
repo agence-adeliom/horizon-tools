@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace LucasVigneron\SageTools\Providers;
 
 use LucasVigneron\SageTools\Hooks\AbstractHook;
+use LucasVigneron\SageTools\Hooks\DefaultGutenbergHooks;
 use LucasVigneron\SageTools\Hooks\PostHooks;
 use LucasVigneron\SageTools\Hooks\RankMathHooks;
 use LucasVigneron\SageTools\Services\ClassService;
@@ -29,6 +30,7 @@ class HooksServiceProvider extends SageServiceProvider
 			$defaultClasses = [
 				PostHooks::class,
 				RankMathHooks::class,
+				DefaultGutenbergHooks::class,
 			];
 
 			$hookClasses = array_filter(get_declared_classes(), function ($class) {
