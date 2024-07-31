@@ -54,6 +54,10 @@ class MakeBlock extends Command
 			mkdir($path, 0755, true);
 		}
 
+		if (!file_exists($templatePath)) {
+			mkdir($templatePath, 0755, true);
+		}
+
 		foreach ($folders as $folder) {
 			$path .= $folder . '/';
 			$templatePath .= strtolower($folder) . '/';
