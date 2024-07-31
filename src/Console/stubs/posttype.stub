@@ -30,7 +30,7 @@ class %%CLASS%% extends %%PARENT%%
                 'all_items'=> 'Tous les éléments',
                 'archives'=> 'Archives des éléments',
             ],
-            'menu_icon'=> 'dashicons-calendar-alt',
+            'menu_icon'=> 'dashicons-admin-post',
             'supports'=> ['title', 'editor'],
             // 'rewrite'=> ['slug'=> 'custom'],
         ];
