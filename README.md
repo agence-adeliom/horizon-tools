@@ -1,5 +1,5 @@
 # Introducing WordPress Sage Tools 🚀
----  
+
 Unleash the power of WordPress with WordPress Sage Tools, your ultimate toolkit for elevating your development experience!
 ## Easy Installation
 
@@ -7,9 +7,9 @@ Get started with WordPress Sage Tools in just a few simple steps:
 
 1. **Add Repository**: Incorporate our package into your project by adding our repository to your `composer.json`.
 ```json  
-{  
-  "type": "vcs",  
-  "url": "git@github.com:agence-adeliom/sage-tools.git"  
+{
+  "type": "vcs",
+  "url": "git@github.com:agence-adeliom/sage-tools.git"
 }  
 ```  
 
@@ -184,9 +184,28 @@ return [
 ];
 ```
 
+#### Allow new media types
+
+- **Allow and sanitize SVG files**: Allow to enable or disable SVG files on the fly and sanitize them
+  - Simply edit the `/web/app/{theme}/config/medias.php` file
+
+```php
+<?php
+
+return [
+    'allow' => [
+        'svg' => false,
+    ],
+    'sanitize' => [
+        'svg' => false,
+    ],
+];
+
+```
+
 #### SEO Automations
 
 - **Auto-add archives in RankMath breadcrumbs**: Automatically add (if able to) archives in RankMath breacrumbs
-  -  To work, you need to add a `pages` Group containing PostObjects where field keys has to be the classname of the PostType
+  -  To work, you need to add a `pages` Group in your global ACF option fields containing PostObjects where field keys has to be the classname of the PostType
   - It will then use the retrieved WP_Post instance to compare the rewrite url set in PostType and the WP_Post slug
   - If they match, it will add the WP_Post to the breadcrumbs
