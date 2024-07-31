@@ -22,6 +22,7 @@ class QueryBuilder
 	private ?string $asClass = null;
 	private ?int $perPage = null;
 	private int $page = 1;
+	private ?string $slug = null;
 	private string $orderBy = 'date';
 	private string $order = 'DESC';
 	private ?string $orderMetaKey = null;
@@ -87,6 +88,15 @@ class QueryBuilder
 				$this->idIn[] = $item;
 			}
 		}
+
+		return $this;
+	}
+
+	public function whereSlug(?string $slug = null):self
+	{
+		$this->triggerChange();
+
+		$this->slug = $slug;
 
 		return $this;
 	}
@@ -229,6 +239,10 @@ class QueryBuilder
 
 			if ($this->status) {
 				$args['post_status'] = $this->status;
+			}
+
+			if($this->slug){
+				$args['name']=$this->slug;
 			}
 
 			if ($this->postTypes) {
