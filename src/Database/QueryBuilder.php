@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Adeliom\SageTools\Database;
 
-use Adeliom\SageTools\Http\Request\Request;
-
 class QueryBuilder
 {
 	private const ORDER_BY_META_KEY = 'meta_value';
@@ -92,7 +90,7 @@ class QueryBuilder
 		return $this;
 	}
 
-	public function whereSlug(?string $slug = null):self
+	public function whereSlug(?string $slug = null): self
 	{
 		$this->triggerChange();
 
@@ -241,8 +239,8 @@ class QueryBuilder
 				$args['post_status'] = $this->status;
 			}
 
-			if($this->slug){
-				$args['name']=$this->slug;
+			if ($this->slug) {
+				$args['name'] = $this->slug;
 			}
 
 			if ($this->postTypes) {
@@ -321,6 +319,10 @@ class QueryBuilder
 
 			if ($this->idIn) {
 				$args['include'] = $this->idIn;
+			}
+
+			if ($this->slug) {
+				$args['slug'] = $this->slug;
 			}
 
 			$args['hide_empty'] = $this->hideEmpty;
