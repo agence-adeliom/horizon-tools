@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Providers;
+namespace Adeliom\SageTools\Providers;
 
-use LucasVigneron\SageTools\Console\Commands\ListBlocks;
-use LucasVigneron\SageTools\Console\Commands\ListPostTypes;
-use LucasVigneron\SageTools\Console\Commands\ListTaxonomies;
-use LucasVigneron\SageTools\Console\Commands\MakeBlock;
-use LucasVigneron\SageTools\Console\Commands\MakePostType;
-use LucasVigneron\SageTools\Console\Commands\MakeTaxonomy;
+use Adeliom\SageTools\Console\Commands\ListBlocks;
+use Adeliom\SageTools\Console\Commands\ListPostTypes;
+use Adeliom\SageTools\Console\Commands\ListTaxonomies;
+use Adeliom\SageTools\Console\Commands\MakeBlock;
+use Adeliom\SageTools\Console\Commands\MakePostType;
+use Adeliom\SageTools\Console\Commands\MakeTaxonomy;
 use Roots\Acorn\Exceptions\SkipProviderException;
 use Roots\Acorn\Sage\SageServiceProvider;
 

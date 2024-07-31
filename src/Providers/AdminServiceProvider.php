@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Providers;
+namespace Adeliom\SageTools\Providers;
 
-use LucasVigneron\SageTools\Admin\AbstractAdmin;
-use LucasVigneron\SageTools\Services\ClassService;
-use LucasVigneron\SageTools\Services\FileService;
+use Adeliom\SageTools\Admin\AbstractAdmin;
+use Adeliom\SageTools\Services\ClassService;
+use Adeliom\SageTools\Services\FileService;
 use Roots\Acorn\Sage\SageServiceProvider;
 
 class AdminServiceProvider extends SageServiceProvider

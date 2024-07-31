@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Providers;
+namespace Adeliom\SageTools\Providers;
 
 use Roots\Acorn\Exceptions\SkipProviderException;
 use Roots\Acorn\Sage\SageServiceProvider;

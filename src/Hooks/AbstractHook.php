@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Hooks;
+namespace Adeliom\SageTools\Hooks;
 
 abstract class AbstractHook
 {

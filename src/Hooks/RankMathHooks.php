@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Hooks;
+namespace Adeliom\SageTools\Hooks;
 
-use LucasVigneron\SageTools\PostTypes\AbstractPostType;
-use LucasVigneron\SageTools\Services\ClassService;
-use LucasVigneron\SageTools\Services\SeoService;
+use Adeliom\SageTools\PostTypes\AbstractPostType;
+use Adeliom\SageTools\Services\ClassService;
+use Adeliom\SageTools\Services\SeoService;
 
 class RankMathHooks extends AbstractHook
 {

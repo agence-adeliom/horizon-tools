@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Database;
+namespace Adeliom\SageTools\Database;
 
 class MetaQuery
 {

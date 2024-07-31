@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Console\Commands;
+namespace Adeliom\SageTools\Console\Commands;
 
 use Illuminate\Console\Command;
-use LucasVigneron\SageTools\Blocks\AbstractBlock;
-use LucasVigneron\SageTools\Services\ClassService;
+use Adeliom\SageTools\Blocks\AbstractBlock;
+use Adeliom\SageTools\Services\ClassService;
 
 class MakeBlock extends Command
 {

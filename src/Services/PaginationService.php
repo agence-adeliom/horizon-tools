@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Services;
+namespace Adeliom\SageTools\Services;
 
-use LucasVigneron\SageTools\Http\Request\Request;
+use Adeliom\SageTools\Http\Request\Request;
 
 class PaginationService
 {

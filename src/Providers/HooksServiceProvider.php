@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Providers;
+namespace Adeliom\SageTools\Providers;
 
-use LucasVigneron\SageTools\Hooks\AbstractHook;
-use LucasVigneron\SageTools\Hooks\DefaultGutenbergHooks;
-use LucasVigneron\SageTools\Hooks\DefaultWordPressHooks;
-use LucasVigneron\SageTools\Hooks\PostHooks;
-use LucasVigneron\SageTools\Hooks\RankMathHooks;
-use LucasVigneron\SageTools\Services\ClassService;
-use LucasVigneron\SageTools\Services\FileService;
+use Adeliom\SageTools\Hooks\AbstractHook;
+use Adeliom\SageTools\Hooks\DefaultGutenbergHooks;
+use Adeliom\SageTools\Hooks\DefaultWordPressHooks;
+use Adeliom\SageTools\Hooks\PostHooks;
+use Adeliom\SageTools\Hooks\RankMathHooks;
+use Adeliom\SageTools\Services\ClassService;
+use Adeliom\SageTools\Services\FileService;
 use Roots\Acorn\Sage\SageServiceProvider;
 use Roots\Acorn\Exceptions\SkipProviderException;
 

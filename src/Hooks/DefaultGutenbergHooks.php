@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Hooks;
+namespace Adeliom\SageTools\Hooks;
 
-use LucasVigneron\SageTools\Services\BudService;
+use Adeliom\SageTools\Services\BudService;
 
 class DefaultGutenbergHooks extends AbstractHook
 {

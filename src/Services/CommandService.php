@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Services;
+namespace Adeliom\SageTools\Services;
 
 class CommandService
 {

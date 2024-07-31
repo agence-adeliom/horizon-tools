@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Http\Middleware;
+namespace Adeliom\SageTools\Http\Middleware;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

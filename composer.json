@@ -1,17 +1,17 @@
 {
-    "name": "lucas-vigneron/sage-tools",
-    "description": "Tools for Sage WordPress Theme, made by Lucas Vigneron",
+    "name": "agence-adeliom/sage-tools",
+    "description": "Tools for Sage WordPress Theme, made by the Adeliom Agency",
     "type": "library",
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "LucasVigneron\\SageTools\\": "src/"
+            "Adeliom\\SageTools\\": "src/"
         }
     },
     "authors": [
         {
-            "name": "Lucas Vigneron",
-            "email": "hello@lucasvigneron.fr"
+            "name": "Agence Adeliom",
+            "email": "dev@adeliom.com"
         }
     ],
     "require": {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\ViewModels\Menu;
+namespace Adeliom\SageTools\ViewModels\Menu;
 
 class MenuViewModel
 {

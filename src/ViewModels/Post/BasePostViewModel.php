@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\ViewModels\Post;
+namespace Adeliom\SageTools\ViewModels\Post;
 
 class BasePostViewModel
 {

@@ -9,14 +9,14 @@ Get started with WordPress Sage Tools in just a few simple steps:
 ```json  
 {  
   "type": "vcs",  
-  "url": "git@github.com:LucasVigneron/sage-tools.git"  
+  "url": "git@github.com:agence-adeliom/sage-tools.git"  
 }  
 ```  
 
 2. **Run Composer**: Execute the following command in your terminal to install WordPress Sage Tools:
 
 ```bash  
-composer require lucas-vigneron/sage-tools  
+composer require agence-adeliom/sage-tools  
 ```  
 
 3. **Voilà!** 🎉 WordPress Sage Tools is now seamlessly integrated into your project, ready to supercharge your development process.
@@ -37,7 +37,7 @@ Once you've met these prerequisites, head to your template folder's `composer.js
     "acorn": {  
       "providers": [  
         ...  
-        "LucasVigneron\\SageTools\\Providers\\SageToolsServiceProvider"  
+        "Adeliom\\SageTools\\Providers\\SageToolsServiceProvider"  
       ]
     }  
   }  
@@ -64,10 +64,10 @@ To activate specific features, simply include the corresponding provider within 
     "acorn": {
       "providers": [
         ...
-        "LucasVigneron\\SageTools\\Providers\\AdminServiceProvider",
-        "LucasVigneron\\SageTools\\Providers\\BlockServiceProvider",
-        "LucasVigneron\\SageTools\\Providers\\CommentsServiceProvider",
-        "LucasVigneron\\SageTools\\Providers\\PostTypeServiceProvider"
+        "Adeliom\\SageTools\\Providers\\AdminServiceProvider",
+        "Adeliom\\SageTools\\Providers\\BlockServiceProvider",
+        "Adeliom\\SageTools\\Providers\\CommentsServiceProvider",
+        "Adeliom\\SageTools\\Providers\\PostTypeServiceProvider"
       ]
     }
   }

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Console\Commands;
+namespace Adeliom\SageTools\Console\Commands;
 
 use Illuminate\Console\Command;
-use LucasVigneron\SageTools\Services\ClassService;
-use LucasVigneron\SageTools\Taxonomies\AbstractTaxonomy;
+use Adeliom\SageTools\Services\ClassService;
+use Adeliom\SageTools\Taxonomies\AbstractTaxonomy;
 
 class MakeTaxonomy extends Command
 {

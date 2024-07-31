@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Admin;
+namespace Adeliom\SageTools\Admin;
 
 use Extended\ACF\Location;
 use Roots\Acorn\Exceptions\SkipProviderException;

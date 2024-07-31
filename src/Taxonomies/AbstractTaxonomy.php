@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Taxonomies;
+namespace Adeliom\SageTools\Taxonomies;
 
 use Roots\Acorn\Exceptions\SkipProviderException;
 

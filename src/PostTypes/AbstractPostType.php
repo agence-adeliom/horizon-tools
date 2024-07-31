@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\PostTypes;
+namespace Adeliom\SageTools\PostTypes;
 
 use Extended\ACF\Location;
 use Roots\Acorn\Exceptions\SkipProviderException;

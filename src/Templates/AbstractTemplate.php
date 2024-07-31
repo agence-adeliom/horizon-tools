@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Templates;
+namespace Adeliom\SageTools\Templates;
 
 abstract class AbstractTemplate
 {

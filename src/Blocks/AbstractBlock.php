@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Blocks;
+namespace Adeliom\SageTools\Blocks;
 
 use Roots\Acorn\Exceptions\SkipProviderException;
 

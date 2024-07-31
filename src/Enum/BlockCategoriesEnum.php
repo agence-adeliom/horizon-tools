@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Enum;
+namespace Adeliom\SageTools\Enum;
 
 enum BlockCategoriesEnum: string
 {

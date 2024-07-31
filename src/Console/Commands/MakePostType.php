@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Console\Commands;
+namespace Adeliom\SageTools\Console\Commands;
 
 use Illuminate\Console\Command;
-use LucasVigneron\SageTools\PostTypes\AbstractPostType;
-use LucasVigneron\SageTools\Services\ClassService;
+use Adeliom\SageTools\PostTypes\AbstractPostType;
+use Adeliom\SageTools\Services\ClassService;
 
 class MakePostType extends Command
 {

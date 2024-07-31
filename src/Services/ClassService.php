@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Services;
+namespace Adeliom\SageTools\Services;
 
-use LucasVigneron\SageTools\Blocks\AbstractBlock;
-use LucasVigneron\SageTools\PostTypes\AbstractPostType;
-use LucasVigneron\SageTools\Taxonomies\AbstractTaxonomy;
-use LucasVigneron\SageTools\Templates\AbstractTemplate;
+use Adeliom\SageTools\Blocks\AbstractBlock;
+use Adeliom\SageTools\PostTypes\AbstractPostType;
+use Adeliom\SageTools\Taxonomies\AbstractTaxonomy;
+use Adeliom\SageTools\Templates\AbstractTemplate;
 
 class ClassService
 {

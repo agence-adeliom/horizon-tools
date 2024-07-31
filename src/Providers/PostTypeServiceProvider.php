@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace LucasVigneron\SageTools\Providers;
+namespace Adeliom\SageTools\Providers;
 
 use Extended\ACF\Location;
-use LucasVigneron\SageTools\Blocks\AbstractBlock;
-use LucasVigneron\SageTools\Services\ClassService;
-use LucasVigneron\SageTools\Services\FileService;
-use LucasVigneron\SageTools\Taxonomies\AbstractTaxonomy;
+use Adeliom\SageTools\Blocks\AbstractBlock;
+use Adeliom\SageTools\Services\ClassService;
+use Adeliom\SageTools\Services\FileService;
+use Adeliom\SageTools\Taxonomies\AbstractTaxonomy;
 use Roots\Acorn\Sage\SageServiceProvider;
 use Roots\Acorn\Exceptions\SkipProviderException;
 
