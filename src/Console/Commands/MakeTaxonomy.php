@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Adeliom\SageTools\Console\Commands;
 
 use Illuminate\Console\Command;
-use Adeliom\SageTools\Services\ClassService;
+use Adeliom\SageTools\Services\CommandService;
 use Adeliom\SageTools\Taxonomies\AbstractTaxonomy;
 
 class MakeTaxonomy extends Command
@@ -24,53 +24,25 @@ class MakeTaxonomy extends Command
 		return file_exists($path) ? file_get_contents($path) : '';
 	}
 
-	public function handle()
+	public function handle(): void
 	{
 		$path = $this->getPath();
-		$folders = explode('/', $this->argument('name'));
-		$className = last($folders);
-		array_pop($folders);
 
-		$filepath = $path . $this->argument('name') . '.php';
+		$structure = CommandService::getFolderStructure($this->argument('name'));
+		$folders = $structure['folders'];
+		$className = $structure['class'];
 
-		if (file_exists($filepath)) {
-			$this->error('Taxonomy already exists!');
-			return;
+		$filepath = $path . $structure['path'];
+
+		$result = CommandService::handleClassCreation(AbstractTaxonomy::class, $filepath, $path, $folders, $className, $this->getTemplate());
+
+		switch ($result) {
+			case 'already_exists':
+				$this->error('Taxonomy already exists!');
+				break;
+			case 'success':
+				$this->info('Taxonomy created successfully at ' . $filepath);
+				break;
 		}
-
-		if (!file_exists($path)) {
-			mkdir($path, 0755, true);
-		}
-
-		foreach ($folders as $folder) {
-			$path .= $folder . '/';
-			if (!file_exists($path)) {
-				mkdir($path, 0755, true);
-			}
-		}
-
-		// Create slug from $className
-		$slug = ClassService::slugifyClassName($className);
-
-		$namespaceEnd = implode('\\', $folders);
-
-		// Create empty file
-		file_put_contents($filepath, str_replace([
-			'%%NAMESPACE%%',
-			'%%CLASS%%',
-			'%%PARENT_NAMESPACE%%',
-			'%%PARENT%%',
-			'%%SLUG%%',
-			'%%TAXONOMY_NAME%%',
-		], [
-			'App\Taxonomies' . ($namespaceEnd ? '\\' . $namespaceEnd : ''),
-			$className,
-			AbstractTaxonomy::class,
-			ClassService::getClassNameFromFullName(AbstractTaxonomy::class),
-			$slug,
-			$className,
-		], $this->getTemplate()));
-
-		$this->info('Taxonomy created successfully at ' . $filepath);
 	}
 }

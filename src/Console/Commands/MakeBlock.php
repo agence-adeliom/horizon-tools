@@ -7,6 +7,7 @@ namespace Adeliom\SageTools\Console\Commands;
 use Illuminate\Console\Command;
 use Adeliom\SageTools\Blocks\AbstractBlock;
 use Adeliom\SageTools\Services\ClassService;
+use Adeliom\SageTools\Services\CommandService;
 
 class MakeBlock extends Command
 {
@@ -35,69 +36,48 @@ class MakeBlock extends Command
 		return file_exists($path) ? file_get_contents($path) : '';
 	}
 
-	public function handle()
+	private function handleClassName(string $className): string
 	{
-		$path = $this->getPath();
-		$templatePath = $this->getTemplatesPath();
-		$folders = explode('/', $this->argument('name'));
-		$className = last($folders);
-
-		array_pop($folders);
-
-		// If $className ends by Block, remove it
-		if (substr($className, -5) === 'Block') {
+		if (str_ends_with($className, 'Block')) {
 			$className = substr($className, 0, -5);
 		}
 
-		$filepath = $path . $this->argument('name') . '.php';
+		return $className;
+	}
 
-		if (file_exists($filepath)) {
-			$this->error('Block already exists!');
-			return;
+	public function handle(): void
+	{
+		$path = $this->getPath();
+		$templatePath = $this->getTemplatesPath();
+
+		$path = $this->getPath();
+
+		$structure = CommandService::getFolderStructure($this->argument('name'));
+		$folders = $structure['folders'];
+		$className = $structure['class'];
+
+		$filepath = $path . $structure['path'];
+
+		$result = CommandService::handleClassCreation(AbstractBlock::class, $filepath, $path, $folders, $className, $this->getTemplate());
+
+		switch ($result) {
+			case 'already_exists':
+				$this->error('PostType already exists!');
+				break;
+			case 'success':
+				$this->info('PostType created successfully at ' . $filepath);
+				break;
 		}
 
-		if (!file_exists($path)) {
-			mkdir($path, 0755, true);
-		}
-
-		if (!file_exists($templatePath)) {
-			mkdir($templatePath, 0755, true);
-		}
+		$slug = ClassService::slugifyClassName($className);
 
 		foreach ($folders as $folder) {
-			$path .= $folder . '/';
 			$templatePath .= strtolower($folder) . '/';
-
-			if (!file_exists($path)) {
-				mkdir($path, 0755, true);
-			}
 
 			if (!file_exists($templatePath)) {
 				mkdir($templatePath, 0755, true);
 			}
 		}
-
-		// Create slug from $className
-		$slug = ClassService::slugifyClassName($className);
-
-		$namespaceEnd = implode('\\', $folders);
-
-		// Create empty file
-		file_put_contents($filepath, str_replace([
-			'%%NAMESPACE%%',
-			'%%CLASS%%',
-			'%%PARENT_NAMESPACE%%',
-			'%%PARENT%%',
-			'%%SLUG%%',
-			'%%BLOCK_NAME%%',
-		], [
-			'App\Blocks' . ($namespaceEnd ? '\\' . $namespaceEnd : ''),
-			$className.'Block',
-			AbstractBlock::class,
-			ClassService::getClassNameFromFullName(AbstractBlock::class),
-			$slug,
-			$className.'Block',
-		], $this->getTemplate()));
 
 		file_put_contents($templatePath . $slug . '.blade.php', str_replace([
 			'%%BLOCK_PATH%%',
