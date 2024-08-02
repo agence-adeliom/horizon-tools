@@ -1,0 +1,22 @@
+<?php
+
+declare(strict_types=1);
+
+namespace %%NAMESPACE%%;
+
+use %%PARENT_NAMESPACE%%;
+
+class %%CLASS%% extends %%PARENT%%
+{
+
+    public function getPostTypes(): array
+    {
+        return [];
+    }
+
+    public function getBlocks(): array
+    {
+        // An array with keys representing block class and values representing fields (as an array)
+        return [];
+    }
+}

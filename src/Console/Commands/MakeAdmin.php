@@ -5,22 +5,22 @@ declare(strict_types=1);
 namespace Adeliom\SageTools\Console\Commands;
 
 use Illuminate\Console\Command;
-use Adeliom\SageTools\PostTypes\AbstractPostType;
+use Adeliom\SageTools\Admin\AbstractAdmin;
 use Adeliom\SageTools\Services\CommandService;
 
-class MakePostType extends Command
+class MakeAdmin extends Command
 {
-	protected $signature = 'make:posttype {name}';
-	protected $description = 'Create a new post-type';
+	protected $signature = 'make:admin {name}';
+	protected $description = 'Create a new admin fields group';
 
 	public function getPath(): string
 	{
-		return get_template_directory() . '/app/PostTypes/';
+		return get_template_directory() . '/app/Admin/';
 	}
 
 	public function getTemplate(): string
 	{
-		$path = __DIR__ . '/../stubs/posttype.stub';
+		$path = __DIR__ . '/../stubs/admin.stub';
 		return file_exists($path) ? file_get_contents($path) : '';
 	}
 
@@ -34,14 +34,14 @@ class MakePostType extends Command
 
 		$filepath = $path . $structure['path'];
 
-		$result = CommandService::handleClassCreation(AbstractPostType::class, $filepath, $path, $folders, $className, $this->getTemplate());
+		$result = CommandService::handleClassCreation(AbstractAdmin::class, $filepath, $path, $folders, $className, $this->getTemplate());
 
 		switch ($result) {
 			case 'already_exists':
-				$this->error('PostType already exists!');
+				$this->error('Admin already exists!');
 				break;
 			case 'success':
-				$this->info('PostType created successfully at ' . $filepath);
+				$this->info('Admin created successfully at ' . $filepath);
 				break;
 		}
 	}

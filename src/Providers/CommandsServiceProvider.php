@@ -7,9 +7,11 @@ namespace Adeliom\SageTools\Providers;
 use Adeliom\SageTools\Console\Commands\ListBlocks;
 use Adeliom\SageTools\Console\Commands\ListPostTypes;
 use Adeliom\SageTools\Console\Commands\ListTaxonomies;
+use Adeliom\SageTools\Console\Commands\MakeAdmin;
 use Adeliom\SageTools\Console\Commands\MakeBlock;
 use Adeliom\SageTools\Console\Commands\MakePostType;
 use Adeliom\SageTools\Console\Commands\MakeTaxonomy;
+use Adeliom\SageTools\Console\Commands\MakeTemplate;
 use Roots\Acorn\Exceptions\SkipProviderException;
 use Roots\Acorn\Sage\SageServiceProvider;
 
@@ -22,6 +24,8 @@ class CommandsServiceProvider extends SageServiceProvider
 				MakeBlock::class,
 				MakePostType::class,
 				MakeTaxonomy::class,
+				MakeTemplate::class,
+				MakeAdmin::class,
 				ListBlocks::class,
 				ListPostTypes::class,
 				ListTaxonomies::class,

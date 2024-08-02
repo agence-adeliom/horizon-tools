@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Adeliom\SageTools\Services;
 
+use Adeliom\SageTools\Admin\AbstractAdmin;
 use Adeliom\SageTools\Blocks\AbstractBlock;
 use Adeliom\SageTools\PostTypes\AbstractPostType;
 use Adeliom\SageTools\Taxonomies\AbstractTaxonomy;
+use Adeliom\SageTools\Templates\AbstractTemplate;
 
 class CommandService
 {
@@ -52,6 +54,8 @@ class CommandService
 			AbstractBlock::class => 'Blocks',
 			AbstractTaxonomy::class => 'Taxonomies',
 			AbstractPostType::class => 'PostTypes',
+			AbstractTemplate::class => 'Templates',
+			AbstractAdmin::class => 'Admin',
 		};
 
 		// Create empty file
@@ -64,12 +68,14 @@ class CommandService
 			'%%TAXONOMY_NAME%%',
 			'%%CPT_NAME%%',
 			'%%BLOCK_NAME%%',
+			'%%ADMIN_NAME%%',
 		], [
 			'App\\' . $folder . ($namespaceEnd ? '\\' . $namespaceEnd : ''),
 			$className,
 			$type,
 			ClassService::getClassNameFromFullName($type),
 			$slug,
+			$className,
 			$className,
 			$className,
 			$className,
