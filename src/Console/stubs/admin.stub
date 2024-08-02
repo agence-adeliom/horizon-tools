@@ -9,6 +9,8 @@ use %%PARENT_NAMESPACE%%;
 class %%CLASS%% extends %%PARENT%%
 {
     public static ?string $title = '%%ADMIN_NAME%%';
+    public static bool $isOptionPage = false;
+    public static ?string $optionPageIcon = null;
 
     public function getFields(): ?iterable
     {

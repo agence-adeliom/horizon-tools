@@ -49,8 +49,14 @@ class AdminServiceProvider extends SageServiceProvider
 							}
 						}
 
-						if ($class->isOptionPage()) {
-							acf_add_options_page($class->getOptionPageParams());
+						if ($class::$isOptionPage) {
+							$params = $class->getOptionPageParams();
+
+							if ($class::$optionPageIcon) {
+								$params['icon_url'] = $class::$optionPageIcon;
+							}
+
+							acf_add_options_page($params);
 						}
 					}
 				}
