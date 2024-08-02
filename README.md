@@ -203,9 +203,22 @@ return [
 
 ```
 
-#### SEO Automations
+### SEO Automations
 
 - **Auto-add archives in RankMath breadcrumbs**: Automatically add (if able to) archives in RankMath breacrumbs
   -  To work, you need to add a `pages` Group in your global ACF option fields containing PostObjects where field keys has to be the classname of the PostType
   - It will then use the retrieved WP_Post instance to compare the rewrite url set in PostType and the WP_Post slug
   - If they match, it will add the WP_Post to the breadcrumbs
+
+### Access restrictions
+
+- **Restrict access with HTTP Basic Auth**: Simply add the following line to the environment configuration file
+  - Default ID : `adeliom`
+  - Default password : `@deliomYYYY!` _(where `YYYY` is the current year)_
+
+```php
+Config::define('ENABLED_HTTP_LOGIN', true);
+```
+
+- To change default ID, set the `HTTP_USER` constant
+- To change the default password, set the `HTTP_PASSWD` constant
