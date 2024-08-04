@@ -29,7 +29,7 @@ class CommandService
 		];
 	}
 
-	public static function handleClassCreation(string $type, string $filepath, string $path, array $folders, string $className, string $template): string
+	public static function handleClassCreation(string $type, string $filepath, string $path, array $folders, string $className, string $template, ?string $slug = null): string
 	{
 		if (file_exists($filepath)) {
 			return 'already_exists';
@@ -46,7 +46,13 @@ class CommandService
 			}
 		}
 
-		$slug = ClassService::slugifyClassName($className);
+		if (null === $slug) {
+			$slug = ClassService::slugifyClassName($className);
+
+			if (str_ends_with($slug, '-block')) {
+				$slug = substr($slug, 0, -6);
+			}
+		}
 
 		$namespaceEnd = implode('\\', $folders);
 

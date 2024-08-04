@@ -58,18 +58,22 @@ class MakeBlock extends Command
 
 		$filepath = $path . $structure['path'];
 
-		$result = CommandService::handleClassCreation(AbstractBlock::class, $filepath, $path, $folders, $className, $this->getTemplate());
+		$slug = ClassService::slugifyClassName($className);
+
+		if (str_ends_with($slug, '-block')) {
+			$slug = substr($slug, 0, -6);
+		}
+
+		$result = CommandService::handleClassCreation(AbstractBlock::class, $filepath, $path, $folders, $className, $this->getTemplate(), $slug);
 
 		switch ($result) {
 			case 'already_exists':
-				$this->error('PostType already exists!');
-				break;
+				$this->error('Block already exists!');
+				return;
 			case 'success':
-				$this->info('PostType created successfully at ' . $filepath);
+				$this->info('Block created successfully at ' . $filepath);
 				break;
 		}
-
-		$slug = ClassService::slugifyClassName($className);
 
 		foreach ($folders as $folder) {
 			$templatePath .= strtolower($folder) . '/';
@@ -87,7 +91,6 @@ class MakeBlock extends Command
 			$templatePath . $slug . '.blade.php',
 		], $this->getTemplateContent()));
 
-		$this->info('Block created successfully at ' . $filepath);
 		$this->info('Template created successfully at ' . $templatePath . $slug . '.blade.php');
 	}
 }
