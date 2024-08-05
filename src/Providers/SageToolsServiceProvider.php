@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Adeliom\SageTools\Providers;
 
+use Illuminate\Http\Request;
 use Roots\Acorn\Application;
 use Roots\Acorn\Sage\SageServiceProvider;
 
@@ -12,6 +13,13 @@ class SageToolsServiceProvider extends SageServiceProvider
 	public function __construct(Application $app)
 	{
 		parent::__construct($app);
+	}
+
+	public function register(): void
+	{
+		Request::macro('hasValidSignature', function () {
+			return true;
+		});
 	}
 
 	public function boot(): void
