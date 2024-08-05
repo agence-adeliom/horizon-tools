@@ -167,6 +167,7 @@ Experience the versatility of WordPress Sage Tools as you tailor your developmen
 - **Create a Block**: Craft a new Block class with the `make:block` command.
 - **Create an Admin**: Develop a new Admin class with the `make:admin` command.
 - **Create a Template**: Design a new Template class with the `make:template` command.
+- **Create a Hook**: Construct a new Hook class with the `make:hook` command.
 
 #### List elements with commands
 

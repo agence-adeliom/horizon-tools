@@ -6,6 +6,7 @@ namespace Adeliom\SageTools\Services;
 
 use Adeliom\SageTools\Admin\AbstractAdmin;
 use Adeliom\SageTools\Blocks\AbstractBlock;
+use Adeliom\SageTools\Hooks\AbstractHook;
 use Adeliom\SageTools\PostTypes\AbstractPostType;
 use Adeliom\SageTools\Taxonomies\AbstractTaxonomy;
 use Adeliom\SageTools\Templates\AbstractTemplate;
@@ -62,6 +63,7 @@ class CommandService
 			AbstractPostType::class => 'PostTypes',
 			AbstractTemplate::class => 'Templates',
 			AbstractAdmin::class => 'Admin',
+			AbstractHook::class => 'Hooks',
 		};
 
 		// Create empty file

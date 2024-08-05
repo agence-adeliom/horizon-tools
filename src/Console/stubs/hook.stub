@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+namespace %%NAMESPACE%%;
+
+use %%PARENT_NAMESPACE%%;
+
+class %%CLASS%% extends %%PARENT%%
+{
+    public function init(): void
+    {
+        // Implement hook methods such as add_filter(...) or add_action(...)
+    }
+}
