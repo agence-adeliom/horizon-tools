@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Console\Commands;
+namespace Adeliom\HorizonTools\Console\Commands;
 
 use Illuminate\Console\Command;
-use Adeliom\SageTools\Services\CommandService;
-use Adeliom\SageTools\Taxonomies\AbstractTaxonomy;
+use Adeliom\HorizonTools\Services\CommandService;
+use Adeliom\HorizonTools\Taxonomies\AbstractTaxonomy;
 
 class MakeTaxonomy extends Command
 {

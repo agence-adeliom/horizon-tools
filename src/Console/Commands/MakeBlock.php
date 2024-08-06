@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Console\Commands;
+namespace Adeliom\HorizonTools\Console\Commands;
 
 use Illuminate\Console\Command;
-use Adeliom\SageTools\Blocks\AbstractBlock;
-use Adeliom\SageTools\Services\ClassService;
-use Adeliom\SageTools\Services\CommandService;
+use Adeliom\HorizonTools\Blocks\AbstractBlock;
+use Adeliom\HorizonTools\Services\ClassService;
+use Adeliom\HorizonTools\Services\CommandService;
 
 class MakeBlock extends Command
 {

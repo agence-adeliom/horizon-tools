@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Providers;
+namespace Adeliom\HorizonTools\Providers;
 
-use Adeliom\SageTools\Admin\AbstractAdmin;
-use Adeliom\SageTools\Services\ClassService;
-use Adeliom\SageTools\Services\FileService;
+use Adeliom\HorizonTools\Admin\AbstractAdmin;
+use Adeliom\HorizonTools\Services\ClassService;
+use Adeliom\HorizonTools\Services\FileService;
 use Roots\Acorn\Sage\SageServiceProvider;
 
 class AdminServiceProvider extends SageServiceProvider

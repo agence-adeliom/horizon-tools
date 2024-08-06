@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Providers;
+namespace Adeliom\HorizonTools\Providers;
 
-use Adeliom\SageTools\Hooks\AbstractHook;
-use Adeliom\SageTools\Hooks\DefaultGutenbergHooks;
-use Adeliom\SageTools\Hooks\DefaultWordPressHooks;
-use Adeliom\SageTools\Hooks\PostHooks;
-use Adeliom\SageTools\Hooks\RankMathHooks;
-use Adeliom\SageTools\Services\ClassService;
-use Adeliom\SageTools\Services\FileService;
+use Adeliom\HorizonTools\Hooks\AbstractHook;
+use Adeliom\HorizonTools\Hooks\DefaultGutenbergHooks;
+use Adeliom\HorizonTools\Hooks\DefaultWordPressHooks;
+use Adeliom\HorizonTools\Hooks\PostHooks;
+use Adeliom\HorizonTools\Hooks\RankMathHooks;
+use Adeliom\HorizonTools\Services\ClassService;
+use Adeliom\HorizonTools\Services\FileService;
 use Roots\Acorn\Sage\SageServiceProvider;
 use Roots\Acorn\Exceptions\SkipProviderException;
 

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Console\Commands;
+namespace Adeliom\HorizonTools\Console\Commands;
 
 use Illuminate\Console\Command;
-use Adeliom\SageTools\Services\ClassService;
+use Adeliom\HorizonTools\Services\ClassService;
 
 class ListBlocks extends Command
 {

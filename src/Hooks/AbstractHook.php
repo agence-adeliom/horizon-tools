@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Hooks;
+namespace Adeliom\HorizonTools\Hooks;
 
 abstract class AbstractHook
 {

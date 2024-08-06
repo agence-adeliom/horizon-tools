@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Providers;
+namespace Adeliom\HorizonTools\Providers;
 
 use Roots\Acorn\Sage\SageServiceProvider;
 
@@ -52,7 +52,7 @@ class CommentsServiceProvider extends SageServiceProvider
 
 		add_action('wp_before_admin_bar_render', function () {
 			global $wp_admin_bar;
-			
+
 			$wp_admin_bar->remove_menu('comments');
 		});
 	}

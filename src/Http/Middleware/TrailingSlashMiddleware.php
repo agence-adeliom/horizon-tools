@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Http\Middleware;
+namespace Adeliom\HorizonTools\Http\Middleware;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

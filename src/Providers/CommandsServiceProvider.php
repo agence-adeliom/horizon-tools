@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Providers;
+namespace Adeliom\HorizonTools\Providers;
 
-use Adeliom\SageTools\Console\Commands\ListBlocks;
-use Adeliom\SageTools\Console\Commands\ListPostTypes;
-use Adeliom\SageTools\Console\Commands\ListTaxonomies;
-use Adeliom\SageTools\Console\Commands\MakeAdmin;
-use Adeliom\SageTools\Console\Commands\MakeBlock;
-use Adeliom\SageTools\Console\Commands\MakeHook;
-use Adeliom\SageTools\Console\Commands\MakePostType;
-use Adeliom\SageTools\Console\Commands\MakeTaxonomy;
-use Adeliom\SageTools\Console\Commands\MakeTemplate;
+use Adeliom\HorizonTools\Console\Commands\ListBlocks;
+use Adeliom\HorizonTools\Console\Commands\ListPostTypes;
+use Adeliom\HorizonTools\Console\Commands\ListTaxonomies;
+use Adeliom\HorizonTools\Console\Commands\MakeAdmin;
+use Adeliom\HorizonTools\Console\Commands\MakeBlock;
+use Adeliom\HorizonTools\Console\Commands\MakeHook;
+use Adeliom\HorizonTools\Console\Commands\MakePostType;
+use Adeliom\HorizonTools\Console\Commands\MakeTaxonomy;
+use Adeliom\HorizonTools\Console\Commands\MakeTemplate;
 use Roots\Acorn\Exceptions\SkipProviderException;
 use Roots\Acorn\Sage\SageServiceProvider;
 

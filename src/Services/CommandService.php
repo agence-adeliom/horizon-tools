@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Services;
+namespace Adeliom\HorizonTools\Services;
 
-use Adeliom\SageTools\Admin\AbstractAdmin;
-use Adeliom\SageTools\Blocks\AbstractBlock;
-use Adeliom\SageTools\Hooks\AbstractHook;
-use Adeliom\SageTools\PostTypes\AbstractPostType;
-use Adeliom\SageTools\Taxonomies\AbstractTaxonomy;
-use Adeliom\SageTools\Templates\AbstractTemplate;
+use Adeliom\HorizonTools\Admin\AbstractAdmin;
+use Adeliom\HorizonTools\Blocks\AbstractBlock;
+use Adeliom\HorizonTools\Hooks\AbstractHook;
+use Adeliom\HorizonTools\PostTypes\AbstractPostType;
+use Adeliom\HorizonTools\Taxonomies\AbstractTaxonomy;
+use Adeliom\HorizonTools\Templates\AbstractTemplate;
 
 class CommandService
 {

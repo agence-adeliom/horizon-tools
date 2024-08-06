@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Services;
+namespace Adeliom\HorizonTools\Services;
 
-use Adeliom\SageTools\Http\Request\Request;
+use Adeliom\HorizonTools\Http\Request\Request;
 
 class PaginationService
 {

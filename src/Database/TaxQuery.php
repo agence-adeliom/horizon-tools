@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Database;
+namespace Adeliom\HorizonTools\Database;
 
 class TaxQuery
 {

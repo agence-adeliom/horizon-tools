@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\ViewModels\Menu;
+namespace Adeliom\HorizonTools\ViewModels\Menu;
 
 class MenuViewModel
 {

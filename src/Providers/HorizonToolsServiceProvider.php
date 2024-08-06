@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Providers;
+namespace Adeliom\HorizonTools\Providers;
 
 use Illuminate\Http\Request;
 use Roots\Acorn\Application;
 use Roots\Acorn\Sage\SageServiceProvider;
 
-class SageToolsServiceProvider extends SageServiceProvider
+class HorizonToolsServiceProvider extends SageServiceProvider
 {
 	public function __construct(Application $app)
 	{

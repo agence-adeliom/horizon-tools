@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Admin;
+namespace Adeliom\HorizonTools\Admin;
 
 use Extended\ACF\Location;
 use Roots\Acorn\Exceptions\SkipProviderException;

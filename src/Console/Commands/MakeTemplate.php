@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Console\Commands;
+namespace Adeliom\HorizonTools\Console\Commands;
 
 use Illuminate\Console\Command;
-use Adeliom\SageTools\Services\CommandService;
-use Adeliom\SageTools\Templates\AbstractTemplate;
+use Adeliom\HorizonTools\Services\CommandService;
+use Adeliom\HorizonTools\Templates\AbstractTemplate;
 
 class MakeTemplate extends Command
 {

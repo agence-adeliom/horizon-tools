@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\ViewModels\Term;
+namespace Adeliom\HorizonTools\ViewModels\Term;
 
 class BaseTermViewModel
 {

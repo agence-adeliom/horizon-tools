@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Providers;
+namespace Adeliom\HorizonTools\Providers;
 
 use Extended\ACF\Location;
-use Adeliom\SageTools\Enum\BlockCategoriesEnum;
-use Adeliom\SageTools\Services\ClassService;
-use Adeliom\SageTools\Services\FileService;
+use Adeliom\HorizonTools\Enum\BlockCategoriesEnum;
+use Adeliom\HorizonTools\Services\ClassService;
+use Adeliom\HorizonTools\Services\FileService;
 use Roots\Acorn\Exceptions\SkipProviderException;
 use Roots\Acorn\Sage\SageServiceProvider;
 

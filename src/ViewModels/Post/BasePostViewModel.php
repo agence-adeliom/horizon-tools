@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\ViewModels\Post;
+namespace Adeliom\HorizonTools\ViewModels\Post;
 
 class BasePostViewModel
 {

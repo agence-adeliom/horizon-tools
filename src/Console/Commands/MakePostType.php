@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Console\Commands;
+namespace Adeliom\HorizonTools\Console\Commands;
 
 use Illuminate\Console\Command;
-use Adeliom\SageTools\PostTypes\AbstractPostType;
-use Adeliom\SageTools\Services\CommandService;
+use Adeliom\HorizonTools\PostTypes\AbstractPostType;
+use Adeliom\HorizonTools\Services\CommandService;
 
 class MakePostType extends Command
 {

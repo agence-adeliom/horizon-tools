@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Enum;
+namespace Adeliom\HorizonTools\Enum;
 
 enum BlockCategoriesEnum: string
 {

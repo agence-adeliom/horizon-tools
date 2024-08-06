@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Console\Commands;
+namespace Adeliom\HorizonTools\Console\Commands;
 
 use Illuminate\Console\Command;
-use Adeliom\SageTools\Admin\AbstractAdmin;
-use Adeliom\SageTools\Services\CommandService;
+use Adeliom\HorizonTools\Admin\AbstractAdmin;
+use Adeliom\HorizonTools\Services\CommandService;
 
 class MakeAdmin extends Command
 {

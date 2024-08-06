@@ -1,11 +1,11 @@
 {
-    "name": "agence-adeliom/sage-tools",
+    "name": "agence-adeliom/horizon-tools",
     "description": "Tools for Sage WordPress Theme, made by the Adeliom Agency",
     "type": "library",
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Adeliom\\SageTools\\": "src/"
+            "Adeliom\\HorizonTools\\": "src/"
         }
     },
     "authors": [

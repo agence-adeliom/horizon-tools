@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Taxonomies;
+namespace Adeliom\HorizonTools\Taxonomies;
 
 use Roots\Acorn\Exceptions\SkipProviderException;
 

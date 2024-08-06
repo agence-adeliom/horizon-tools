@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\PostTypes;
+namespace Adeliom\HorizonTools\PostTypes;
 
 use Extended\ACF\Location;
 use Roots\Acorn\Exceptions\SkipProviderException;

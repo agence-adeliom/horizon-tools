@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Http\Request;
+namespace Adeliom\HorizonTools\Http\Request;
 
 use Symfony\Component\HttpFoundation\Request as BaseRequest;
 

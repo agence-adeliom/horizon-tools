@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Blocks;
+namespace Adeliom\HorizonTools\Blocks;
 
 use Roots\Acorn\Exceptions\SkipProviderException;
 

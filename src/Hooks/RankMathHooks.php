@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\SageTools\Hooks;
+namespace Adeliom\HorizonTools\Hooks;
 
-use Adeliom\SageTools\PostTypes\AbstractPostType;
-use Adeliom\SageTools\Services\ClassService;
-use Adeliom\SageTools\Services\SeoService;
+use Adeliom\HorizonTools\PostTypes\AbstractPostType;
+use Adeliom\HorizonTools\Services\ClassService;
+use Adeliom\HorizonTools\Services\SeoService;
 
 class RankMathHooks extends AbstractHook
 {
