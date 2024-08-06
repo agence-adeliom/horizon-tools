@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Adeliom\HorizonTools\Console\Commands;
 
 use Illuminate\Console\Command;
-use Adeliom\SageTools\Hooks\AbstractHook;
-use Adeliom\SageTools\Services\CommandService;
+use Adeliom\HorizonTools\Hooks\AbstractHook;
+use Adeliom\HorizonTools\Services\CommandService;
 
 class MakeHook extends Command
 {

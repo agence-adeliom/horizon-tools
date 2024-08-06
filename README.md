@@ -37,7 +37,7 @@ Once you've met these prerequisites, head to your template folder's `composer.js
     "acorn": {  
       "providers": [  
         ...  
-        "Adeliom\\SageTools\\Providers\\SageToolsServiceProvider"  
+        "Adeliom\\HorizonTools\\Providers\\HorizonToolsServiceProvider"  
       ]
     }  
   }  
@@ -64,10 +64,10 @@ To activate specific features, simply include the corresponding provider within 
     "acorn": {
       "providers": [
         ...
-        "Adeliom\\SageTools\\Providers\\AdminServiceProvider",
-        "Adeliom\\SageTools\\Providers\\BlockServiceProvider",
-        "Adeliom\\SageTools\\Providers\\CommentsServiceProvider",
-        "Adeliom\\SageTools\\Providers\\PostTypeServiceProvider"
+        "Adeliom\\HorizonTools\\Providers\\AdminServiceProvider",
+        "Adeliom\\HorizonTools\\Providers\\BlockServiceProvider",
+        "Adeliom\\HorizonTools\\Providers\\CommentsServiceProvider",
+        "Adeliom\\HorizonTools\\Providers\\PostTypeServiceProvider"
       ]
     }
   }
