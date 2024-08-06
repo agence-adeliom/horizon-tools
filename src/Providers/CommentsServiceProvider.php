@@ -49,5 +49,11 @@ class CommentsServiceProvider extends SageServiceProvider
 				remove_action('admin_bar_menu', 'wp_admin_bar_comments_menu', 60);
 			}
 		});
+
+		add_action('wp_before_admin_bar_render', function () {
+			global $wp_admin_bar;
+			
+			$wp_admin_bar->remove_menu('comments');
+		});
 	}
 }
