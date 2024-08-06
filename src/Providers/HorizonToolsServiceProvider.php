@@ -39,8 +39,8 @@ class HorizonToolsServiceProvider extends SageServiceProvider
 		if (InstalledVersions::isInstalled('agence-adeliom/horizon-blocks')) {
 			try {
 				if (class_exists(HorizonBlocksServiceProvider::class)) {
-					$test = new HorizonBlocksServiceProvider($this->app);
-					$test->boot();
+					$blocks = new HorizonBlocksServiceProvider($this->app);
+					$blocks->boot();
 				}
 			} catch (\Exception $e) {
 				throw new SkipProviderException($e->getMessage());
