@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Providers;
 
+use Adeliom\HorizonBlocks\Providers\HorizonBlocksServiceProvider;
+use Composer\InstalledVersions;
 use Illuminate\Http\Request;
 use Roots\Acorn\Application;
+use Roots\Acorn\Exceptions\SkipProviderException;
 use Roots\Acorn\Sage\SageServiceProvider;
 
 class HorizonToolsServiceProvider extends SageServiceProvider
@@ -32,5 +35,16 @@ class HorizonToolsServiceProvider extends SageServiceProvider
 		(new MiddlewareServiceProvider($this->app))->boot();
 		(new CommandsServiceProvider($this->app))->boot();
 		(new HttpLoginServiceProvider($this->app))->boot();
+
+		if (InstalledVersions::isInstalled('agence-adeliom/horizon-blocks')) {
+			try {
+				if (class_exists(HorizonBlocksServiceProvider::class)) {
+					$test = new HorizonBlocksServiceProvider($this->app);
+					$test->boot();
+				}
+			} catch (\Exception $e) {
+				throw new SkipProviderException($e->getMessage());
+			}
+		}
 	}
 }
