@@ -8,6 +8,7 @@ use Adeliom\HorizonTools\Blocks\AbstractBlock;
 use Adeliom\HorizonTools\PostTypes\AbstractPostType;
 use Adeliom\HorizonTools\Taxonomies\AbstractTaxonomy;
 use Adeliom\HorizonTools\Templates\AbstractTemplate;
+use Composer\InstalledVersions;
 
 class ClassService
 {
@@ -59,5 +60,55 @@ class ClassService
 		return array_filter(get_declared_classes(), function ($class) {
 			return is_subclass_of($class, AbstractTemplate::class);
 		});
+	}
+
+	public static function isHorizonBlocksInstalled(): bool
+	{
+		return InstalledVersions::isInstalled('agence-adeliom/horizon-blocks');
+	}
+
+	public static function getAllImportableBlockClasses(): array
+	{
+		$classes = [];
+
+		if (ClassService::isHorizonBlocksInstalled()) {
+			if ($pathToDependency = InstalledVersions::getInstallPath('agence-adeliom/horizon-blocks')) {
+				if ($blocks = FileService::getClassesPathsFromPath($pathToDependency . '/src/Blocks')) {
+					foreach ($blocks as $block) {
+						// Get classname from $block path
+						if ($blockClassName = ClassService::getClassNameFromFilePath($block)) {
+							$classes[$block] = $blockClassName;
+						}
+					}
+				}
+			}
+		}
+
+		return $classes;
+	}
+
+	public static function getClassNameFromFilePath(string $filePath): ?string
+	{
+		$content = file_get_contents($filePath);
+		if ($content === false) {
+			return null;
+		}
+
+		$namespace = null;
+		$class = null;
+
+		if (preg_match('/namespace\s+([^;]+);/', $content, $matches)) {
+			$namespace = $matches[1];
+		}
+
+		if (preg_match('/class\s+([^\s]+)/', $content, $matches)) {
+			$class = $matches[1];
+		}
+
+		if ($namespace && $class) {
+			return $namespace . '\\' . $class;
+		}
+
+		return null;
 	}
 }
