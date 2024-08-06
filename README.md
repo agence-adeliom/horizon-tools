@@ -1,35 +1,35 @@
-# Introducing WordPress Sage Tools 🚀
+# Introducing WordPress Horizon Tools 🚀
 
-Unleash the power of WordPress with WordPress Sage Tools, your ultimate toolkit for elevating your development experience!
+Unleash the power of WordPress with WordPress Horizon Tools, your ultimate toolkit for elevating your development experience!
 ## Easy Installation
 
-Get started with WordPress Sage Tools in just a few simple steps:
+Get started with WordPress Horizon Tools in just a few simple steps:
 
 1. **Add Repository**: Incorporate our package into your project by adding our repository to your `composer.json`.
 ```json  
 {
   "type": "vcs",
-  "url": "git@github.com:agence-adeliom/sage-tools.git"
+  "url": "git@github.com:agence-adeliom/horizon-tools.git"
 }  
 ```  
 
-2. **Run Composer**: Execute the following command in your terminal to install WordPress Sage Tools:
+2. **Run Composer**: Execute the following command in your terminal to install WordPress Horizon Tools:
 
 ```bash  
-composer require agence-adeliom/sage-tools  
+composer require agence-adeliom/horizon-tools  
 ```  
 
-3. **Voilà!** 🎉 WordPress Sage Tools is now seamlessly integrated into your project, ready to supercharge your development process.
+3. **Voilà!** 🎉 WordPress Horizon Tools is now seamlessly integrated into your project, ready to supercharge your development process.
 
 ## Unleash All Features
 
-Unlock the full potential of WordPress Sage Tools by ensuring your project meets these requirements:
+Unlock the full potential of WordPress Horizon Tools by ensuring your project meets these requirements:
 
 - WordPress BedRock
 - Sage theme
 - Acorn installed
 
-Once you've met these prerequisites, head to your template folder's `composer.json` file. Confirm that the `extra` section includes the Sage Tools provider :
+Once you've met these prerequisites, head to your template folder's `composer.json` file. Confirm that the `extra` section includes the Horizon Tools provider :
 
 ```json  
 {  
@@ -45,11 +45,11 @@ Once you've met these prerequisites, head to your template folder's `composer.js
   
 ```  
 
-Experience the magic of WordPress Sage Tools and revolutionize your WordPress development workflow today! 🌟
+Experience the magic of WordPress Horizon Tools and revolutionize your WordPress development workflow today! 🌟
 
 ## Activate Features Individually
 
-While unlocking the full potential of WordPress Sage Tools is fantastic, sometimes you may want to enable specific features tailored to your project's needs. Fear not, as Sage Tools offers the flexibility to activate features on a case-by-case basis using the following providers:
+While unlocking the full potential of WordPress Horizon Tools is fantastic, sometimes you may want to enable specific features tailored to your project's needs. Fear not, as Horizon Tools offers the flexibility to activate features on a case-by-case basis using the following providers:
 
 - **AdminServiceProvider:** Facilitates the creation of custom administration pages within WordPress, integrating Advanced Custom Fields (ACF) to streamline the process of building and managing custom admin interfaces.
 - **BlockServiceProvider:** Unleashes the power of Gutenberg blocks within your Sage theme, allowing you to create rich and dynamic content layouts effortlessly.
@@ -74,7 +74,7 @@ To activate specific features, simply include the corresponding provider within 
 }
 ```
 
-Experience the versatility of WordPress Sage Tools as you tailor your development workflow to suit your project's specific requirements! 🚀
+Experience the versatility of WordPress Horizon Tools as you tailor your development workflow to suit your project's specific requirements! 🚀
 
 ## Power-Packed Features Showcase 💥
 
