@@ -28,8 +28,8 @@ class LayoutField
     public static function darkMode(): TrueFalse
     {
         return TrueFalse::make(__('Dark mode'), self::DARK_MODE)
-            ->instructions('Activer le fond sombre pour ce bloc')
-            ->stylisedUi();
+            ->helperText('Activer le fond sombre pour ce bloc')
+            ->stylized();
     }
 
     public static function mediaPosition(array $choices = [
@@ -39,7 +39,7 @@ class LayoutField
     {
         return RadioButton::make(__('Position du média'), self::MEDIA_POSITION)
             ->choices($choices)
-            ->defaultValue("left")
+            ->default("left")
             ->required();
     }
 
@@ -58,20 +58,20 @@ class LayoutField
                     "small" => "Petite",
                     "large" => "Grande"
                 ])
-                ->defaultValue("large")
-                ->instructions("");
+                ->default("large")
+                ->helperText("");
         }
 
         if (in_array(self::MARGIN_TOP_REMOVE, $fields)) {
             $fieldsGroup[] = TrueFalse::make("Suppression marge haute", self::MARGIN_TOP_REMOVE)
-                ->stylisedUi()
-                ->instructions("");
+                ->stylized()
+                ->helperText("");
         }
 
         if (in_array(self::MARGIN_BOTTOM_REMOVE, $fields)) {
             $fieldsGroup[] = TrueFalse::make("Suppression marge basse", self::MARGIN_BOTTOM_REMOVE)
-                ->stylisedUi()
-                ->instructions("");
+                ->stylized()
+                ->helperText("");
         }
 
         return Group::make("Marges", self::MARGIN)->fields($fieldsGroup);
@@ -81,7 +81,7 @@ class LayoutField
     {
         $fieldsGroup = [
             TrueFalse::make("Contraindre le ratio du média", self::HAS_MEDIA_RATIO)
-                ->stylisedUi(),
+                ->stylized(),
             RadioButton::make("Ratio", self::MEDIA_RATIO_VALUE)->choices([
                 "auto" => "Automatique",
                 "paysage" => "Paysage",
