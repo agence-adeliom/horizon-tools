@@ -60,9 +60,9 @@ abstract class AbstractBlock
 	{
 		return [
 			'align' => false,
-			'anchor' => false,
-			'className' => false,
-			'customClassName' => false,
+			'anchor' => true,
+			'className' => true,
+			'customClassName' => true,
  			'jsx' => false,
 			'renaming' => false
 		];
