@@ -9,6 +9,7 @@ use Adeliom\HorizonTools\Hooks\DefaultGutenbergHooks;
 use Adeliom\HorizonTools\Hooks\DefaultWordPressHooks;
 use Adeliom\HorizonTools\Hooks\PostHooks;
 use Adeliom\HorizonTools\Hooks\RankMathHooks;
+use Adeliom\HorizonTools\Hooks\WysiwygHooks;
 use Adeliom\HorizonTools\Services\ClassService;
 use Adeliom\HorizonTools\Services\FileService;
 use Roots\Acorn\Sage\SageServiceProvider;
@@ -33,6 +34,7 @@ class HooksServiceProvider extends SageServiceProvider
 				RankMathHooks::class,
 				DefaultGutenbergHooks::class,
 				DefaultWordPressHooks::class,
+                WysiwygHooks::class,
 			];
 
 			$hookClasses = array_filter(get_declared_classes(), function ($class) {
