@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Adeliom\HorizonTools\Hooks;
 
 use Adeliom\HorizonTools\Services\BudService;
+use Illuminate\Support\Facades\Config;
 
 class DefaultGutenbergHooks extends AbstractHook
 {
@@ -15,14 +16,28 @@ class DefaultGutenbergHooks extends AbstractHook
 
 	public function enqueueBlockEditorAssets(): void
 	{
-		$style = BudService::getUrl('app.css');
+		$toEnqueue = [
+			'app.css',
+		];
 
-		if (!$style) {
-			$style = BudService::getUrlByRegex('/app.[0-9-a-z-A-Z]+.css/');
+		if ($files = Config::get('gutenberg.assets.enqueue')) {
+			$toEnqueue = $files;
 		}
 
-		if ($style) {
-			wp_enqueue_style('gutenberg-tailwind', $style, ['common']);
+		foreach ($toEnqueue as $file) {
+			$fileUrl = BudService::getUrl($file);
+
+			if (!$fileUrl) {
+				// Get file extension
+				$ext = pathinfo($file, PATHINFO_EXTENSION);
+				$fileName = pathinfo($file, PATHINFO_FILENAME);
+
+				$fileUrl = BudService::getUrlByRegex(sprintf('/%s.[0-9-a-z-A-Z]+.%s/', $fileName, $ext));
+			}
+
+			if ($fileUrl) {
+				wp_enqueue_style('gutenberg-' . $file, $fileUrl, ['common']);
+			}
 		}
 	}
 }
