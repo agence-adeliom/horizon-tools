@@ -89,8 +89,8 @@ class WysiwygHooks extends AbstractHook
             'removeformat',
         ];
 
-        $toolbars[TOOLBAR_DEFAULT::TOOLBAR_SIMPLE] = [];
-        $toolbars[TOOLBAR_DEFAULT::TOOLBAR_SIMPLE][1] = [
+        $toolbars[WysiwygField::TOOLBAR_SIMPLE] = [];
+        $toolbars[WysiwygField::TOOLBAR_SIMPLE][1] = [
             'bold',
             'italic',
             'underline',
