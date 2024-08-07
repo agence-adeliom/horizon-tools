@@ -100,6 +100,13 @@ class WysiwygHooks extends AbstractHook
             'removeformat',
         ];
 
+        $toolbars[WysiwygField::TOOLBAR_MINIMAL] = [];
+        $toolbars[WysiwygField::TOOLBAR_MINIMAL][1] = [
+            'bold',
+            'link',
+            'removeformat',
+        ];
+
         return $toolbars;
     }
 

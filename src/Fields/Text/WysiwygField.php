@@ -9,25 +9,35 @@ use Extended\ACF\Fields\WysiwygEditor;
 class WysiwygField
 {
     final public const WYSIWYG = "wysiwyg";
+
     final public const TOOLBAR_DEFAULT = 'default';
     final public const TOOLBAR_SIMPLE = 'simple';
+    final public const TOOLBAR_MINIMAL = 'minimal';
 
-    public static function make(string $label = "Description", string|null $name = self::WYSIWYG): static
+
+    public static function make(string $label = "Description", string|null $name = self::WYSIWYG): WysiwygEditor
     {
         return WysiwygEditor::make($label, $name);
     }
 
-    public function default(): static
+    public static function default(string $label = "Description", string|null $name = self::WYSIWYG): WysiwygEditor
     {
-        $this->settings['toolbar'] = self::TOOLBAR_DEFAULT;
-        $this->settings['media_upload'] = false;
-        return $this;
+        return self::make($label, $name)
+            ->toolbar( self::TOOLBAR_DEFAULT)
+            ->disableMediaUpload(false);
     }
 
-    public function simple(): static
+    public static function simple(string $label = "Description", string|null $name = self::WYSIWYG): WysiwygEditor
     {
-        $this->settings['toolbar'] = self::TOOLBAR_SIMPLE;
-        $this->settings['media_upload'] = false;
-        return $this;
+        return self::make($label, $name)
+            ->toolbar( self::TOOLBAR_SIMPLE)
+            ->disableMediaUpload(false);
+    }
+
+    public static function minimal(string $label = "Description", string|null $name = self::WYSIWYG): WysiwygEditor
+    {
+        return self::make($label, $name)
+            ->toolbar( self::TOOLBAR_MINIMAL)
+            ->disableMediaUpload(false);
     }
 }
