@@ -111,4 +111,20 @@ class ClassService
 
 		return null;
 	}
+
+	public static function getPostTypeClassBySlug(string $slug): ?string
+	{
+		$class = null;
+
+		foreach (self::getAllCustomPostTypeClasses() as $postTypeClass) {
+			if (class_exists($postTypeClass)) {
+				if ($postTypeClass::$slug === $slug) {
+					$class = $postTypeClass;
+					break;
+				}
+			}
+		}
+
+		return $class;
+	}
 }
