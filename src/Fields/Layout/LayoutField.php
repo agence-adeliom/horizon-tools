@@ -91,6 +91,7 @@ class LayoutField
             ]),
         ];
 
+
         return Group::make("Ratio du média", self::MEDIA_RATIO)->fields($fieldsGroup);
     }
 
