@@ -39,6 +39,7 @@ class ButtonField
                         "outline"   => __("Outline"),
                     ])
                     ->default("primary")
+					->stylized()
                     ->helperText($typeInstructions),
                 self::make("Lien", self::BUTTON_LINK),
             ]);
