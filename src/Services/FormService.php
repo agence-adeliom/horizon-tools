@@ -6,8 +6,6 @@ namespace Adeliom\HorizonTools\Services;
 
 use GFFormsModel;
 
-use FilesystemIterator;
-
 class FormService
 {
     public static function getAllForms(): array
