@@ -7,34 +7,36 @@ namespace Adeliom\HorizonTools\Enum;
 enum BlockCategoriesEnum: string
 {
 	case CONTENT = 'content';
-	
+
 	case HERO = 'hero';
-	
+
 	case LISTING = 'listing';
-	
+
 	case CTA = 'cta';
-	
+
 	case TRIP = 'trip';
-	
+
 	case NAVIGATION = 'navigation';
-	
+
 	case RELATION = 'relation';
-	
+
 	case GENERIC = 'generic';
-	
+
 	case LATEST = 'latest';
 
 	case OTHERS = 'others';
-	
+
 	case DOWNLOAD = 'download';
-	
+
 	case ACCORDIONS = 'accordions';
-	
+
 	case TESTIMONIALS = 'testimonials';
+
+    case REASSURANCE = 'reassurance';
 
 	const ASSOCIATIONS = [
 		self::HERO->value=>[
-			'title'=>'Header',
+			'title'=>'Haut de page',
 			'icon'=>'editor-kitchensink',
 		],
 		self::NAVIGATION->value=>[
@@ -50,7 +52,7 @@ enum BlockCategoriesEnum: string
 			'icon'=>'align-right'
 		],
 		self::CTA->value=>[
-			'title'=>'CTA',
+			'title'=>'Actions',
 			'icon'=>'button'
 		],
 		self::LISTING->value=>[
@@ -81,5 +83,10 @@ enum BlockCategoriesEnum: string
 			'title' => 'Autres',
 			'icon' => 'admin-generic',
 		],
+
+        self::REASSURANCE->value => [
+            'title' => 'Réassurance',
+            'icon' => 'admin-generic',
+        ],
 	];
 }
