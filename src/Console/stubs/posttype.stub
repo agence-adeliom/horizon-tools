@@ -10,6 +10,9 @@ class %%CLASS%% extends %%PARENT%%
 {
     public static ?string $slug = '%%SLUG%%';
 
+    // Blade component used to render the card in the listing
+    public static ?string $card = null;
+
     public function getConfig(array $config = []): array
     {
         $config['args'] =[
