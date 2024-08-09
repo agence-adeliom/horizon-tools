@@ -56,10 +56,19 @@ class %%CLASS%% extends %%PARENT%%
     {
         // return [
         //     [
-        //         'name' => 'fieldname',
-        //         'type' => FilterTypesEnum::TAXONOMY,
-        //         'appearance' => 'select',
-        //         'value' => 'tested value', // could be taxonomy slug or meta key
+        //         'name' => 'fieldname', // Name of the filter field in the filter form
+        //         'type' => FilterTypesEnum::TAXONOMY, // Filter type (taxonomy or meta)
+        //         'appearance' => 'select', // Appearance of the filter (only select supported)
+        //         'value' => \App\Taxonomies\Taxonomy::$slug, // Slug of the taxonomy
+        //         'placeholder'=>'Toutes les options' // Placeholder of the field (or label of "all" options)
+        //     ],
+        //     [
+        //         'name' => 'city', // Name of the filter field in the filter form
+        //         'type' => FilterTypesEnum::META, // Filter type (taxonomy or meta)
+        //         'appearance' => 'select', // Appearance of the filter (only select supported)
+        //         'value' => self::FIELD_CITY, // Full name of the meta field (be careful if in groups for instance)
+        //         'fieldClass' => Text::class, // Field class of the ACF field
+        //         'placeholder' => 'Toutes les villes' // Placeholder of the field (or label of "all" options)
         //     ],
         // ];
 
