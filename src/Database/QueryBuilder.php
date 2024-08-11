@@ -25,7 +25,7 @@ class QueryBuilder
 	private string $order = 'DESC';
 	private ?string $orderMetaKey = null;
 	private ?string $status = 'publish';
-	private bool $hideEmpty = true;
+	private bool $hideEmpty = false;
 	private ?\WP_Query $WP_Query = null;
 	private ?\WP_Term_Query $WP_Term_Query = null;
 
