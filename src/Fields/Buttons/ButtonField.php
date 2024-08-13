@@ -31,15 +31,15 @@ class ButtonField
 			]);
 	}
 
-	public static function types(string $title = "Types", string|null $typeInstructions = "", string|null $name = self::BUTTON): Group
+	public static function types(string $title = "Bouton", string|null $typeInstructions = "", string|null $name = self::BUTTON): Group
 	{
 		return Group::make($title, $name)
 			->fields([
-				Select::make("Types", self::BUTTON_TYPE)
+				Select::make("Type", self::BUTTON_TYPE)
 					->choices([
 						"primary" => __("Primaire"),
 						"secondary" => __("Secondaire"),
-						"outline" => __("Outline"),
+						"tertiary" => __("Tertiaire"),
 					])
 					->default("primary")
 					->stylized()
@@ -67,5 +67,4 @@ class ButtonField
 
 		return Group::make(__("Boutons"), self::BUTTONS)->fields($fields);
 	}
-
 }
