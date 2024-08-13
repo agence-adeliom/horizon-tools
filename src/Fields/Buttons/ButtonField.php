@@ -7,6 +7,7 @@ namespace Adeliom\HorizonTools\Fields\Buttons;
 use Extended\ACF\Fields\Group;
 use Extended\ACF\Fields\Link;
 use Extended\ACF\Fields\Select;
+use Extended\ACF\Fields\Text;
 
 class ButtonField
 {
@@ -22,9 +23,12 @@ class ButtonField
 	final public const NAME = 'uptitle';
 	final public const LABEL = 'Sur-titre';
 
-	public static function make(string $label = "Bouton", string|null $name = self::BUTTON): Link
+	public static function make(string $label = "Bouton", string|null $name = self::BUTTON): Group
 	{
-		return Link::make($label, $name);
+		return Group::make(__('Bouton'), $name)
+			->fields([
+				Link::make($label, self::BUTTON_LINK)
+			]);
 	}
 
 	public static function types(string $title = "Bouton", string|null $typeInstructions = "", string|null $name = self::BUTTON): Group
@@ -40,7 +44,7 @@ class ButtonField
 					->default("primary")
 					->stylized()
 					->helperText($typeInstructions),
-				self::make("Lien", self::BUTTON_LINK),
+				Link::make("Lien", self::BUTTON_LINK)
 			]);
 	}
 
