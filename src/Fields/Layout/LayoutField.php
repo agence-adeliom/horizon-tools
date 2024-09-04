@@ -18,6 +18,8 @@ class LayoutField
     final public const MARGIN = "margin";
 
     final public const MARGIN_SIZES = "sizes";
+    final public const MARGIN_TOP_SIZE = "top_size";
+    final public const MARGIN_BOTTOM_SIZE = "bottom_size";
     final public const MARGIN_TOP_REMOVE = "top_remove";
     final public const MARGIN_BOTTOM_REMOVE = "bottom_remove";
 
@@ -44,17 +46,17 @@ class LayoutField
     }
 
     public static function margin(array $fields = [
-        self::MARGIN_SIZES,
-        self::MARGIN_TOP_REMOVE,
-        self::MARGIN_BOTTOM_REMOVE
+        self::MARGIN_TOP_SIZE,
+        self::MARGIN_BOTTOM_SIZE,
     ]): Group
     {
 
         $fieldsGroup = [];
 
-        if (in_array(self::MARGIN_SIZES, $fields)) {
-            $fieldsGroup[] = Select::make("Taille des marges", self::MARGIN_SIZES)
+        if (in_array(self::MARGIN_TOP_SIZE, $fields)) {
+            $fieldsGroup[] = Select::make("Taille de la marge supérieure", self::MARGIN_TOP_SIZE)
                 ->choices([
+                    "none" => "Nulle",
                     "small" => "Petite",
                     "large" => "Grande"
                 ])
@@ -62,15 +64,14 @@ class LayoutField
                 ->helperText("");
         }
 
-        if (in_array(self::MARGIN_TOP_REMOVE, $fields)) {
-            $fieldsGroup[] = TrueFalse::make("Suppression marge haute", self::MARGIN_TOP_REMOVE)
-                ->stylized()
-                ->helperText("");
-        }
-
-        if (in_array(self::MARGIN_BOTTOM_REMOVE, $fields)) {
-            $fieldsGroup[] = TrueFalse::make("Suppression marge basse", self::MARGIN_BOTTOM_REMOVE)
-                ->stylized()
+        if (in_array(self::MARGIN_BOTTOM_SIZE, $fields)) {
+            $fieldsGroup[] = Select::make("Taille de la marge inférieure", self::MARGIN_BOTTOM_SIZE)
+                ->choices([
+                    "none" => "Nulle",
+                    "small" => "Petite",
+                    "large" => "Grande"
+                ])
+                ->default("large")
                 ->helperText("");
         }
 
@@ -94,5 +95,4 @@ class LayoutField
 
         return Group::make("Ratio du média", self::MEDIA_RATIO)->fields($fieldsGroup);
     }
-
 }
