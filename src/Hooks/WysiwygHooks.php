@@ -12,9 +12,9 @@ class WysiwygHooks extends AbstractHook
     public function init(): void
     {
         add_filter('tiny_mce_before_init', [$this, 'removeHeadings']);
-        add_filter('tiny_mce_before_init', [$this, 'customStyleFormats']);
         add_filter('mce_buttons', [$this, 'removeButtons']);
         add_filter('mce_buttons_2', [$this, 'removeButtonLine2']);
+        add_filter('mce_buttons', [$this, 'addSelect']);
         add_filter('acf/fields/wysiwyg/toolbars', [$this, 'wysiwygToolbars']);
     }
 
@@ -24,52 +24,6 @@ class WysiwygHooks extends AbstractHook
         return $headings;
     }
 
-    public static function customStyleFormats($settings): array
-    {
-        $style_formats = [
-            [
-                'title' => 'Titres',
-                'items' => [
-                    [
-                        'title'      => 'Titre 3xl',
-                        'selector'   => 'h2, h3, h4, h5, h6, p',
-                        'wrapper'    => false,
-                        'remove'     => 'none',
-                        'attributes' => [
-                            'class' => 'text-3xl',
-                        ],
-                    ],
-                    [
-                        'title'      => 'Titre 2xl',
-                        'selector'   => 'h2, h3, h4, h5, h6, p',
-                        'wrapper'    => false,
-                        'remove'     => 'none',
-                        'attributes' => [
-                            'class' => 'text-2xl',
-                        ],
-                    ],
-                ],
-            ],
-            [
-                'title' => 'Paragraphes',
-                'items' => [
-                    [
-                        'title'      => 'Texte large',
-                        'wrapper'    => false,
-                        'selector'   => 'h2, h3, h4, h5, h6, p',
-                        'remove'     => 'none',
-                        'attributes' => [
-                            'class' => 'text-xl',
-                        ],
-                    ],
-                ],
-            ],
-        ];
-
-        $settings['style_formats'] = json_encode($style_formats);
-
-        return $settings;
-    }
 
     public static function wysiwygToolbars(array $toolbars): array
     {
@@ -91,6 +45,8 @@ class WysiwygHooks extends AbstractHook
 
         $toolbars[WysiwygField::TOOLBAR_SIMPLE] = [];
         $toolbars[WysiwygField::TOOLBAR_SIMPLE][1] = [
+            'formatselect',
+            'styleselect',
             'bold',
             'italic',
             'underline',
@@ -156,6 +112,11 @@ class WysiwygHooks extends AbstractHook
             }
         }
 
+        return $buttons;
+    }
+
+    public static function addSelect($buttons) :array {
+        array_unshift($buttons, 'styleselect');
         return $buttons;
     }
 
