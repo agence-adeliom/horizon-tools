@@ -8,6 +8,7 @@ class MenuItemViewModel
 {
 	public int $id;
 	public string $title;
+	public string $description;
 	public string $url;
 	public int $parentId;
 	public array $classes = [];
@@ -19,6 +20,7 @@ class MenuItemViewModel
 	{
 		$this->id = $menuItem->ID;
 		$this->title = $menuItem->title;
+		$this->description = $menuItem->description;
 		$this->url = $menuItem->url;
 		$this->classes = $menuItem->classes;
 		$this->parentId = (int)$menuItem->menu_item_parent;
