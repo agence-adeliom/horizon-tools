@@ -18,4 +18,16 @@ class FontAwesomeIcon extends Field
 	use Wrapper;
 
 	protected string|null $type = 'font-awesome';
+
+    public function format(string $format): static
+    {
+        if (!in_array($format, ['element', 'unicode', 'object'])) {
+            throw new InvalidArgumentException("Invalid argument format [$format].");
+        }
+
+        $this->settings['save_format'] = $format;
+
+        return $this;
+    }
+
 }
