@@ -57,4 +57,11 @@ class AcfService
 
 		return false;
 	}
+
+	public static function getAllOptionPages(): array
+	{
+		$pages = [];
+
+		return $pages;
+	}
 }

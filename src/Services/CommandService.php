@@ -30,7 +30,7 @@ class CommandService
 		];
 	}
 
-	public static function handleClassCreation(string $type, string $filepath, string $path, array $folders, string $className, string $template, ?string $slug = null): string
+	public static function handleClassCreation(string $type, string $filepath, string $path, array $folders, string $className, string $template, ?string $slug = null, ?string $parentClass = null): string
 	{
 		if (file_exists($filepath)) {
 			return 'already_exists';
@@ -77,6 +77,8 @@ class CommandService
 			'%%CPT_NAME%%',
 			'%%BLOCK_NAME%%',
 			'%%ADMIN_NAME%%',
+			'%%ADMIN_SLUG%%',
+			'%%PARENT_SLUG_STATIC%%',
 		], [
 			'App\\' . $folder . ($namespaceEnd ? '\\' . $namespaceEnd : ''),
 			$className,
@@ -87,6 +89,8 @@ class CommandService
 			$className,
 			$className,
 			$className,
+			sanitize_title($className),
+			$parentClass !== null ? sprintf("\%s::%s", $parentClass, '$slug') : 'null',
 		], $template));
 
 		return 'success';

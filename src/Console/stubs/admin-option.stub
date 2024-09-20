@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+namespace %%NAMESPACE%%;
+
+use %%PARENT_NAMESPACE%%;
+
+class %%CLASS%% extends %%PARENT%%
+{
+    public static ?string $title = '%%ADMIN_NAME%%';
+    public static ?string $slug = '%%ADMIN_SLUG%%';
+    public static bool $isOptionPage = true;
+    public static ?string $optionPageIcon = null;
+
+    public function getFields(): ?iterable
+    {
+        return null;
+    }
+
+    public function getOptionPageParent(): ?string
+    {
+        return %%PARENT_SLUG_STATIC%%;
+    }
+
+    public function getLocation(): iterable
+    {
+        // yield Location::where(...);
+    }
+}

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Services;
 
+use Adeliom\HorizonTools\Admin\AbstractAdmin;
 use Adeliom\HorizonTools\Blocks\AbstractBlock;
 use Adeliom\HorizonTools\PostTypes\AbstractPostType;
 use Adeliom\HorizonTools\Taxonomies\AbstractTaxonomy;
@@ -32,6 +33,24 @@ class ClassService
 	public static function slugifyClassName(string $className): string
 	{
 		return strtolower(preg_replace('/(?<!^)[A-Z]/', '-$0', $className));
+	}
+
+	public static function getAllCustomAdminClasses(): array
+	{
+		return array_filter(get_declared_classes(), function ($class) {
+			return is_subclass_of($class, AbstractAdmin::class);
+		});
+	}
+
+	public static function getAllCustomOptionPages(): array
+	{
+		return array_values(array_filter(array_map(function (string $class) {
+			if ($class::$isOptionPage) {
+				return $class;
+			}
+
+			return null;
+		}, self::getAllCustomAdminClasses())));
 	}
 
 	public static function getAllCustomPostTypeClasses(): array
