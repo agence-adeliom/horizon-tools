@@ -30,7 +30,7 @@ class CommandService
 		];
 	}
 
-	public static function handleClassCreation(string $type, string $filepath, string $path, array $folders, string $className, string $template, ?string $slug = null): string
+	public static function handleClassCreation(string $type, string $filepath, string $path, array $folders, string $className, string $template, ?string $slug = null, ?string $parentClass = null, ?string $parentPath = null): string
 	{
 		if (file_exists($filepath)) {
 			return 'already_exists';
@@ -66,6 +66,14 @@ class CommandService
 			AbstractHook::class => 'Hooks',
 		};
 
+		$parentSlug = null;
+
+		if ($parentClass) {
+			$parentSlug = sprintf("\%s::%s", $parentClass, '$slug');
+		} elseif ($parentPath) {
+			$parentSlug = sprintf("'%s'", $parentPath);
+		}
+
 		// Create empty file
 		file_put_contents($filepath, str_replace([
 			'%%NAMESPACE%%',
@@ -77,6 +85,8 @@ class CommandService
 			'%%CPT_NAME%%',
 			'%%BLOCK_NAME%%',
 			'%%ADMIN_NAME%%',
+			'%%ADMIN_SLUG%%',
+			'%%PARENT_SLUG_STATIC%%',
 		], [
 			'App\\' . $folder . ($namespaceEnd ? '\\' . $namespaceEnd : ''),
 			$className,
@@ -87,6 +97,8 @@ class CommandService
 			$className,
 			$className,
 			$className,
+			sanitize_title($className),
+			$parentSlug,
 		], $template));
 
 		return 'success';

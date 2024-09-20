@@ -56,6 +56,10 @@ class AdminServiceProvider extends SageServiceProvider
 								$params['icon_url'] = $class::$optionPageIcon;
 							}
 
+							if (method_exists($class, 'getOptionPageParent')) {
+								$params['parent_slug'] = $class->getOptionPageParent();
+							}
+
 							acf_add_options_page($params);
 						}
 					}

@@ -10,6 +10,7 @@ use Roots\Acorn\Exceptions\SkipProviderException;
 abstract class AbstractAdmin
 {
 	public static ?string $title = null;
+	public static ?string $slug = null;
 	public static bool $isOptionPage = false;
 	public static ?string $optionPageIcon = null;
 
@@ -20,20 +21,37 @@ abstract class AbstractAdmin
 		}
 	}
 
-	public function getSlug(): string
+	public function getSlug(): ?string
 	{
-		return sanitize_title($this::$title);
+		return $this::$slug;
 	}
 
 	public function getOptionPageParams(): array
 	{
 		return [
 			'page_title' => $this::$title,
-			'menu_title' => $this::$title,
+			'menu_title' => '',
+			'autoload' => 0,
+			'position' => '',
+			'redirect' => 0,
+			'description' => '',
+			'icon_url' => '',
+			'update_button' => 'Mise à jour',
+			'updated_message' => 'Options mises à jour',
+			'advanced_configuration' => 0,
 			'menu_slug' => $this->getSlug(),
 			'capability' => 'edit_theme_options',
-			'autoload' => true,
+			'menu_icon' => [
+				'type' => 'dashicons',
+				'value' => 'dashicons-admin-generic',
+			],
+			'post_id' => '',
 		];
+	}
+
+	public function getOptionPageParent(): ?string
+	{
+		return null;
 	}
 
 	public function getFields(): ?iterable
