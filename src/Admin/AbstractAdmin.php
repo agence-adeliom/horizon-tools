@@ -23,7 +23,7 @@ abstract class AbstractAdmin
 
 	public function getSlug(): ?string
 	{
-		return $this::$slug;
+		return $this::$slug ?? sanitize_title($this::$title);
 	}
 
 	public function getOptionPageParams(): array
