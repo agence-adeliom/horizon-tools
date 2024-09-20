@@ -42,11 +42,21 @@ class ClassService
 		});
 	}
 
-	public static function getAllCustomOptionPages(): array
+	public static function getAllCustomOptionPages(bool $onlyRoot = false): array
 	{
-		return array_values(array_filter(array_map(function (string $class) {
+		return array_values(array_filter(array_map(function (string $class) use ($onlyRoot) {
 			if ($class::$isOptionPage) {
-				return $class;
+				if (!$onlyRoot) {
+					return $class;
+				} else {
+					$classInstance = new $class();
+
+					if (method_exists($classInstance, 'getOptionPageParent')) {
+						if ($classInstance->getOptionPageParent() === null) {
+							return $class;
+						}
+					}
+				}
 			}
 
 			return null;
@@ -55,9 +65,9 @@ class ClassService
 
 	public static function getAllCustomPostTypeClasses(): array
 	{
-		return array_filter(get_declared_classes(), function ($class) {
+		return array_values(array_filter(get_declared_classes(), function ($class) {
 			return is_subclass_of($class, AbstractPostType::class);
-		});
+		}));
 	}
 
 	public static function getAllCustomBlockClasses(): array

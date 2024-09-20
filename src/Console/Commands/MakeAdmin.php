@@ -17,9 +17,13 @@ class MakeAdmin extends Command
 
 	private bool $isOptionPage = false;
 	private ?string $optionPageParent = null;
+	private ?string $optionPageParentPath = null;
 
 	private const TYPE_OPTION_PAGE = 'option';
 	private const TYPE_POST_TYPE = 'cpt';
+
+	private const POST_CPT = 'Posts';
+	private const PAGE_CPT = 'Pages';
 
 	private const PARENT_TYPES = [
 		self::TYPE_OPTION_PAGE => 'Option Page',
@@ -48,27 +52,54 @@ class MakeAdmin extends Command
 		if ($this->confirm('Is this an option page?')) {
 			$this->isOptionPage = true;
 
-			if ($existingOptionPages = ClassService::getAllCustomOptionPages()) {
-				if ($this->confirm('Do you want your option page to have a parent?')) {
-					$parentType = $this->choice('Choose a parent type', self::PARENT_TYPES);
+			if ($this->confirm('Do you want your option page to have a parent?')) {
+				$existingOptionPages = ClassService::getAllCustomOptionPages(onlyRoot: true);
+				$parentTypes = self::PARENT_TYPES;
+				if (empty($existingOptionPages)) {
+					unset($parentTypes[self::TYPE_OPTION_PAGE]);
+				}
+				$parentType = $this->choice('Choose a parent type', self::PARENT_TYPES);
 
-					switch ($parentType) {
-						case self::TYPE_OPTION_PAGE:
-							$parent = $this->choice('Choose a parent option page', $existingOptionPages);
-							$parentInstance = new $parent();
 
-							if (method_exists($parentInstance, 'getSlug')) {
-								if ($slug = $parentInstance->getSlug()) {
-									$this->optionPageParent = $parent;
-								}
+				switch ($parentType) {
+					case self::TYPE_OPTION_PAGE:
+						$parent = $this->choice('Choose a parent option page (only pages without parents are displayed)', $existingOptionPages);
+						$parentInstance = new $parent();
+
+						if (method_exists($parentInstance, 'getSlug')) {
+							if ($slug = $parentInstance->getSlug()) {
+								$this->optionPageParent = $parent;
 							}
-							break;
-						case self::TYPE_POST_TYPE:
-							dd('choose cpt');
-							break;
-						default:
-							break;
-					}
+						}
+						break;
+					case self::TYPE_POST_TYPE:
+						$cpts = array_merge([
+							self::POST_CPT,
+							self::PAGE_CPT,
+						], ClassService::getAllCustomPostTypeClasses());
+
+						$cpt = $this->choice('Choose a parent post type', $cpts);
+
+						$urlPath = null;
+
+						switch ($cpt) {
+							case self::POST_CPT:
+								$urlPath = 'edit.php';
+								break;
+							case self::PAGE_CPT:
+								$urlPath = 'edit.php?post_type=page';
+								break;
+							default:
+								if (isset($cpt::$slug)) {
+									$urlPath = sprintf('edit.php?post_type=%s', $cpt::$slug);
+								}
+								break;
+						}
+
+						$this->optionPageParentPath = $urlPath;
+						break;
+					default:
+						break;
 				}
 			}
 		}
@@ -79,7 +110,7 @@ class MakeAdmin extends Command
 
 		$filepath = $path . $structure['path'];
 
-		$result = CommandService::handleClassCreation(AbstractAdmin::class, $filepath, $path, $folders, $className, $this->getTemplate(), parentClass: $this->optionPageParent);
+		$result = CommandService::handleClassCreation(AbstractAdmin::class, $filepath, $path, $folders, $className, $this->getTemplate(), parentClass: $this->optionPageParent, parentPath: $this->optionPageParentPath);
 
 		switch ($result) {
 			case 'already_exists':
