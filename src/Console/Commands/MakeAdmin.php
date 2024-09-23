@@ -60,7 +60,6 @@ class MakeAdmin extends Command
 				}
 				$parentType = $this->choice('Choose a parent type', self::PARENT_TYPES);
 
-
 				switch ($parentType) {
 					case self::TYPE_OPTION_PAGE:
 						$parent = $this->choice('Choose a parent option page (only pages without parents are displayed)', $existingOptionPages);
