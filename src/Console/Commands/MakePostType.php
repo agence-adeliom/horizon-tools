@@ -29,10 +29,13 @@ class MakePostType extends Command
 		$path = $this->getPath();
 		$name = $this->argument('name');
 		$supports = ['title', 'editor'];
+		$isGutenberg = true;
 
 		while (null === $name) {
 			$name = $this->ask('What is the relative path of the post-type? (Folder/Of/My/PostTypeFile)');
 		}
+
+		$isGutenberg = $this->confirm('Do you want to use Gutenberg editor?', default: true);
 
 		if ($this->confirm('Do you want to configure the supported fields?')) {
 			$supports = $this->choice('What fields the post-type should support? (separated by ,)', [
@@ -53,7 +56,7 @@ class MakePostType extends Command
 
 		$filepath = $path . $structure['path'];
 
-		$result = CommandService::handleClassCreation(type: AbstractPostType::class, filepath: $filepath, path: $path, folders: $folders, className: $className, template: $this->getTemplate(), postTypeSupports: $supports);
+		$result = CommandService::handleClassCreation(type: AbstractPostType::class, filepath: $filepath, path: $path, folders: $folders, className: $className, template: $this->getTemplate(), postTypeSupports: $supports, postTypeIsGutenberg: $isGutenberg);
 
 		switch ($result) {
 			case 'already_exists':

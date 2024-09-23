@@ -30,7 +30,7 @@ class CommandService
 		];
 	}
 
-	public static function handleClassCreation(string $type, string $filepath, string $path, array $folders, string $className, string $template, ?string $slug = null, ?string $parentClass = null, ?string $parentPath = null, string $postTypes = null, bool $taxonomyVisibleInQuickEdit = true, bool $taxonomyVisibleInPost = true, array $postTypeSupports = []): string
+	public static function handleClassCreation(string $type, string $filepath, string $path, array $folders, string $className, string $template, ?string $slug = null, ?string $parentClass = null, ?string $parentPath = null, string $postTypes = null, bool $taxonomyVisibleInQuickEdit = true, bool $taxonomyVisibleInPost = true, array $postTypeSupports = [], bool $postTypeIsGutenberg = true): string
 	{
 		$supportsString = '';
 
@@ -111,6 +111,7 @@ class CommandService
 			'%%SHOW_IN_QUICK_EDIT%%',
 			'%%SHOW_IN_POST%%',
 			'%%POST_TYPE_SUPPORTS%%',
+			'%%POST_TYPE_SUPPORTS_REST%%',
 		], [
 			'App\\' . $folder . ($namespaceEnd ? '\\' . $namespaceEnd : ''),
 			$className,
@@ -127,6 +128,7 @@ class CommandService
 			$taxonomyVisibleInQuickEdit ? 'true' : 'false',
 			$taxonomyVisibleInPost ? 'true' : 'false',
 			$supportsString,
+			$postTypeIsGutenberg? 'true' : 'false',
 		], $template));
 
 		return 'success';
