@@ -9,7 +9,20 @@ use Adeliom\HorizonTools\Database\TaxQuery;
 
 abstract class AbstractTaxonomyRepository
 {
-    abstract static function getBaseQueryBuilder(): QueryBuilder;
+    abstract static function getBaseQueryBuilder(?int $perPage = null, int $page = 1, bool $hideEmpty = true): QueryBuilder;
+
+    public static function handlePagination(QueryBuilder $qb, ?int $perPage = null, int $page = 1): QueryBuilder
+    {
+        $qb->setPage($page);
+
+        if (null !== $perPage) {
+            $qb->setPerPage($perPage);
+        } else {
+            $qb->setPerPage(-1);
+        }
+
+        return $qb;
+    }
 
     /**
      * @return \WP_Term[]
@@ -31,5 +44,14 @@ abstract class AbstractTaxonomyRepository
         $qb = static::getBaseQueryBuilder(hideEmpty: $hideEmpty)->whereIdIn([$id]);
 
         return $qb->getOneOrNull();
+    }
+
+    public static function getPaginated(?int $perPage = null, int $page = 1, bool $hideEmpty = true)
+    {
+        if (null === $perPage) {
+            $perPage = static::$perPage;
+        }
+
+        return static::getBaseQueryBuilder(perPage: $perPage, page: $page, hideEmpty: $hideEmpty)->getPaginatedData();
     }
 }

@@ -309,6 +309,10 @@ class QueryBuilder
             }
 
             if ($this->perPage) {
+                if ($this->perPage === -1) {
+                    $this->perPage = 0;
+                }
+
                 $args['number'] = $this->perPage;
             }
 
