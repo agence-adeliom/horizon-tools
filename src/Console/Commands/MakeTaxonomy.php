@@ -33,6 +33,8 @@ class MakeTaxonomy extends Command
 		$path = $this->getPath();
 		$name = $this->argument('name');
 		$postTypes = '[]';
+		$visibleInQuickEdit = true;
+		$visibleInPost = true;
 
 		while (null === $name) {
 			$name = $this->ask('What is the relative path of the taxonomy? (Folder/Of/My/TaxonomyFile)');
@@ -59,13 +61,16 @@ class MakeTaxonomy extends Command
 			}
 		}
 
+		$visibleInQuickEdit = $this->confirm('Do you want to make the taxonomy visible in quick edit?', default: true);
+		$visibleInPost = $this->confirm('Do you want to make the taxonomy visible in post?', default: true);
+
 		$structure = CommandService::getFolderStructure($name);
 		$folders = $structure['folders'];
 		$className = $structure['class'];
 
 		$filepath = $path . $structure['path'];
 
-		$result = CommandService::handleClassCreation(type: AbstractTaxonomy::class, filepath: $filepath, path: $path, folders: $folders, className: $className, template: $this->getTemplate(), postTypes: $postTypes);
+		$result = CommandService::handleClassCreation(type: AbstractTaxonomy::class, filepath: $filepath, path: $path, folders: $folders, className: $className, template: $this->getTemplate(), postTypes: $postTypes, taxonomyVisibleInQuickEdit: $visibleInQuickEdit, taxonomyVisibleInPost: $visibleInPost);
 
 		switch ($result) {
 			case 'already_exists':

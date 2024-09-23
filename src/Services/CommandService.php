@@ -30,7 +30,7 @@ class CommandService
 		];
 	}
 
-	public static function handleClassCreation(string $type, string $filepath, string $path, array $folders, string $className, string $template, ?string $slug = null, ?string $parentClass = null, ?string $parentPath = null, string $postTypes = null): string
+	public static function handleClassCreation(string $type, string $filepath, string $path, array $folders, string $className, string $template, ?string $slug = null, ?string $parentClass = null, ?string $parentPath = null, string $postTypes = null, bool $taxonomyVisibleInQuickEdit = true, bool $taxonomyVisibleInPost = true): string
 	{
 		if (file_exists($filepath)) {
 			return 'already_exists';
@@ -87,7 +87,9 @@ class CommandService
 			'%%ADMIN_NAME%%',
 			'%%ADMIN_SLUG%%',
 			'%%PARENT_SLUG_STATIC%%',
-			'%%POST_TYPES%%'
+			'%%POST_TYPES%%',
+			'%%SHOW_IN_QUICK_EDIT%%',
+			'%%SHOW_IN_POST%%',
 		], [
 			'App\\' . $folder . ($namespaceEnd ? '\\' . $namespaceEnd : ''),
 			$className,
@@ -100,7 +102,9 @@ class CommandService
 			$className,
 			sanitize_title($className),
 			$parentSlug,
-			$postTypes
+			$postTypes,
+			$taxonomyVisibleInQuickEdit ? 'true' : 'false',
+			$taxonomyVisibleInPost ? 'true' : 'false',
 		], $template));
 
 		return 'success';

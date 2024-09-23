@@ -31,6 +31,10 @@ class %%CLASS%% extends %%PARENT%%
                 'all_items'=> 'Tous les éléments',
                 'archives'=> 'Archives des éléments'
             ],
+            'show_ui' => true,
+            'show_in_quick_edit' => %%SHOW_IN_QUICK_EDIT%%,
+            'meta_box_cb' => %%SHOW_IN_POST%%, // Show meta-box in Classic Editor posts
+            'show_in_rest' => %%SHOW_IN_POST%%, // Show meta-box in Gutenberg Editor posts
         ];
 
         return parent::getConfig($config);
