@@ -30,8 +30,28 @@ class CommandService
 		];
 	}
 
-	public static function handleClassCreation(string $type, string $filepath, string $path, array $folders, string $className, string $template, ?string $slug = null, ?string $parentClass = null, ?string $parentPath = null, string $postTypes = null, bool $taxonomyVisibleInQuickEdit = true, bool $taxonomyVisibleInPost = true): string
+	public static function handleClassCreation(string $type, string $filepath, string $path, array $folders, string $className, string $template, ?string $slug = null, ?string $parentClass = null, ?string $parentPath = null, string $postTypes = null, bool $taxonomyVisibleInQuickEdit = true, bool $taxonomyVisibleInPost = true, array $postTypeSupports = []): string
 	{
+		$supportsString = '';
+
+		if ($postTypeSupports) {
+			$isFirst = true;
+			$supportsString .= '[';
+
+			foreach ($postTypeSupports as $postTypeSupport) {
+				if (!$isFirst) {
+					$supportsString .= ', ';
+				}
+				$supportsString .= "'$postTypeSupport'";
+
+				if ($isFirst) {
+					$isFirst = false;
+				}
+			}
+
+			$supportsString .= ']';
+		}
+
 		if (file_exists($filepath)) {
 			return 'already_exists';
 		}
@@ -90,6 +110,7 @@ class CommandService
 			'%%POST_TYPES%%',
 			'%%SHOW_IN_QUICK_EDIT%%',
 			'%%SHOW_IN_POST%%',
+			'%%POST_TYPE_SUPPORTS%%',
 		], [
 			'App\\' . $folder . ($namespaceEnd ? '\\' . $namespaceEnd : ''),
 			$className,
@@ -105,6 +126,7 @@ class CommandService
 			$postTypes,
 			$taxonomyVisibleInQuickEdit ? 'true' : 'false',
 			$taxonomyVisibleInPost ? 'true' : 'false',
+			$supportsString,
 		], $template));
 
 		return 'success';
