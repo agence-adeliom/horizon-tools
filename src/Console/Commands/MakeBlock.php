@@ -12,7 +12,7 @@ use Adeliom\HorizonTools\Services\CommandService;
 class MakeBlock extends Command
 {
     protected $signature = 'make:block {name?}';
-    protected $description = 'Create a new block';
+    protected $description = 'Create a new ACF block';
 
     public function getPath(): string
     {

@@ -13,7 +13,7 @@ use Adeliom\HorizonTools\Services\CommandService;
 class MakeAdmin extends Command
 {
     protected $signature = 'make:admin {name?}';
-    protected $description = 'Create a new admin fields group';
+    protected $description = 'Create a new admin fields group, or an option page';
 
     private bool $isOptionPage = false;
     private ?string $optionPageParent = null;

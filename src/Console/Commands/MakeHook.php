@@ -11,7 +11,7 @@ use Adeliom\HorizonTools\Services\CommandService;
 class MakeHook extends Command
 {
     protected $signature = 'make:hook {name?}';
-    protected $description = 'Create a new hook';
+    protected $description = 'Create a new hook class';
 
     public function getPath(): string
     {
