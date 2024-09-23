@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace %%NAMESPACE%%;
+
+use Adeliom\HorizonTools\Database\QueryBuilder;
+use %%PARENT_NAMESPACE%%;
+
+class %%CLASS%% extends %%PARENT%%
+{
+    public static $perPage = %%PER_PAGE%%;
+
+    public static function getBaseQueryBuilder(): QueryBuilder
+    {
+        return (new QueryBuilder())
+            ->postType([%%SLUG%%]);
+    }
+}

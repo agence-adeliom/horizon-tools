@@ -8,129 +8,175 @@ use Adeliom\HorizonTools\Admin\AbstractAdmin;
 use Adeliom\HorizonTools\Blocks\AbstractBlock;
 use Adeliom\HorizonTools\Hooks\AbstractHook;
 use Adeliom\HorizonTools\PostTypes\AbstractPostType;
+use Adeliom\HorizonTools\Repositories\AbstractRepository;
 use Adeliom\HorizonTools\Taxonomies\AbstractTaxonomy;
 use Adeliom\HorizonTools\Templates\AbstractTemplate;
+use Illuminate\Console\Command;
 
 class CommandService
 {
-	/**
-	 * @param string $argument
-	 * @return array<string, string|array>
-	 */
-	public static function getFolderStructure(string $argument): array
-	{
-		$folders = explode('/', $argument);
-		$className = last($folders);
-		array_pop($folders);
+    public const POST_CPT = 'Posts';
+    public const PAGE_CPT = 'Pages';
 
-		return [
-			'class' => $className,
-			'folders' => $folders,
-			'path' => $argument . '.php',
-		];
-	}
+    public const POST_TYPE_POST = 'post';
+    public const POST_TYPE_PAGE = 'page';
 
-	public static function handleClassCreation(string $type, string $filepath, string $path, array $folders, string $className, string $template, ?string $slug = null, ?string $parentClass = null, ?string $parentPath = null, string $postTypes = null, bool $taxonomyVisibleInQuickEdit = true, bool $taxonomyVisibleInPost = true, array $postTypeSupports = [], bool $postTypeIsGutenberg = true): string
-	{
-		$supportsString = '';
+    /**
+     * @param string $argument
+     * @return array<string, string|array>
+     */
+    public static function getFolderStructure(string $argument): array
+    {
+        $folders = explode('/', $argument);
+        $className = last($folders);
+        array_pop($folders);
 
-		if ($postTypeSupports) {
-			$isFirst = true;
-			$supportsString .= '[';
+        return [
+            'class' => $className,
+            'folders' => $folders,
+            'path' => $argument . '.php',
+        ];
+    }
 
-			foreach ($postTypeSupports as $postTypeSupport) {
-				if (!$isFirst) {
-					$supportsString .= ', ';
-				}
-				$supportsString .= "'$postTypeSupport'";
+    public static function choosePostType(Command $commandInstance, string $question = 'Choose a post-type'): string
+    {
+        $postTypes = array_merge([self::POST_CPT, self::PAGE_CPT], ClassService::getAllCustomPostTypeClasses());
 
-				if ($isFirst) {
-					$isFirst = false;
-				}
-			}
+        $cpt = $commandInstance->choice($question, $postTypes);
 
-			$supportsString .= ']';
-		}
+        return match ($cpt) {
+            self::POST_CPT => self::POST_TYPE_POST,
+            self::PAGE_CPT => self::POST_TYPE_PAGE,
+            default => $cpt,
+        };
+    }
 
-		if (file_exists($filepath)) {
-			return 'already_exists';
-		}
+    public static function handleClassCreation(
+        string $type,
+        string $filepath,
+        string $path,
+        array $folders,
+        string $className,
+        string $template,
+        ?string $slug = null,
+        ?string $parentClass = null,
+        ?string $parentPath = null,
+        string $postTypes = null,
+        bool $taxonomyVisibleInQuickEdit = true,
+        bool $taxonomyVisibleInPost = true,
+        array $postTypeSupports = [],
+        bool $postTypeIsGutenberg = true,
+        ?int $perPage = null
+    ): string {
+        $supportsString = '';
 
-		if (!file_exists($path)) {
-			mkdir($path, 0755, true);
-		}
+        if ($postTypeSupports) {
+            $isFirst = true;
+            $supportsString .= '[';
 
-		foreach ($folders as $folder) {
-			$path .= $folder . '/';
-			if (!file_exists($path)) {
-				mkdir($path, 0755, true);
-			}
-		}
+            foreach ($postTypeSupports as $postTypeSupport) {
+                if (!$isFirst) {
+                    $supportsString .= ', ';
+                }
+                $supportsString .= "'$postTypeSupport'";
 
-		if (null === $slug) {
-			$slug = ClassService::slugifyClassName($className);
+                if ($isFirst) {
+                    $isFirst = false;
+                }
+            }
 
-			if (str_ends_with($slug, '-block')) {
-				$slug = substr($slug, 0, -6);
-			}
-		}
+            $supportsString .= ']';
+        }
 
-		$namespaceEnd = implode('\\', $folders);
+        if (file_exists($filepath)) {
+            return 'already_exists';
+        }
 
-		$folder = match ($type) {
-			AbstractBlock::class => 'Blocks',
-			AbstractTaxonomy::class => 'Taxonomies',
-			AbstractPostType::class => 'PostTypes',
-			AbstractTemplate::class => 'Templates',
-			AbstractAdmin::class => 'Admin',
-			AbstractHook::class => 'Hooks',
-		};
+        if (!file_exists($path)) {
+            mkdir($path, 0755, true);
+        }
 
-		$parentSlug = null;
+        foreach ($folders as $folder) {
+            $path .= $folder . '/';
+            if (!file_exists($path)) {
+                mkdir($path, 0755, true);
+            }
+        }
 
-		if ($parentClass) {
-			$parentSlug = sprintf("\%s::%s", $parentClass, '$slug');
-		} elseif ($parentPath) {
-			$parentSlug = sprintf("'%s'", $parentPath);
-		}
+        if (null === $slug) {
+            $slug = ClassService::slugifyClassName($className);
 
-		// Create empty file
-		file_put_contents($filepath, str_replace([
-			'%%NAMESPACE%%',
-			'%%CLASS%%',
-			'%%PARENT_NAMESPACE%%',
-			'%%PARENT%%',
-			'%%SLUG%%',
-			'%%TAXONOMY_NAME%%',
-			'%%CPT_NAME%%',
-			'%%BLOCK_NAME%%',
-			'%%ADMIN_NAME%%',
-			'%%ADMIN_SLUG%%',
-			'%%PARENT_SLUG_STATIC%%',
-			'%%POST_TYPES%%',
-			'%%SHOW_IN_QUICK_EDIT%%',
-			'%%SHOW_IN_POST%%',
-			'%%POST_TYPE_SUPPORTS%%',
-			'%%POST_TYPE_SUPPORTS_REST%%',
-		], [
-			'App\\' . $folder . ($namespaceEnd ? '\\' . $namespaceEnd : ''),
-			$className,
-			$type,
-			ClassService::getClassNameFromFullName($type),
-			$slug,
-			$className,
-			$className,
-			$className,
-			$className,
-			sanitize_title($className),
-			$parentSlug,
-			$postTypes,
-			$taxonomyVisibleInQuickEdit ? 'true' : 'false',
-			$taxonomyVisibleInPost ? 'true' : 'false',
-			$supportsString,
-			$postTypeIsGutenberg? 'true' : 'false',
-		], $template));
+            if (str_ends_with($slug, '-block')) {
+                $slug = substr($slug, 0, -6);
+            }
+        }
 
-		return 'success';
-	}
+        $namespaceEnd = implode('\\', $folders);
+
+        $folder = match ($type) {
+            AbstractBlock::class => 'Blocks',
+            AbstractTaxonomy::class => 'Taxonomies',
+            AbstractPostType::class => 'PostTypes',
+            AbstractTemplate::class => 'Templates',
+            AbstractAdmin::class => 'Admin',
+            AbstractHook::class => 'Hooks',
+            AbstractRepository::class => 'Repositories',
+        };
+
+        $parentSlug = null;
+
+        if ($parentClass) {
+            $parentSlug = sprintf('\%s::%s', $parentClass, '$slug');
+        } elseif ($parentPath) {
+            $parentSlug = sprintf("'%s'", $parentPath);
+        }
+
+        // Create empty file
+        file_put_contents(
+            $filepath,
+            str_replace(
+                [
+                    '%%NAMESPACE%%',
+                    '%%CLASS%%',
+                    '%%PARENT_NAMESPACE%%',
+                    '%%PARENT%%',
+                    '%%SLUG%%',
+                    '%%TAXONOMY_NAME%%',
+                    '%%CPT_NAME%%',
+                    '%%BLOCK_NAME%%',
+                    '%%ADMIN_NAME%%',
+                    '%%ADMIN_SLUG%%',
+                    '%%PARENT_SLUG_STATIC%%',
+                    '%%POST_TYPES%%',
+                    '%%SHOW_IN_QUICK_EDIT%%',
+                    '%%SHOW_IN_POST%%',
+                    '%%POST_TYPE_SUPPORTS%%',
+                    '%%POST_TYPE_SUPPORTS_REST%%',
+                    '%%PER_PAGE%%',
+                ],
+                [
+                    'App\\' . $folder . ($namespaceEnd ? '\\' . $namespaceEnd : ''),
+                    $className,
+                    $type,
+                    ClassService::getClassNameFromFullName($type),
+                    $slug,
+                    $className,
+                    $className,
+                    $className,
+                    $className,
+                    sanitize_title($className),
+                    $parentSlug,
+                    $postTypes,
+                    $taxonomyVisibleInQuickEdit ? 'true' : 'false',
+                    $taxonomyVisibleInPost ? 'true' : 'false',
+                    $supportsString,
+                    $postTypeIsGutenberg ? 'true' : 'false',
+                    $perPage ?? 10,
+                ],
+                $template
+            )
+        );
+
+        return 'success';
+    }
 }
