@@ -32,12 +32,11 @@ class MakeTaxonomy extends Command
 	{
 		$path = $this->getPath();
 		$name = $this->argument('name');
+		$postTypes = '[]';
 
 		while (null === $name) {
 			$name = $this->ask('What is the relative path of the taxonomy? (Folder/Of/My/TaxonomyFile)');
 		}
-
-		$postTypes = '[]';
 
 		if ($this->confirm('Do you want to automatically link with an existing Post-Type?')) {
 			$cpts = array_merge([
