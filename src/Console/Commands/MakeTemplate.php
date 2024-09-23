@@ -10,7 +10,7 @@ use Adeliom\HorizonTools\Templates\AbstractTemplate;
 
 class MakeTemplate extends Command
 {
-	protected $signature = 'make:template {name}';
+	protected $signature = 'make:template {name?}';
 	protected $description = 'Create a new post-type template';
 
 	public function getPath(): string
@@ -26,9 +26,14 @@ class MakeTemplate extends Command
 
 	public function handle(): void
 	{
+		$name = $this->argument('name');
 		$path = $this->getPath();
 
-		$structure = CommandService::getFolderStructure($this->argument('name'));
+		while (null === $name) {
+			$name = $this->ask('What is the relative path of the template? (Folder/Of/My/TemplateFile)');
+		}
+
+		$structure = CommandService::getFolderStructure($name);
 		$folders = $structure['folders'];
 		$className = $structure['class'];
 

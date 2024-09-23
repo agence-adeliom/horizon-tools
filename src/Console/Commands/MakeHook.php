@@ -10,7 +10,7 @@ use Adeliom\HorizonTools\Services\CommandService;
 
 class MakeHook extends Command
 {
-	protected $signature = 'make:hook {name}';
+	protected $signature = 'make:hook {name?}';
 	protected $description = 'Create a new hook';
 
 	public function getPath(): string
@@ -26,9 +26,14 @@ class MakeHook extends Command
 
 	public function handle(): void
 	{
+		$name = $this->argument('name');
 		$path = $this->getPath();
 
-		$structure = CommandService::getFolderStructure($this->argument('name'));
+		while (null === $name) {
+			$name = $this->ask('What is the relative path of the hook? (Folder/Of/My/HookFile)');
+		}
+
+		$structure = CommandService::getFolderStructure($name);
 		$folders = $structure['folders'];
 		$className = $structure['class'];
 

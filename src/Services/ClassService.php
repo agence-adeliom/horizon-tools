@@ -24,9 +24,18 @@ class ClassService
 		return null;
 	}
 
-	public static function getFolderNameFromFullName(string $fullName): ?string
+	public static function getFolderNameFromFullName(string $fullName, array $replacements = []): ?string
 	{
 		$string = explode('\\', $fullName);
+
+		if (!empty($replacements)) {
+			// Remove the last element (the class name)
+			array_pop($string);
+			$path = strtolower(implode('/', $string));
+			
+			return str_replace(array_keys($replacements), array_values($replacements), $path);
+		}
+
 		return strtolower($string[count($string) - 2]);
 	}
 
