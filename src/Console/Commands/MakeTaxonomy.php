@@ -11,7 +11,7 @@ use Adeliom\HorizonTools\Taxonomies\AbstractTaxonomy;
 
 class MakeTaxonomy extends Command
 {
-	protected $signature = 'make:taxonomy {name}';
+	protected $signature = 'make:taxonomy {name?}';
 	protected $description = 'Create a new taxonomy';
 
 	private const POST_CPT = 'Posts';
@@ -31,6 +31,12 @@ class MakeTaxonomy extends Command
 	public function handle(): void
 	{
 		$path = $this->getPath();
+		$name = $this->argument('name');
+
+		while (null === $name) {
+			$name = $this->ask('What is the relative path of the taxonomy? (Folder/Of/My/TaxonomyFile)');
+		}
+
 		$postTypes = '[]';
 
 		if ($this->confirm('Do you want to automatically link with an existing Post-Type?')) {
@@ -54,7 +60,7 @@ class MakeTaxonomy extends Command
 			}
 		}
 
-		$structure = CommandService::getFolderStructure($this->argument('name'));
+		$structure = CommandService::getFolderStructure($name);
 		$folders = $structure['folders'];
 		$className = $structure['class'];
 

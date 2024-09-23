@@ -42,7 +42,9 @@ class BlockServiceProvider extends SageServiceProvider
 							$category = null;
 
 							if ($blockClass !== 'App\\Blocks\\' . ClassService::getClassNameFromFullName($blockClass)) {
-								$category = ClassService::getFolderNameFromFullName($blockClass);
+								$category = ClassService::getFolderNameFromFullName(fullName: $blockClass, replacements: [
+									'app/blocks/' => '',
+								]);
 							}
 
 							register_extended_field_group([

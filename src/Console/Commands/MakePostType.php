@@ -10,7 +10,7 @@ use Adeliom\HorizonTools\Services\CommandService;
 
 class MakePostType extends Command
 {
-	protected $signature = 'make:posttype {name}';
+	protected $signature = 'make:posttype {name?}';
 	protected $description = 'Create a new post-type';
 
 	public function getPath(): string
@@ -27,8 +27,13 @@ class MakePostType extends Command
 	public function handle(): void
 	{
 		$path = $this->getPath();
+		$name = $this->argument('name');
 
-		$structure = CommandService::getFolderStructure($this->argument('name'));
+		while (null === $name) {
+			$name = $this->ask('What is the relative path of the post-type? (Folder/Of/My/PostTypeFile)');
+		}
+
+		$structure = CommandService::getFolderStructure($name);
 		$folders = $structure['folders'];
 		$className = $structure['class'];
 

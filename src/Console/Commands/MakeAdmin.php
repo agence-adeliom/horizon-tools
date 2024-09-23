@@ -12,7 +12,7 @@ use Adeliom\HorizonTools\Services\CommandService;
 
 class MakeAdmin extends Command
 {
-	protected $signature = 'make:admin {name}';
+	protected $signature = 'make:admin {name?}';
 	protected $description = 'Create a new admin fields group';
 
 	private bool $isOptionPage = false;
@@ -47,6 +47,12 @@ class MakeAdmin extends Command
 
 	public function handle(): void
 	{
+		$name = $this->argument('name');
+
+		while (null === $name) {
+			$name = $this->ask('What is the relative path of the admin? (Folder/Of/My/AdminFile)');
+		}
+
 		$path = $this->getPath();
 
 		if ($this->confirm('Is this an option page?')) {
@@ -103,7 +109,7 @@ class MakeAdmin extends Command
 			}
 		}
 
-		$structure = CommandService::getFolderStructure($this->argument('name'));
+		$structure = CommandService::getFolderStructure($name);
 		$folders = $structure['folders'];
 		$className = $structure['class'];
 

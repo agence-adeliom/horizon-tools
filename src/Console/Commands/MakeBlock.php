@@ -11,7 +11,7 @@ use Adeliom\HorizonTools\Services\CommandService;
 
 class MakeBlock extends Command
 {
-	protected $signature = 'make:block {name}';
+	protected $signature = 'make:block {name?}';
 	protected $description = 'Create a new block';
 
 	public function getPath(): string
@@ -49,10 +49,15 @@ class MakeBlock extends Command
 	{
 		$path = $this->getPath();
 		$templatePath = $this->getTemplatesPath();
+		$name = $this->argument('name');
+
+		while (null === $name) {
+			$name = $this->ask('What is the relative path of the block? (Folder/Of/My/BlockFile)');
+		}
 
 		$path = $this->getPath();
 
-		$structure = CommandService::getFolderStructure($this->argument('name'));
+		$structure = CommandService::getFolderStructure($name);
 		$folders = $structure['folders'];
 		$className = $structure['class'];
 
