@@ -9,6 +9,7 @@ use Adeliom\HorizonTools\Blocks\AbstractBlock;
 use Adeliom\HorizonTools\Hooks\AbstractHook;
 use Adeliom\HorizonTools\PostTypes\AbstractPostType;
 use Adeliom\HorizonTools\Repositories\AbstractRepository;
+use Adeliom\HorizonTools\Repositories\AbstractTaxonomyRepository;
 use Adeliom\HorizonTools\Taxonomies\AbstractTaxonomy;
 use Adeliom\HorizonTools\Templates\AbstractTemplate;
 use Illuminate\Console\Command;
@@ -49,6 +50,13 @@ class CommandService
             self::PAGE_CPT => self::POST_TYPE_PAGE,
             default => $cpt,
         };
+    }
+
+    public static function chooseTaxonomy(Command $commandInstance, string $question = 'Choose a taxonomy'): string
+    {
+        $taxonomies = ClassService::getAllCustomTaxonomyClasses();
+
+        return $commandInstance->choice($question, $taxonomies);
     }
 
     public static function handleClassCreation(
@@ -121,6 +129,7 @@ class CommandService
             AbstractAdmin::class => 'Admin',
             AbstractHook::class => 'Hooks',
             AbstractRepository::class => 'Repositories',
+            AbstractTaxonomyRepository::class => 'Repositories\Taxonomies',
         };
 
         $parentSlug = null;
