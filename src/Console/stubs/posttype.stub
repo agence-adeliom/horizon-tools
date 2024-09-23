@@ -34,7 +34,7 @@ class %%CLASS%% extends %%PARENT%%
                 'archives'=> 'Archives des éléments',
             ],
             'menu_icon'=> 'dashicons-admin-post',
-            'supports'=> ['title', 'editor'],
+            'supports'=> %%POST_TYPE_SUPPORTS%%,
             // 'rewrite'=> ['slug'=> 'custom'],
         ];
 

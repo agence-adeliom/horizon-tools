@@ -115,7 +115,7 @@ class MakeAdmin extends Command
 
 		$filepath = $path . $structure['path'];
 
-		$result = CommandService::handleClassCreation(AbstractAdmin::class, $filepath, $path, $folders, $className, $this->getTemplate(), parentClass: $this->optionPageParent, parentPath: $this->optionPageParentPath);
+		$result = CommandService::handleClassCreation(type: AbstractAdmin::class, filepath: $filepath, path: $path, folders: $folders, className: $className, template: $this->getTemplate(), parentClass: $this->optionPageParent, parentPath: $this->optionPageParentPath);
 
 		switch ($result) {
 			case 'already_exists':

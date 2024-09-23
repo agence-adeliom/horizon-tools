@@ -28,9 +28,23 @@ class MakePostType extends Command
 	{
 		$path = $this->getPath();
 		$name = $this->argument('name');
+		$supports = ['title', 'editor'];
 
 		while (null === $name) {
 			$name = $this->ask('What is the relative path of the post-type? (Folder/Of/My/PostTypeFile)');
+		}
+
+		if ($this->confirm('Do you want to configure the supported fields?')) {
+			$supports = $this->choice('What fields the post-type should support? (separated by ,)', [
+				'title',
+				'editor',
+				'thumbnail',
+				'excerpt',
+				'revisions',
+				'author',
+				'trackbacks',
+				'comments',
+			], multiple: true);
 		}
 
 		$structure = CommandService::getFolderStructure($name);
@@ -39,7 +53,7 @@ class MakePostType extends Command
 
 		$filepath = $path . $structure['path'];
 
-		$result = CommandService::handleClassCreation(AbstractPostType::class, $filepath, $path, $folders, $className, $this->getTemplate());
+		$result = CommandService::handleClassCreation(type: AbstractPostType::class, filepath: $filepath, path: $path, folders: $folders, className: $className, template: $this->getTemplate(), postTypeSupports: $supports);
 
 		switch ($result) {
 			case 'already_exists':

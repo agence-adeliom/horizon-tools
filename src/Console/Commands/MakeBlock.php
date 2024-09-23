@@ -69,7 +69,7 @@ class MakeBlock extends Command
 			$slug = substr($slug, 0, -6);
 		}
 
-		$result = CommandService::handleClassCreation(AbstractBlock::class, $filepath, $path, $folders, $className, $this->getTemplate(), $slug);
+		$result = CommandService::handleClassCreation(type: AbstractBlock::class, filepath: $filepath, path: $path, folders: $folders, className: $className, template: $this->getTemplate(), slug: $slug);
 
 		switch ($result) {
 			case 'already_exists':

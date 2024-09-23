@@ -39,7 +39,7 @@ class MakeHook extends Command
 
 		$filepath = $path . $structure['path'];
 
-		$result = CommandService::handleClassCreation(AbstractHook::class, $filepath, $path, $folders, $className, $this->getTemplate());
+		$result = CommandService::handleClassCreation(type: AbstractHook::class, filepath: $filepath, path: $path, folders: $folders, className: $className, template: $this->getTemplate());
 
 		switch ($result) {
 			case 'already_exists':
