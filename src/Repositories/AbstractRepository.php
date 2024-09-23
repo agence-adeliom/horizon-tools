@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Adeliom\HorizonTools\Repositories;
 
 use Adeliom\HorizonTools\Database\QueryBuilder;
+use Adeliom\HorizonTools\Database\TaxQuery;
 
 abstract class AbstractRepository
 {
@@ -38,5 +39,41 @@ abstract class AbstractRepository
         }
 
         return $qb->getOneOrNull();
+    }
+
+    /**
+     * @param \WP_Term|\WP_Term[] $term
+     * @return array
+     */
+    public static function getByTerms(\WP_Term|array $terms, string $relation = 'AND', ?int $perPage = null, ?int $page = 1): array
+    {
+        $qb = static::getBaseQueryBuilder();
+
+        if (null !== $perPage) {
+            $qb->setPerPage($perPage);
+            $qb->setPage($page);
+        }
+
+        if (!is_array($terms)) {
+            $terms = [$terms];
+        }
+
+        $taxQueries = new TaxQuery();
+        $taxQueries->setRelation($relation);
+
+        foreach ($terms as $term) {
+            $taxQuery = new TaxQuery();
+            $taxQuery->add($term->taxonomy, $term->slug);
+
+            $taxQueries->add($taxQuery);
+        }
+
+        $qb->addTaxQuery($taxQueries);
+
+        if (null !== $perPage) {
+            return $qb->getPaginatedData();
+        }
+
+        return $qb->get();
     }
 }
