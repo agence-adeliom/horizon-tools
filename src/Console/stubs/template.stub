@@ -11,7 +11,7 @@ class %%CLASS%% extends %%PARENT%%
 
     public function getPostTypes(): array
     {
-        return [];
+        return %%POST_TYPES%%;
     }
 
     public function getBlocks(): array
