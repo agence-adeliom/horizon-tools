@@ -9,14 +9,35 @@ use Adeliom\HorizonTools\Database\TaxQuery;
 
 abstract class AbstractRepository
 {
-    abstract static function getBaseQueryBuilder(): QueryBuilder;
+    abstract static function getBaseQueryBuilder(?int $perPage = null, int $page = 1): QueryBuilder;
+
+    public static function handlePagination(QueryBuilder $qb, ?int $perPage = null, int $page = 1): QueryBuilder
+    {
+        $qb->setPage($page);
+
+        if (null !== $perPage) {
+            $qb->setPerPage($perPage);
+        } else {
+            $qb->setPerPage(-1);
+        }
+
+        return $qb;
+    }
 
     /**
      * @return \WP_Post[]
      */
-    public static function getAll(): array
+    public static function getAll(?int $perPage = null, int $page = 1): array
     {
-        return static::getBaseQueryBuilder()->get();
+        $qb = static::getBaseQueryBuilder()->setPage($page);
+
+        if (null === $perPage) {
+            $qb->setPerPage(-1);
+        } else {
+            $qb->setPerPage($perPage);
+        }
+
+        return $qb->get();
     }
 
     public static function getOneBySlug(string $slug, ?string $status = null): ?\WP_Post
@@ -41,18 +62,22 @@ abstract class AbstractRepository
         return $qb->getOneOrNull();
     }
 
+    public static function getPaginated(?int $perPage = null, int $page = 1)
+    {
+        if (null === $perPage) {
+            $perPage = static::$perPage;
+        }
+
+        return static::getBaseQueryBuilder(perPage: $perPage, page: $page)->getPaginatedData();
+    }
+
     /**
      * @param \WP_Term|\WP_Term[] $term
      * @return array
      */
     public static function getByTerms(\WP_Term|array $terms, string $relation = 'AND', ?int $perPage = null, ?int $page = 1): array
     {
-        $qb = static::getBaseQueryBuilder();
-
-        if (null !== $perPage) {
-            $qb->setPerPage($perPage);
-            $qb->setPage($page);
-        }
+        $qb = static::getBaseQueryBuilder(perPage: $perPage, page: $page);
 
         if (!is_array($terms)) {
             $terms = [$terms];

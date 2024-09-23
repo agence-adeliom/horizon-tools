@@ -11,9 +11,11 @@ class %%CLASS%% extends %%PARENT%%
 {
     public static $perPage = %%PER_PAGE%%;
 
-    public static function getBaseQueryBuilder(): QueryBuilder
+    public static function getBaseQueryBuilder(?int $perPage = null, $page = 1): QueryBuilder
     {
-        return (new QueryBuilder())
+        $qb = (new QueryBuilder())
             ->postType([%%SLUG%%]);
+
+        return static::handlePagination(qb: $qb, perPage: $perPage, page: $page);
     }
 }

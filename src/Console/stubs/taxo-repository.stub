@@ -11,10 +11,12 @@ class %%CLASS%% extends %%PARENT%%
 {
     public static $perPage = %%PER_PAGE%%;
 
-    public static function getBaseQueryBuilder(bool $hideEmpty = true): QueryBuilder
+    public static function getBaseQueryBuilder(?int $perPage = null, int $page = 1, bool $hideEmpty = true): QueryBuilder
     {
-        return (new QueryBuilder())
+        $qb = (new QueryBuilder())
             ->taxonomy([%%SLUG%%])
             ->fetchEmptyTaxonomies(!$hideEmpty);
+
+        return static::handlePagination(qb: $qb, perPage: $perPage, page: $page);
     }
 }
