@@ -35,6 +35,7 @@ class %%CLASS%% extends %%PARENT%%
             ],
             'menu_icon'=> 'dashicons-admin-post',
             'supports'=> %%POST_TYPE_SUPPORTS%%,
+            'show_in_rest' => %%POST_TYPE_SUPPORTS_REST%%,
             // 'rewrite'=> ['slug'=> 'custom'],
         ];
 
