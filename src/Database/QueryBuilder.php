@@ -310,8 +310,6 @@ class QueryBuilder
 
             if ($this->perPage) {
                 $args['number'] = $this->perPage;
-            } else {
-                $args['number'] = -1;
             }
 
             if ($this->idNotIn) {
