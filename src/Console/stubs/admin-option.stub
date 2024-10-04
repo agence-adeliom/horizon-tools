@@ -25,6 +25,6 @@ class %%CLASS%% extends %%PARENT%%
 
     public function getLocation(): iterable
     {
-        // yield Location::where(...);
+        yield from parent::getLocation();
     }
 }
