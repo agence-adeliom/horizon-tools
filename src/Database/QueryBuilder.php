@@ -9,6 +9,13 @@ class QueryBuilder
     private const ORDER_BY_META_KEY = 'meta_value';
     private const ORDER_BY_META_KEY_NUM = 'meta_value_num';
 
+    public const SEARCH_COLUMN_TITLE = 'post_title';
+    public const SEARCH_COLUMN_CONTENT = 'post_content';
+    public const SEARCH_COLUMN_EXCERPT = 'post_excerpt';
+    public const SEARCH_COLUMN_NAME = 'post_name';
+
+    public const DEFAULT_POST_SEARCH_COLUMNS = [self::SEARCH_COLUMN_TITLE, self::SEARCH_COLUMN_CONTENT, self::SEARCH_COLUMN_EXCERPT];
+
     private bool $isPostType = true;
     private bool $isTaxonomy = false;
     private array $postTypes = [];
@@ -25,6 +32,8 @@ class QueryBuilder
     private string $order = 'DESC';
     private ?string $orderMetaKey = null;
     private ?string $status = 'publish';
+    private ?string $search = null;
+    private array $searchColumns = [];
     private bool $hideEmpty = false;
     private ?\WP_Query $WP_Query = null;
     private ?\WP_Term_Query $WP_Term_Query = null;
@@ -172,7 +181,7 @@ class QueryBuilder
         return $this;
     }
 
-    public function setPage(int $page): self
+    public function page(int $page): self
     {
         $this->triggerChange();
 
@@ -181,7 +190,15 @@ class QueryBuilder
         return $this;
     }
 
-    public function setPerPage(?int $perPage): self
+    /**
+     * @deprecated
+     */
+    public function setPage(int $page): self
+    {
+        return $this->page(page: $page);
+    }
+
+    public function perPage(?int $perPage): self
     {
         $this->triggerChange();
 
@@ -190,13 +207,39 @@ class QueryBuilder
         return $this;
     }
 
-    public function setStatus(string $status): self
+    /**
+     * @deprecated
+     */
+    public function setPerPage(?int $perPage): self
+    {
+        return $this->perPage(perPage: $perPage);
+    }
+
+    public function status(string $status): self
     {
         $this->triggerChange();
 
         if (in_array($status, ['any', 'publish', 'pending', 'draft', 'future', 'auto-draft', 'private', 'inherit', 'trash'])) {
             $this->status = $status;
         }
+
+        return $this;
+    }
+
+    /**
+     * @deprecated
+     */
+    public function setStatus(string $status): self
+    {
+        return $this->status(status: $status);
+    }
+
+    public function search(string $search, array $columns = self::DEFAULT_POST_SEARCH_COLUMNS): self
+    {
+        $this->triggerChange();
+
+        $this->search = $search;
+        $this->searchColumns = $columns;
 
         return $this;
     }
@@ -253,6 +296,14 @@ class QueryBuilder
 
             if ($this->idNotIn) {
                 $args['post__not_in'] = $this->idNotIn;
+            }
+
+            if ($this->search) {
+                $args['s'] = $this->search;
+            }
+
+            if ($this->searchColumns) {
+                $args['search_columns'] = $this->searchColumns;
             }
 
             if ($this->page) {
@@ -441,7 +492,7 @@ class QueryBuilder
             $pages = $this->getPagesCount();
         } elseif ($this->isTaxonomy) {
             $clone = clone $this;
-            $clone->setPerPage(null);
+            $clone->perPage(null);
             $total = $clone->get();
 
             $total = count($total);
