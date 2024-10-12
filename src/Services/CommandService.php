@@ -73,7 +73,6 @@ class CommandService
         bool $taxonomyVisibleInQuickEdit = true,
         bool $taxonomyVisibleInPost = true,
         array $postTypeSupports = [],
-        bool $postTypeIsGutenberg = true,
         ?int $perPage = null
     ): string {
         $supportsString = '';
@@ -174,12 +173,12 @@ class CommandService
                     $className,
                     $className,
                     sanitize_title($className),
-                    $parentSlug,
+                    $parentSlug ?? 'null',
                     $postTypes,
                     $taxonomyVisibleInQuickEdit ? 'true' : 'false',
                     $taxonomyVisibleInPost ? 'true' : 'false',
                     $supportsString,
-                    $postTypeIsGutenberg ? 'true' : 'false',
+                    'true',
                     $perPage ?? 10,
                 ],
                 $template

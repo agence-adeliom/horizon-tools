@@ -28,7 +28,7 @@ class MakePostType extends Command
     {
         $path = $this->getPath();
         $name = $this->argument('name');
-        $supports = ['title', 'editor'];
+        $supports = ['title'];
         $isGutenberg = true;
 
         while (null === $name) {
@@ -37,10 +37,14 @@ class MakePostType extends Command
 
         $isGutenberg = $this->confirm('Do you want to use Gutenberg editor?', default: true);
 
+        if ($isGutenberg) {
+            $supports[] = 'editor';
+        }
+
         if ($this->confirm('Do you want to configure the supported fields?')) {
             $supports = $this->choice(
                 'What fields the post-type should support? (separated by ,)',
-                ['title', 'editor', 'thumbnail', 'excerpt', 'revisions', 'author', 'trackbacks', 'comments'],
+                array_merge($supports, ['thumbnail', 'excerpt', 'revisions', 'author', 'trackbacks', 'comments']),
                 multiple: true
             );
         }
@@ -58,8 +62,7 @@ class MakePostType extends Command
             folders: $folders,
             className: $className,
             template: $this->getTemplate(),
-            postTypeSupports: $supports,
-            postTypeIsGutenberg: $isGutenberg
+            postTypeSupports: $supports
         );
 
         switch ($result) {
