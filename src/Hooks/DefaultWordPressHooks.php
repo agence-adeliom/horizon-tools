@@ -58,18 +58,17 @@ class DefaultWordPressHooks extends AbstractHook
     public function svgAttributes($out, $id)
     {
         $image_url = wp_get_attachment_url($id);
+
+        if (!$image_url) {
+            return false;
+        }
+
         $file_ext = pathinfo($image_url, PATHINFO_EXTENSION);
 
         if (is_admin() || 'svg' !== $file_ext) {
             return false;
         }
 
-        return [
-            $image_url,
-            null,
-            null,
-            false,
-        ];
-
+        return [$image_url, null, null, false];
     }
 }
