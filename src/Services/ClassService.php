@@ -10,6 +10,8 @@ use Adeliom\HorizonTools\PostTypes\AbstractPostType;
 use Adeliom\HorizonTools\Taxonomies\AbstractTaxonomy;
 use Adeliom\HorizonTools\Templates\AbstractTemplate;
 use Composer\InstalledVersions;
+use ReflectionClass;
+use ReflectionException;
 
 class ClassService
 {
@@ -177,5 +179,15 @@ class ClassService
         }
 
         return $class;
+    }
+
+    public static function getFilePathFromClassName(string $className): ?string
+    {
+        try {
+            $reflector = new ReflectionClass($className);
+            return $reflector->getFileName();
+        } catch (ReflectionException $e) {
+            return null;
+        }
     }
 }
