@@ -13,152 +13,160 @@ use Roots\Acorn\Sage\SageServiceProvider;
 
 class BlockServiceProvider extends SageServiceProvider
 {
-	public const UNREGISTER_DEFAULT_BLOCKS = true;
-	private const THEME_BLOCK_CATEGORIES_CLASS = 'App\Enum\BlockCategoriesEnum';
+    public const UNREGISTER_DEFAULT_BLOCKS = true;
+    private const THEME_BLOCK_CATEGORIES_CLASS = 'App\Enum\BlockCategoriesEnum';
 
-	public function boot(): void
-	{
-		$this->initBlocks();
+    public function boot(): void
+    {
+        $this->initBlocks();
 
-		if (self::UNREGISTER_DEFAULT_BLOCKS) {
-			add_filter('allowed_block_types_all', [$this, 'unregisterBlocks'], 10, 2);
-			add_filter('block_categories_all', [$this, 'registerCustomBlockCategories'], 10, 2);
-		}
-	}
+        if (self::UNREGISTER_DEFAULT_BLOCKS) {
+            add_filter('allowed_block_types_all', [$this, 'unregisterBlocks'], 10, 2);
+            add_filter('block_categories_all', [$this, 'registerCustomBlockCategories'], 10, 2);
+        }
+    }
 
-	private function initBlocks(): void
-	{
-		try {
-			foreach (FileService::getClassesPathsFromPath(get_template_directory() . '/app/Blocks') as $classPath) {
-				require_once $classPath;
-			}
+    private function initBlocks(): void
+    {
+        try {
+            foreach (FileService::getCustomBlockFiles() as $classPath) {
+                require_once $classPath;
+            }
 
-			foreach (ClassService::getAllCustomBlockClasses() as $blockClass) {
-				if ($className = ClassService::getClassNameFromFullName($blockClass)) {
-					if (!str_starts_with($className, 'Abstract')) {
-						$class = new $blockClass();
+            foreach (ClassService::getAllCustomBlockClasses() as $blockClass) {
+                if ($className = ClassService::getClassNameFromFullName($blockClass)) {
+                    if (!str_starts_with($className, 'Abstract')) {
+                        $class = new $blockClass();
 
-						if (function_exists('register_extended_field_group')) {
-							$category = null;
+                        if (function_exists('register_extended_field_group')) {
+                            $category = null;
 
-							if ($blockClass !== 'App\\Blocks\\' . ClassService::getClassNameFromFullName($blockClass)) {
-								$category = ClassService::getFolderNameFromFullName(fullName: $blockClass, replacements: [
-									'app/blocks/' => '',
-								]);
-							}
+                            if ($blockClass !== 'App\\Blocks\\' . ClassService::getClassNameFromFullName($blockClass)) {
+                                $category = ClassService::getFolderNameFromFullName(
+                                    fullName: $blockClass,
+                                    replacements: [
+                                        'app/blocks/' => '',
+                                    ]
+                                );
+                            }
 
-							register_extended_field_group([
-								'key' => $class::$slug,
-								'title' => $class::$title,
-								'fields' => $class->getFields() ? iterator_to_array($class->getFields(), false) : [],
-								'location' => [
-									Location::where('block', 'acf/' . $class::$slug),
-								],
-							]);
+                            register_extended_field_group([
+                                'key' => $class::$slug,
+                                'title' => $class::$title,
+                                'fields' => $class->getFields() ? iterator_to_array($class->getFields(), false) : [],
+                                'location' => [Location::where('block', 'acf/' . $class::$slug)],
+                            ]);
 
-							acf_register_block_type([
-								'name' => $class::$slug,
-								'title' => $class::$title,
-								'category' => $category,
-								'mode' => $class::$mode,
-								'description' => $class::$description,
-								'icon' => $class::$icon,
-								'post_types' => $class->getPostTypes(),
-								'render_callback' => function ($block) use ($class, $category) {
-									$template = 'blocks/' . ($category ? $category . '/' : '') . str_replace('acf/', '', $block['name']);
+                            acf_register_block_type([
+                                'name' => $class::$slug,
+                                'title' => $class::$title,
+                                'category' => $category,
+                                'mode' => $class::$mode,
+                                'description' => $class::$description,
+                                'icon' => $class::$icon,
+                                'post_types' => $class->getPostTypes(),
+                                'render_callback' => function ($block) use ($class, $category) {
+                                    $template = 'blocks/' . ($category ? $category . '/' : '') . str_replace('acf/', '', $block['name']);
 
-									if (file_exists(get_template_directory() . '/resources/views/' . $template . '.blade.php')) {
+                                    if (file_exists(get_template_directory() . '/resources/views/' . $template . '.blade.php')) {
+                                        if (isset($block['data']['_is_preview'])) {
+                                            echo "<img style='width:100%' src='" .
+                                                get_template_directory_uri() .
+                                                '/resources/images/admin/blocks/' .
+                                                $category .
+                                                '/' .
+                                                $class::$slug .
+                                                ".jpg' alt='Preview'>";
+                                            return;
+                                        }
 
-										if (isset($block['data']['_is_preview'])) {
-											echo "<img style='width:100%' src='" . get_template_directory_uri() . '/resources/images/admin/blocks/' . $category . "/" . $class::$slug . ".jpg' alt='Preview'>";
-											return;
-										}
+                                        echo view('blocks/' . $category . '/' . str_replace('acf/', '', $block['name']), [
+                                            'block' => $block,
+                                            'fields' => get_fields(),
+                                            'context' => $class->addToContext(),
+                                        ]);
+                                    } else {
+                                        throw new SkipProviderException('Template not found: ' . $template . '.blade.php');
+                                    }
+                                },
+                                'supports' => $class->getSupports(),
+                                'example' => $class->getExample(),
+                            ]);
 
-										echo view('blocks/' . $category . '/' . str_replace('acf/', '', $block['name']), [
-											'block' => $block,
-											'fields' => get_fields(),
-											'context' => $class->addToContext(),
-										]);
-									} else {
-										throw new SkipProviderException('Template not found: ' . $template . '.blade.php');
-									}
-								},
-								'supports' => $class->getSupports(),
-								'example' => $class->getExample(),
-							]);
+                            add_filter(sprintf('render_block_%s', $class->getFullName()), function ($blockContent) use ($class, $category) {
+                                $class->renderBlockCallback();
 
-							add_filter(sprintf('render_block_%s', $class->getFullName()), function ($blockContent) use ($class, $category) {
-								$class->renderBlockCallback();
+                                return $blockContent;
+                            });
+                        }
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            throw new SkipProviderException($e->getMessage());
+        }
+    }
 
-								return $blockContent;
-							});
-						}
-					}
-				}
-			}
-		} catch (\Exception $e) {
-			throw new SkipProviderException($e->getMessage());
-		}
-	}
+    public function unregisterBlocks($allowedBlocks, $here): array
+    {
+        try {
+            // Get only declared classes starting by App\Blocks
+            $classes = array_filter(get_declared_classes(), function ($class) {
+                return str_starts_with($class, 'App\Blocks') && $class !== 'App\Blocks\AbstractBlock';
+            });
 
-	public function unregisterBlocks($allowedBlocks, $here): array
-	{
-		try {
-			// Get only declared classes starting by App\Blocks
-			$classes = array_filter(get_declared_classes(), function ($class) {
-				return str_starts_with($class, 'App\Blocks') && $class !== 'App\Blocks\AbstractBlock';
-			});
+            $blocks = array_values(
+                array_map(function ($class) {
+                    return 'acf/' . $class::$slug;
+                }, $classes)
+            );
 
-			$blocks = array_values(array_map(function ($class) {
-				return 'acf/' . $class::$slug;
-			}, $classes));
+            $blocks[] = 'core/block';
 
-			$blocks[] = 'core/block';
+            return $blocks;
+        } catch (\Exception $e) {
+            throw new SkipProviderException($e->getMessage());
+        }
+    }
 
-			return $blocks;
-		} catch (\Exception $e) {
-			throw new SkipProviderException($e->getMessage());
-		}
-	}
+    public function registerCustomBlockCategories($categories, $post): array
+    {
+        try {
+            $this->registerCategoriesFromCases(BlockCategoriesEnum::class, $categories);
 
-	public function registerCustomBlockCategories($categories, $post): array
-	{
-		try {
-			$this->registerCategoriesFromCases(BlockCategoriesEnum::class, $categories);
+            if (class_exists(self::THEME_BLOCK_CATEGORIES_CLASS)) {
+                $this->registerCategoriesFromCases(self::THEME_BLOCK_CATEGORIES_CLASS, $categories);
+            }
 
-			if (class_exists(self::THEME_BLOCK_CATEGORIES_CLASS)) {
-				$this->registerCategoriesFromCases(self::THEME_BLOCK_CATEGORIES_CLASS, $categories);
-			}
+            return $categories;
+        } catch (\Exception $e) {
+            throw new SkipProviderException($e->getMessage());
+        }
+    }
 
-			return $categories;
-		} catch (\Exception $e) {
-			throw new SkipProviderException($e->getMessage());
-		}
-	}
+    private function registerCategoriesFromCases($enum, &$categories): void
+    {
+        if (method_exists($enum, 'cases')) {
+            foreach ($enum::cases() as $case) {
+                $icon = 'admin-post';
+                $title = $case->value;
+                $association = null;
 
-	private function registerCategoriesFromCases($enum, &$categories): void
-	{
-		if (method_exists($enum, 'cases')) {
-			foreach ($enum::cases() as $case) {
-				$icon = 'admin-post';
-				$title = $case->value;
-				$association = null;
+                if (defined($enum . '::ASSOCIATIONS')) {
+                    if (isset($enum::ASSOCIATIONS[$case->value]) && ($association = $enum::ASSOCIATIONS[$case->value])) {
+                        if (isset($association['title'], $association['icon'])) {
+                            $title = $association['title'];
+                            $icon = $association['icon'];
+                        }
+                    }
+                }
 
-				if (defined($enum . '::ASSOCIATIONS')) {
-					if (isset($enum::ASSOCIATIONS[$case->value]) && $association = $enum::ASSOCIATIONS[$case->value]) {
-						if (isset($association['title'], $association['icon'])) {
-							$title = $association['title'];
-							$icon = $association['icon'];
-						}
-					}
-				}
-
-				$categories[] = [
-					'slug' => $case->value,
-					'title' => $title,
-					'icon' => $icon,
-				];
-			}
-		}
-	}
+                $categories[] = [
+                    'slug' => $case->value,
+                    'title' => $title,
+                    'icon' => $icon,
+                ];
+            }
+        }
+    }
 }
