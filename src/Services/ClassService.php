@@ -113,6 +113,11 @@ class ClassService
         return InstalledVersions::isInstalled('agence-adeliom/horizon-blocks');
     }
 
+    public static function isLivewireInstalled(): bool
+    {
+        return InstalledVersions::isInstalled('livewire/livewire');
+    }
+
     public static function getAllImportableBlockClasses(): array
     {
         $classes = [];
