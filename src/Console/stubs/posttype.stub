@@ -13,6 +13,9 @@ class %%CLASS%% extends %%PARENT%%
     // Blade component used to render the card in the listing
     public static ?string $card = null;
 
+    // Set to true to allow post-type in automatic listing block
+    public static bool $availableInListingBlock = false;
+
     public function getConfig(array $config = []): array
     {
         $config['args'] =[

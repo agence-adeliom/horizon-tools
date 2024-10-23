@@ -10,48 +10,60 @@ use Extended\ACF\Fields\Select;
 
 class PostTypeSelectField
 {
-	final public const LABEL = 'Type de contenu';
-	final public const NAME = 'postType';
+    final public const LABEL = 'Type de contenu';
+    final public const NAME = 'postType';
 
-	/**
-	 * @param string $label
-	 * @param string|null $name
-	 * @param array|null $excluded Array of post type slugs to exclude
-	 * @return Select
-	 */
-	public static function make(string $label = self::LABEL, ?string $name = self::NAME, ?array $excluded = null): Select
-	{
-		$choices = [
-			'post' => 'Articles',
-			'page' => 'Pages',
-		];
+    /**
+     * @param string $label
+     * @param string|null $name
+     * @param array|null $excluded Array of post type slugs to exclude
+     * @return Select
+     */
+    public static function make(
+        string $label = self::LABEL,
+        ?string $name = self::NAME,
+        ?array $excluded = null,
+        ?array $with = ['post'],
+        ?callable $callback = null
+    ): Select {
+        $choices = [];
 
-		$classes = FileService::getClassesPathsFromPath(get_template_directory() . '/app/PostTypes');
+        if ($with) {
+            foreach ($with as $item) {
+                $choices[$item] = match ($item) {
+                    'post' => __('Articles'),
+                    'page' => __('Pages'),
+                    default => ucfirst($item),
+                };
+            }
+        }
 
-		foreach ($classes as $class) {
-			$className = ClassService::getClassNameFromFilePath($class);
+        $classes = FileService::getClassesPathsFromPath(get_template_directory() . '/app/PostTypes');
 
-			if (class_exists($className)) {
-				$postType = new $className();
+        foreach ($classes as $class) {
+            $className = ClassService::getClassNameFromFilePath($class);
 
-				$slug = $className::$slug;
+            if (class_exists($className)) {
+                $postType = new $className();
 
-				if ($config = $postType->getConfig()) {
-					if (isset($config['args']['label'])) {
-						$choices[$slug] = $config['args']['label'];
-					} else {
-						$choices[$slug] = $slug;
-					}
-				}
-			}
-		}
+                $slug = $className::$slug;
 
-		if (null !== $excluded) {
-			$choices = array_diff_key($choices, array_flip($excluded));
-		}
+                if ($config = $postType->getConfig()) {
+                    if (null === $callback || $callback($postType)) {
+                        if (isset($config['args']['label'])) {
+                            $choices[$slug] = $config['args']['label'];
+                        } else {
+                            $choices[$slug] = $slug;
+                        }
+                    }
+                }
+            }
+        }
 
-		return Select::make(__($label), $name)
-			->choices($choices)
-			->stylized();
-	}
+        if (null !== $excluded) {
+            $choices = array_diff_key($choices, array_flip($excluded));
+        }
+
+        return Select::make(__($label), $name)->choices($choices)->stylized();
+    }
 }
