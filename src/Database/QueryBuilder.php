@@ -27,6 +27,7 @@ class QueryBuilder
     private ?string $asClass = null;
     private ?int $perPage = null;
     private int $page = 1;
+    private ?int $offset = null;
     private ?string $slug = null;
     private string $orderBy = 'date';
     private string $order = 'DESC';
@@ -181,6 +182,20 @@ class QueryBuilder
         return $this;
     }
 
+    /**
+     * Defines the number of first elements to ignore
+     * @param int $offest
+     * @return $this
+     */
+    public function offset(int $offest): self
+    {
+        $this->triggerChange();
+
+        $this->offset = $offest;
+
+        return $this;
+    }
+
     public function page(int $page): self
     {
         $this->triggerChange();
@@ -311,7 +326,14 @@ class QueryBuilder
 
                 if ($this->perPage) {
                     $args['posts_per_page'] = $this->perPage;
-                    $args['offset'] = ($this->page - 1) * $this->perPage;
+
+                    $offset = ($this->page - 1) * $this->perPage;
+
+                    if (null !== $this->offset) {
+                        $offset += $this->offset;
+                    }
+
+                    $args['offset'] = $offset;
                 } else {
                     $args['offset'] = 0;
                 }
@@ -412,7 +434,7 @@ class QueryBuilder
     }
 
     /**
-     * @return \WP_Post[]
+     * @return \WP_Post[]|\WP_Term[]
      */
     public function get(?callable $callback = null): array
     {
@@ -467,14 +489,22 @@ class QueryBuilder
 
     public function getCount(): ?int
     {
-        return $this->getQuery()->found_posts;
+        $count = $this->getQuery()->found_posts;
+
+        if (null !== $this->offset) {
+            $count -= $this->offset;
+        }
+
+        return $count;
     }
 
     public function getPagesCount(): ?int
     {
         if ($this->isPostType) {
-            if ($pages = $this->getQuery()?->max_num_pages) {
-                return intval($pages);
+            $count = $this->getCount();
+
+            if (null !== $this->perPage) {
+                return intval(ceil($count / $this->perPage));
             }
         }
 
@@ -496,6 +526,11 @@ class QueryBuilder
             $total = $clone->get();
 
             $total = count($total);
+
+            if (null !== $this->offset) {
+                $total -= $this->offset;
+            }
+
             $pages = intval(ceil($total / $this->perPage));
         }
 
