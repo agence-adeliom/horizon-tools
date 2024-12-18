@@ -11,7 +11,7 @@ class FormField
 {
     public const FORM_SELECT = 'form_id';
 
-    public static function selectGF(): Select
+    public static function selectGravityForm(): Select
     {
         return Select::make('Formulaire', self::FORM_SELECT)
             ->stylized()
