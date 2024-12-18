@@ -19,9 +19,11 @@ class OfferField
     {
         return Group::make("Bandeau d'offre", $name)->fields([
             TrueFalse::make('Activer', self::OFFER_ENABLE)->stylized(),
+
             UptitleField::make()
                 ->required()
                 ->conditionalLogic([ConditionalLogic::where(self::OFFER_ENABLE, '==', '1')]),
+
             WysiwygField::minimal()
                 ->required()
                 ->conditionalLogic([ConditionalLogic::where(self::OFFER_ENABLE, '==', '1')]),
