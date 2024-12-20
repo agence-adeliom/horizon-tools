@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Database;
 
+use Illuminate\Support\Facades\Cache;
+
 class QueryBuilder
 {
     private const ORDER_BY_META_KEY = 'meta_value';
@@ -13,6 +15,8 @@ class QueryBuilder
     public const SEARCH_COLUMN_CONTENT = 'post_content';
     public const SEARCH_COLUMN_EXCERPT = 'post_excerpt';
     public const SEARCH_COLUMN_NAME = 'post_name';
+
+    public const CACHE_DEFAULT_DURATION = 3600;
 
     public const DEFAULT_POST_SEARCH_COLUMNS = [self::SEARCH_COLUMN_TITLE, self::SEARCH_COLUMN_CONTENT, self::SEARCH_COLUMN_EXCERPT];
 
@@ -39,10 +43,15 @@ class QueryBuilder
     private ?\WP_Query $WP_Query = null;
     private ?\WP_Term_Query $WP_Term_Query = null;
 
+    private bool $withCache = false;
+    private ?int $cacheDuration = null;
+    private ?string $queryHash = null;
+
     private function triggerChange(): void
     {
         $this->WP_Query = null;
         $this->WP_Term_Query = null;
+        $this->queryHash = null;
     }
 
     public function postType(string|array $postType): self
@@ -288,79 +297,113 @@ class QueryBuilder
         return $this;
     }
 
+    private function generateCacheKey(): ?string
+    {
+        $args = null;
+        $prefix = null;
+
+        switch (true) {
+            case $this->isPostType:
+                $args = $this->getWpQueryArgs();
+                $prefix = 'post';
+                break;
+            case $this->isTaxonomy:
+                $args = $this->getWpTaxQueryArgs();
+                $prefix = 'tax';
+                break;
+            default:
+                break;
+        }
+
+        if (null !== $args) {
+            $this->queryHash = sprintf('%s_%s', $prefix, hash('sha256', serialize($args)));
+        } else {
+            $this->queryHash = null;
+        }
+
+        return $this->queryHash;
+    }
+
+    private function getWpQueryArgs(): array
+    {
+        $args = [];
+
+        if ($this->status) {
+            $args['post_status'] = $this->status;
+        }
+
+        if ($this->slug) {
+            $args['name'] = $this->slug;
+        }
+
+        if ($this->postTypes) {
+            $args['post_type'] = $this->postTypes;
+        }
+
+        if ($this->idIn) {
+            $args['post__in'] = $this->idIn;
+        }
+
+        if ($this->idNotIn) {
+            $args['post__not_in'] = $this->idNotIn;
+        }
+
+        if ($this->search) {
+            $args['s'] = $this->search;
+        }
+
+        if ($this->searchColumns) {
+            $args['search_columns'] = $this->searchColumns;
+        }
+
+        if ($this->page) {
+            $args['page'] = $this->page;
+
+            if ($this->perPage) {
+                $args['posts_per_page'] = $this->perPage;
+
+                $offset = ($this->page - 1) * $this->perPage;
+
+                if (null !== $this->offset) {
+                    $offset += $this->offset;
+                }
+
+                $args['offset'] = $offset;
+            } else {
+                $args['offset'] = 0;
+            }
+        }
+
+        if ([] !== $this->metaQueries) {
+            foreach ($this->metaQueries as $metaQuery) {
+                if ($metaQuery instanceof MetaQuery) {
+                    $args['meta_query'][] = $metaQuery->generateMetaQueryArray();
+                }
+            }
+        }
+
+        if ([] !== $this->taxQueries) {
+            foreach ($this->taxQueries as $taxQuery) {
+                if ($taxQuery instanceof TaxQuery) {
+                    $args['tax_query'][] = $taxQuery->generateTaxQueryArray();
+                }
+            }
+        }
+
+        $args['orderby'] = $this->orderBy;
+        $args['order'] = $this->order;
+
+        if (in_array($this->orderBy, [self::ORDER_BY_META_KEY, self::ORDER_BY_META_KEY_NUM])) {
+            $args['meta_key'] = $this->orderMetaKey;
+        }
+
+        return $args;
+    }
+
     private function getWpQuery(): \WP_Query
     {
         if (null === $this->WP_Query) {
-            $args = [];
-
-            if ($this->status) {
-                $args['post_status'] = $this->status;
-            }
-
-            if ($this->slug) {
-                $args['name'] = $this->slug;
-            }
-
-            if ($this->postTypes) {
-                $args['post_type'] = $this->postTypes;
-            }
-
-            if ($this->idIn) {
-                $args['post__in'] = $this->idIn;
-            }
-
-            if ($this->idNotIn) {
-                $args['post__not_in'] = $this->idNotIn;
-            }
-
-            if ($this->search) {
-                $args['s'] = $this->search;
-            }
-
-            if ($this->searchColumns) {
-                $args['search_columns'] = $this->searchColumns;
-            }
-
-            if ($this->page) {
-                $args['page'] = $this->page;
-
-                if ($this->perPage) {
-                    $args['posts_per_page'] = $this->perPage;
-
-                    $offset = ($this->page - 1) * $this->perPage;
-
-                    if (null !== $this->offset) {
-                        $offset += $this->offset;
-                    }
-
-                    $args['offset'] = $offset;
-                } else {
-                    $args['offset'] = 0;
-                }
-            }
-
-            if ([] !== $this->metaQueries) {
-                foreach ($this->metaQueries as $metaQuery) {
-                    if ($metaQuery instanceof MetaQuery) {
-                        $args['meta_query'][] = $metaQuery->generateMetaQueryArray();
-                    }
-                }
-            }
-
-            if ([] !== $this->taxQueries) {
-                foreach ($this->taxQueries as $taxQuery) {
-                    if ($taxQuery instanceof TaxQuery) {
-                        $args['tax_query'][] = $taxQuery->generateTaxQueryArray();
-                    }
-                }
-            }
-
-            $args['orderby'] = $this->orderBy;
-            $args['order'] = $this->order;
-
-            if (in_array($this->orderBy, [self::ORDER_BY_META_KEY, self::ORDER_BY_META_KEY_NUM])) {
-                $args['meta_key'] = $this->orderMetaKey;
-            }
+            $args = $this->getWpQueryArgs();
 
             $this->WP_Query = new \WP_Query($args);
         }
@@ -368,48 +411,55 @@ class QueryBuilder
         return $this->WP_Query;
     }
 
+    private function getWpTaxQueryArgs(): array
+    {
+        $args = [];
+
+        if ($this->taxonomies) {
+            $args['taxonomy'] = $this->taxonomies;
+        }
+
+        if ($this->page) {
+            $args['offset'] = ($this->page - 1) * $this->perPage;
+        }
+
+        if ($this->perPage) {
+            if ($this->perPage === -1) {
+                $this->perPage = 0;
+            }
+
+            $args['number'] = $this->perPage;
+        }
+
+        if ($this->idNotIn) {
+            $args['exclude'] = $this->idNotIn;
+        }
+
+        if ($this->idIn) {
+            $args['include'] = $this->idIn;
+        }
+
+        if ($this->slug) {
+            $args['slug'] = $this->slug;
+        }
+
+        $args['hide_empty'] = $this->hideEmpty;
+
+        if ([] !== $this->metaQueries) {
+            foreach ($this->metaQueries as $metaQuery) {
+                if ($metaQuery instanceof MetaQuery) {
+                    $args['meta_query'][] = $metaQuery->generateMetaQueryArray();
+                }
+            }
+        }
+
+        return $args;
+    }
+
     private function getWpTaxQuery(): \WP_Term_Query
     {
         if (null === $this->WP_Term_Query) {
-            $args = [];
-
-            if ($this->taxonomies) {
-                $args['taxonomy'] = $this->taxonomies;
-            }
-
-            if ($this->page) {
-                $args['offset'] = ($this->page - 1) * $this->perPage;
-            }
-
-            if ($this->perPage) {
-                if ($this->perPage === -1) {
-                    $this->perPage = 0;
-                }
-
-                $args['number'] = $this->perPage;
-            }
-
-            if ($this->idNotIn) {
-                $args['exclude'] = $this->idNotIn;
-            }
-
-            if ($this->idIn) {
-                $args['include'] = $this->idIn;
-            }
-
-            if ($this->slug) {
-                $args['slug'] = $this->slug;
-            }
-
-            $args['hide_empty'] = $this->hideEmpty;
-
-            if ([] !== $this->metaQueries) {
-                foreach ($this->metaQueries as $metaQuery) {
-                    if ($metaQuery instanceof MetaQuery) {
-                        $args['meta_query'][] = $metaQuery->generateMetaQueryArray();
-                    }
-                }
-            }
+            $args = $this->getWpTaxQueryArgs();
 
             $this->WP_Term_Query = new \WP_Term_Query($args);
         }
@@ -433,12 +483,31 @@ class QueryBuilder
         return $this;
     }
 
+    public function useCache(bool $enabled = true, int $duration = self::CACHE_DEFAULT_DURATION): self
+    {
+        $this->withCache = $enabled;
+        $this->cacheDuration = $duration;
+
+        return $this;
+    }
+
     /**
      * @return \WP_Post[]|\WP_Term[]
      */
     public function get(?callable $callback = null): array
     {
         $results = null;
+        $cacheKey = null;
+
+        if ($this->withCache) {
+            $cacheKey = $this->generateCacheKey();
+
+            if ($cacheKey) {
+                if ($results = Cache::get($cacheKey)) {
+                    return $results;
+                }
+            }
+        }
 
         if ($this->isPostType) {
             $results = $this->getQuery()->posts;
@@ -456,7 +525,13 @@ class QueryBuilder
             }
         }
 
-        return null !== $results ? $results : [];
+        $toReturn = null !== $results ? $results : [];
+
+        if ($this->withCache && $cacheKey) {
+            Cache::put($cacheKey, $toReturn, $this->cacheDuration);
+        }
+
+        return $toReturn;
     }
 
     public function getOneOrNull(): mixed
