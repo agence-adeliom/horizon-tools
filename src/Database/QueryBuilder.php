@@ -485,11 +485,19 @@ class QueryBuilder
 
     public function useCache(int $duration = self::CACHE_DEFAULT_DURATION): self
     {
-        if (!$this->withCache) {
-            $this->withCache = true;
+        $useCache = true;
+
+        if (defined('DISABLE_QUERY_BUILDER_CACHE')) {
+            $useCache = !DISABLE_QUERY_BUILDER_CACHE;
         }
 
-        $this->cacheDuration = $duration;
+        if ($useCache) {
+            if (!$this->withCache) {
+                $this->withCache = true;
+            }
+
+            $this->cacheDuration = $duration;
+        }
 
         return $this;
     }
