@@ -13,12 +13,12 @@ abstract class AbstractRepository
 
     public static function handlePagination(QueryBuilder $qb, ?int $perPage = null, int $page = 1): QueryBuilder
     {
-        $qb->setPage($page);
+        $qb->page($page);
 
         if (null !== $perPage) {
-            $qb->setPerPage($perPage);
+            $qb->perPage($perPage);
         } else {
-            $qb->setPerPage(-1);
+            $qb->perPage(-1);
         }
 
         return $qb;

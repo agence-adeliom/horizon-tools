@@ -10,7 +10,7 @@ use Adeliom\HorizonTools\Services\ClassService;
 class ListPostTypes extends Command
 {
     protected $signature = 'list:posttypes';
-    protected $description = 'List all custom blocks';
+    protected $description = 'List all custom post-types';
 
     public function handle()
     {
