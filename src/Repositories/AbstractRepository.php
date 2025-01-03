@@ -32,9 +32,9 @@ abstract class AbstractRepository
         $qb = static::getBaseQueryBuilder()->setPage($page);
 
         if (null === $perPage) {
-            $qb->setPerPage(-1);
+            $qb->perPage(-1);
         } else {
-            $qb->setPerPage($perPage);
+            $qb->perPage($perPage);
         }
 
         return $qb->get();
@@ -45,7 +45,7 @@ abstract class AbstractRepository
         $qb = static::getBaseQueryBuilder()->whereSlug(slug: $slug);
 
         if (null !== $status) {
-            $qb->setStatus($status);
+            $qb->status($status);
         }
 
         return $qb->getOneOrNull();
@@ -56,7 +56,7 @@ abstract class AbstractRepository
         $qb = static::getBaseQueryBuilder()->whereIdIn([$id]);
 
         if (null !== $status) {
-            $qb->setStatus($status);
+            $qb->status($status);
         }
 
         return $qb->getOneOrNull();
