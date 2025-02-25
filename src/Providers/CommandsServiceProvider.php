@@ -19,7 +19,7 @@ use Roots\Acorn\Sage\SageServiceProvider;
 
 class CommandsServiceProvider extends SageServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         try {
             $this->commands([

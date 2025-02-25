@@ -120,6 +120,11 @@ class ClassService
         return InstalledVersions::isInstalled('livewire/livewire');
     }
 
+    public static function isAcfInstalledAndEnabled(): bool
+    {
+        return class_exists('ACF');
+    }
+
     public static function getAllImportableBlockClasses(): array
     {
         $classes = [];

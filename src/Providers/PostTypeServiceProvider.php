@@ -99,7 +99,7 @@ class PostTypeServiceProvider extends SageServiceProvider
                             }
                         }
 
-                        if (function_exists('register_extended_field_group')) {
+                        if (ClassService::isAcfInstalledAndEnabled() && function_exists('register_extended_field_group')) {
                             if ($fields = $class->getFields()) {
                                 if ($customFields = iterator_to_array($fields, false)) {
                                     register_extended_field_group([
@@ -144,7 +144,7 @@ class PostTypeServiceProvider extends SageServiceProvider
                                 }
                             }
 
-                            if (function_exists('register_extended_field_group')) {
+                            if (ClassService::isAcfInstalledAndEnabled() && function_exists('register_extended_field_group')) {
                                 if ($class->getFields() && ($customFields = iterator_to_array($class->getFields(), false))) {
                                     register_extended_field_group([
                                         'key' => 'group_taxonomy_' . $class::$slug,

@@ -32,7 +32,7 @@ class AdminServiceProvider extends SageServiceProvider
                 if (!str_starts_with($className, 'Abstract')) {
                     $class = new $adminClass();
 
-                    if (function_exists('register_extended_field_group')) {
+                    if (ClassService::isAcfInstalledAndEnabled() && function_exists('register_extended_field_group')) {
                         if ($fields = $class->getFields()) {
                             if ($customFields = iterator_to_array($fields, false)) {
                                 register_extended_field_group([
@@ -60,7 +60,9 @@ class AdminServiceProvider extends SageServiceProvider
                                 $params['parent_slug'] = $class->getOptionPageParent();
                             }
 
-                            acf_add_options_page($params);
+                            if (ClassService::isAcfInstalledAndEnabled() && function_exists('acf_add_options_page')) {
+                                acf_add_options_page($params);
+                            }
                         }
                     }
                 }

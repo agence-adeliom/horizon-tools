@@ -50,48 +50,51 @@ class BlockServiceProvider extends SageServiceProvider
                                 );
                             }
 
-                            register_extended_field_group([
-                                'key' => $class::$slug,
-                                'title' => $class::$title,
-                                'fields' => $class->getFields() ? iterator_to_array($class->getFields(), false) : [],
-                                'location' => [Location::where('block', 'acf/' . $class::$slug)],
-                            ]);
+                            if (ClassService::isAcfInstalledAndEnabled()) {
+                                register_extended_field_group([
+                                    'key' => $class::$slug,
+                                    'title' => $class::$title,
+                                    'fields' => $class->getFields() ? iterator_to_array($class->getFields(), false) : [],
+                                    'location' => [Location::where('block', 'acf/' . $class::$slug)],
+                                ]);
 
-                            acf_register_block_type([
-                                'name' => $class::$slug,
-                                'title' => $class::$title,
-                                'category' => $category,
-                                'mode' => $class::$mode,
-                                'description' => $class::$description,
-                                'icon' => $class::$icon,
-                                'post_types' => $class->getPostTypes(),
-                                'render_callback' => function ($block) use ($class, $category) {
-                                    $template = 'blocks/' . ($category ? $category . '/' : '') . str_replace('acf/', '', $block['name']);
+                                acf_register_block_type([
+                                    'name' => $class::$slug,
+                                    'title' => $class::$title,
+                                    'category' => $category,
+                                    'mode' => $class::$mode,
+                                    'description' => $class::$description,
+                                    'icon' => $class::$icon,
+                                    'post_types' => $class->getPostTypes(),
+                                    'render_callback' => function ($block) use ($class, $category) {
+                                        $template =
+                                            'blocks/' . ($category ? $category . '/' : '') . str_replace('acf/', '', $block['name']);
 
-                                    if (file_exists(get_template_directory() . '/resources/views/' . $template . '.blade.php')) {
-                                        if (isset($block['data']['_is_preview'])) {
-                                            echo "<img style='width:100%' src='" .
-                                                get_template_directory_uri() .
-                                                '/resources/images/admin/blocks/' .
-                                                $category .
-                                                '/' .
-                                                $class::$slug .
-                                                ".jpg' alt='Preview'>";
-                                            return;
+                                        if (file_exists(get_template_directory() . '/resources/views/' . $template . '.blade.php')) {
+                                            if (isset($block['data']['_is_preview'])) {
+                                                echo "<img style='width:100%' src='" .
+                                                    get_template_directory_uri() .
+                                                    '/resources/images/admin/blocks/' .
+                                                    $category .
+                                                    '/' .
+                                                    $class::$slug .
+                                                    ".jpg' alt='Preview'>";
+                                                return;
+                                            }
+
+                                            echo view('blocks/' . $category . '/' . str_replace('acf/', '', $block['name']), [
+                                                'block' => $block,
+                                                'fields' => get_fields(),
+                                                'context' => $class->addToContext(),
+                                            ]);
+                                        } else {
+                                            throw new SkipProviderException('Template not found: ' . $template . '.blade.php');
                                         }
-
-                                        echo view('blocks/' . $category . '/' . str_replace('acf/', '', $block['name']), [
-                                            'block' => $block,
-                                            'fields' => get_fields(),
-                                            'context' => $class->addToContext(),
-                                        ]);
-                                    } else {
-                                        throw new SkipProviderException('Template not found: ' . $template . '.blade.php');
-                                    }
-                                },
-                                'supports' => $class->getSupports(),
-                                'example' => $class->getExample(),
-                            ]);
+                                    },
+                                    'supports' => $class->getSupports(),
+                                    'example' => $class->getExample(),
+                                ]);
+                            }
 
                             add_filter(sprintf('render_block_%s', $class->getFullName()), function ($blockContent) use ($class, $category) {
                                 $class->renderBlockCallback();
