@@ -27,14 +27,14 @@ class HorizonToolsServiceProvider extends SageServiceProvider
 
     public function boot(): void
     {
-        (new AdminServiceProvider($this->app))->boot();
-        (new BlockServiceProvider($this->app))->boot();
-        (new CommentsServiceProvider($this->app))->boot();
-        (new PostTypeServiceProvider($this->app))->boot();
-        (new HooksServiceProvider($this->app))->boot();
-        (new MiddlewareServiceProvider($this->app))->boot();
         (new CommandsServiceProvider($this->app))->boot();
         (new HttpLoginServiceProvider($this->app))->boot();
+        (new CommentsServiceProvider($this->app))->boot();
+        (new PostTypeServiceProvider($this->app))->boot();
+        (new AdminServiceProvider($this->app))->boot();
+        (new BlockServiceProvider($this->app))->boot();
+        (new HooksServiceProvider($this->app))->boot();
+        (new MiddlewareServiceProvider($this->app))->boot();
         (new LivewireServiceProvider($this->app))->boot();
 
         if (ClassService::isHorizonBlocksInstalled()) {
