@@ -87,6 +87,17 @@ class ClassService
         );
     }
 
+    public static function getAllSearchableCustomPostTypeClasses(): array
+    {
+        return array_values(
+            array_filter(
+                array_map(function ($class) {
+                    return property_exists($class, 'searchable') && $class::$searchable ? $class : null;
+                }, self::getAllCustomPostTypeClasses())
+            )
+        );
+    }
+
     public static function getAllCustomBlockClasses(): array
     {
         return array_filter(get_declared_classes(), function ($class) {
