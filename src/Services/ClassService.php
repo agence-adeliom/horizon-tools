@@ -92,7 +92,7 @@ class ClassService
         return array_values(
             array_filter(
                 array_map(function ($class) {
-                    return self::isPostTypeSearchableByClassName(className: $class);
+                    return self::isPostTypeSearchableByClassName(className: $class) ? $class : null;
                 }, self::getAllCustomPostTypeClasses())
             )
         );
