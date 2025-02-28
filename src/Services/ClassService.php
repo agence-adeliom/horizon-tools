@@ -92,10 +92,15 @@ class ClassService
         return array_values(
             array_filter(
                 array_map(function ($class) {
-                    return property_exists($class, 'searchable') && $class::$searchable ? $class : null;
+                    return self::isPostTypeSearchableByClassName(className: $class);
                 }, self::getAllCustomPostTypeClasses())
             )
         );
+    }
+
+    public static function isPostTypeSearchableByClassName(string $className): ?bool
+    {
+        return property_exists($className, 'searchable') && $className::$searchable ? $className::$searchable : null;
     }
 
     public static function getAllCustomBlockClasses(): array
