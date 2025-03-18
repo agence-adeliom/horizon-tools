@@ -70,7 +70,7 @@ class WysiwygHooks extends AbstractHook
     {
         $remove_buttons = [
             //'strikethrough',
-            'blockquote',
+            //'blockquote',
             'hr',
             // horizontal line
             'alignleft',
