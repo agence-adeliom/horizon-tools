@@ -6,87 +6,93 @@ namespace Adeliom\HorizonTools\Enum;
 
 enum BlockCategoriesEnum: string
 {
-	case CONTENT = 'content';
+    case CONTENT = 'content';
 
-	case HERO = 'hero';
+    case HERO = 'hero';
 
-	case LISTING = 'listing';
+    case LISTING = 'listing';
 
-	case CTA = 'cta';
+    case CTA = 'cta';
 
-	case TRIP = 'trip';
+    case ACTION = 'action';
 
-	case NAVIGATION = 'navigation';
+    case TRIP = 'trip';
 
-	case RELATION = 'relation';
+    case NAVIGATION = 'navigation';
 
-	case GENERIC = 'generic';
+    case RELATION = 'relation';
 
-	case LATEST = 'latest';
+    case GENERIC = 'generic';
 
-	case OTHERS = 'others';
+    case LATEST = 'latest';
 
-	case DOWNLOAD = 'download';
+    case OTHERS = 'others';
 
-	case ACCORDIONS = 'accordions';
+    case DOWNLOAD = 'download';
 
-	case TESTIMONIALS = 'testimonials';
+    case ACCORDIONS = 'accordions';
+
+    case TESTIMONIALS = 'testimonials';
 
     case REASSURANCE = 'reassurance';
 
-	const ASSOCIATIONS = [
-		self::HERO->value=>[
-			'title'=>'Haut de page',
-			'icon'=>'editor-kitchensink',
-		],
-		self::NAVIGATION->value=>[
-		'title'=>'Navigation',
-		'icon'=>'menu',
-		],
-		self::CONTENT->value => [
-			'title'=> 'Contenu',
-			'icon'=> 'admin-post'
-		],
-		self::GENERIC->value=>[
-			'title'=>'Texte et Images',
-			'icon'=>'align-right'
-		],
-		self::CTA->value=>[
-			'title'=>'Actions',
-			'icon'=>'button'
-		],
-		self::LISTING->value=>[
-			'title'=>'Listes',
-			'icon'=>'editor-ul'
-		],
-		self::LATEST->value=>[
-			'title'=>'Remontées automatiques',
-			'icon'=>'page'
-		],
-		self::ACCORDIONS->value=>[
-			'title'=>'Accordéons',
-			'icon'=>'arrow-down-alt2'
-		],
-		self::RELATION->value=>[
-			'title'=>'Relation',
-			'icon'=>'networking'
-		],
-		self::DOWNLOAD->value=>[
-			'title'=>'Téléchargement',
-			'icon'=>'download'
-		],
-		self::TESTIMONIALS->value=>[
-			'title'=>'Témoignages',
-			'icon'=>'format-quote'
-		],
-		self::OTHERS->value => [
-			'title' => 'Autres',
-			'icon' => 'admin-generic',
-		],
+    const ASSOCIATIONS = [
+        self::HERO->value => [
+            'title' => 'Haut de page',
+            'icon' => 'editor-kitchensink',
+        ],
+        self::NAVIGATION->value => [
+            'title' => 'Navigation',
+            'icon' => 'menu',
+        ],
+        self::CONTENT->value => [
+            'title' => 'Contenu',
+            'icon' => 'admin-post',
+        ],
+        self::GENERIC->value => [
+            'title' => 'Texte et Images',
+            'icon' => 'align-right',
+        ],
+        self::CTA->value => [
+            'title' => 'Actions',
+            'icon' => 'button',
+        ],
+        self::ACTION->value => [
+            'title' => 'Actions',
+            'icon' => 'button',
+        ],
+        self::LISTING->value => [
+            'title' => 'Listes',
+            'icon' => 'editor-ul',
+        ],
+        self::LATEST->value => [
+            'title' => 'Remontées automatiques',
+            'icon' => 'page',
+        ],
+        self::ACCORDIONS->value => [
+            'title' => 'Accordéons',
+            'icon' => 'arrow-down-alt2',
+        ],
+        self::RELATION->value => [
+            'title' => 'Relation',
+            'icon' => 'networking',
+        ],
+        self::DOWNLOAD->value => [
+            'title' => 'Téléchargement',
+            'icon' => 'download',
+        ],
+        self::TESTIMONIALS->value => [
+            'title' => 'Témoignages',
+            'icon' => 'format-quote',
+        ],
+        self::OTHERS->value => [
+            'title' => 'Autres',
+            'icon' => 'admin-generic',
+        ],
 
         self::REASSURANCE->value => [
             'title' => 'Réassurance',
             'icon' => 'admin-generic',
         ],
-	];
+    ];
 }
