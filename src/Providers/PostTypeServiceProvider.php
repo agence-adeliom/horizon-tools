@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Providers;
 
+use Adeliom\HorizonTools\Blocks\CompositionBlock;
 use Extended\ACF\Location;
 use Adeliom\HorizonTools\Blocks\AbstractBlock;
 use Adeliom\HorizonTools\Services\ClassService;
@@ -35,8 +36,6 @@ class PostTypeServiceProvider extends SageServiceProvider
 
     public function setTemplates($args, $postType)
     {
-        $this->getTemplates();
-
         if (!isset($args['template'])) {
             if (isset($this->getTemplates()[$postType])) {
                 $args['template'] = $this->getTemplates()[$postType];
@@ -64,7 +63,11 @@ class PostTypeServiceProvider extends SageServiceProvider
 
                             foreach ($class->getBlocks() as $block => $fields) {
                                 $blockClass = new $block();
-                                if ($blockClass instanceof AbstractBlock) {
+                                if ($blockClass instanceof CompositionBlock) {
+                                    if (isset($fields['id'])) {
+                                        $template[] = ['core/block', ['ref' => $fields['id']]];
+                                    }
+                                } elseif ($blockClass instanceof AbstractBlock) {
                                     $template[] = ['acf/' . $blockClass::$slug, $fields];
                                 }
                             }
