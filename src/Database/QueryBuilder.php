@@ -445,6 +445,9 @@ class QueryBuilder
 
         $args['hide_empty'] = $this->hideEmpty;
 
+        $args['orderby'] = $this->orderBy;
+        $args['order'] = $this->order;
+
         if ([] !== $this->metaQueries) {
             foreach ($this->metaQueries as $metaQuery) {
                 if ($metaQuery instanceof MetaQuery) {
