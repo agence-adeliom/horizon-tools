@@ -137,9 +137,12 @@ class BlockServiceProvider extends SageServiceProvider
         try {
             $this->registerCategoriesFromCases(BlockCategoriesEnum::class, $categories);
 
+
+
             if (class_exists(self::THEME_BLOCK_CATEGORIES_CLASS)) {
                 $this->registerCategoriesFromCases(self::THEME_BLOCK_CATEGORIES_CLASS, $categories);
             }
+
 
             return $categories;
         } catch (\Exception $e) {
@@ -150,16 +153,25 @@ class BlockServiceProvider extends SageServiceProvider
     private function registerCategoriesFromCases($enum, &$categories): void
     {
         if (method_exists($enum, 'cases')) {
-            foreach ($enum::cases() as $case) {
+            $cases = $enum::cases();
+            usort($cases, function ($a, $b) use ($enum) {
+                $orderA = $enum::ASSOCIATIONS[$a->value]['order'] ?? PHP_INT_MAX;
+                $orderB = $enum::ASSOCIATIONS[$b->value]['order'] ?? PHP_INT_MAX;
+                return $orderA <=> $orderB;
+            });
+
+            foreach ($cases as $case) {
                 $icon = 'admin-post';
                 $title = $case->value;
+                $order = PHP_INT_MAX;
                 $association = null;
 
                 if (defined($enum . '::ASSOCIATIONS')) {
                     if (isset($enum::ASSOCIATIONS[$case->value]) && ($association = $enum::ASSOCIATIONS[$case->value])) {
-                        if (isset($association['title'], $association['icon'])) {
+                        if (isset($association['title'], $association['icon'], $association['order'])) {
                             $title = $association['title'];
                             $icon = $association['icon'];
+                            $order = $association['order'];
                         }
                     }
                 }
@@ -168,6 +180,7 @@ class BlockServiceProvider extends SageServiceProvider
                     'slug' => $case->value,
                     'title' => $title,
                     'icon' => $icon,
+                    'order' => $order,
                 ];
             }
         }

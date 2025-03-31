@@ -40,14 +40,31 @@ enum BlockCategoriesEnum: string
         self::HERO->value => [
             'title' => 'Haut de page',
             'icon' => 'editor-kitchensink',
-        ],
-        self::NAVIGATION->value => [
-            'title' => 'Navigation',
-            'icon' => 'menu',
+            'order' => 1,
         ],
         self::CONTENT->value => [
             'title' => 'Contenu',
             'icon' => 'admin-post',
+            'order' => 2,
+        ],
+        self::ACTION->value => [
+            'title' => 'Actions',
+            'icon' => 'button',
+            'order' => 3,
+        ],
+        self::REASSURANCE->value => [
+            'title' => 'Réassurance',
+            'icon' => 'admin-generic',
+            'order' => 4,
+        ],
+        self::LISTING->value => [
+            'title' => 'Listes',
+            'icon' => 'editor-ul',
+            'order' => 5,
+        ],
+        self::NAVIGATION->value => [
+            'title' => 'Navigation',
+            'icon' => 'menu',
         ],
         self::GENERIC->value => [
             'title' => 'Texte et Images',
@@ -56,14 +73,6 @@ enum BlockCategoriesEnum: string
         self::CTA->value => [
             'title' => 'Actions',
             'icon' => 'button',
-        ],
-        self::ACTION->value => [
-            'title' => 'Actions',
-            'icon' => 'button',
-        ],
-        self::LISTING->value => [
-            'title' => 'Listes',
-            'icon' => 'editor-ul',
         ],
         self::LATEST->value => [
             'title' => 'Remontées automatiques',
@@ -90,9 +99,6 @@ enum BlockCategoriesEnum: string
             'icon' => 'admin-generic',
         ],
 
-        self::REASSURANCE->value => [
-            'title' => 'Réassurance',
-            'icon' => 'admin-generic',
-        ],
+
     ];
 }
