@@ -6,6 +6,7 @@ namespace Adeliom\HorizonTools\Services;
 
 use Adeliom\HorizonTools\Fields\Text\HeadingField;
 use App\Blocks\Content\PostSummaryBlock;
+use Illuminate\Support\Facades\Cache;
 
 class BlogPostService
 {
@@ -48,6 +49,21 @@ class BlogPostService
     }
 
     public static function getPostTitles(array $blocks = []): array
+    {
+        if (!empty($blocks)) {
+            return self::getPostTitlesLogic(blocks: $blocks);
+        } else {
+            $currentId = is_admin() ? $_GET['post'] ?? ($_POST['post_id'] ?? null) : get_the_ID();
+
+            if (null !== $currentId) {
+                return Cache::remember('post-titles-' . $currentId, 60, static fn() => self::getPostTitlesLogic());
+            } else {
+                return self::getPostTitlesLogic();
+            }
+        }
+    }
+
+    private static function getPostTitlesLogic(array $blocks = []): array
     {
         $titles = [];
 
