@@ -13,11 +13,42 @@ class BlogPostService
     private const SUMMARY_BLOCK_NAME = 'acf/post-summary';
     private const EXCLUDED_BLOCKS = [self::SUMMARY_BLOCK_NAME];
 
-    private static function getBlocks(): array
+    private static function getBlocks(bool $onlyInSummary = false): array
     {
         $pageId = !is_admin() ? get_the_ID() : $_GET['post'] ?? ($_POST['post_id'] ?? null);
 
-        return parse_blocks(get_the_content());
+        $blocks = parse_blocks(get_the_content());
+
+        if (!$onlyInSummary) {
+            return $blocks;
+        }
+
+        $blocksInSummary = [];
+
+        $entryReached = false;
+        $exitReached = false;
+
+        foreach ($blocks as $block) {
+            if (isset($block['blockName']) && $block['blockName'] === self::SUMMARY_BLOCK_NAME) {
+                if (isset($block['attrs']['data']['top'])) {
+                    if ($block['attrs']['data']['top'] == true) {
+                        $entryReached = true;
+                    } else {
+                        $exitReached = true;
+                    }
+                }
+            } else {
+                if (isset($block['blockName']) && $block['blockName']) {
+                    $blocksInSummary[] = $block;
+                }
+            }
+
+            if ($exitReached) {
+                break;
+            }
+        }
+
+        return $blocksInSummary;
     }
 
     public static function hasClosingTag(array $blocks = []): bool
@@ -68,7 +99,7 @@ class BlogPostService
         $titles = [];
 
         if (empty($blocks)) {
-            $blocks = self::getBlocks();
+            $blocks = self::getBlocks(onlyInSummary: true);
         }
 
         $titleKey = sprintf('%s_%s', HeadingField::NAME, HeadingField::CONTENT_NAME);
