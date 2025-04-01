@@ -17,8 +17,13 @@ class SeoService
         return false;
     }
 
-    public static function getCurrentUrl(): string
+    public static function getCurrentUrl(): ?string
     {
         return Request::fullUrl();
+    }
+
+    public static function getCurrentTitle(): ?string
+    {
+        return get_the_title();
     }
 }
