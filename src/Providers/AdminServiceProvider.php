@@ -15,6 +15,7 @@ class AdminServiceProvider extends SageServiceProvider
     {
         $this->initAdmins();
         $this->moveMenuFromAppearance();
+        $this->moveCompositionsFromAppearance();
     }
 
     private function initAdmins(): void
@@ -76,6 +77,23 @@ class AdminServiceProvider extends SageServiceProvider
             remove_submenu_page('themes.php', 'nav-menus.php');
 
             add_menu_page('Menus', 'Menus', 'edit_theme_options', 'nav-menus.php', '', 'dashicons-list-view', 68);
+        });
+    }
+
+    private function moveCompositionsFromAppearance(): void
+    {
+        add_action('admin_menu', function () {
+            remove_submenu_page('themes.php', 'site-editor.php?path=/patterns');
+
+            add_menu_page(
+                'Compositions',
+                'Compositions',
+                'edit_theme_options',
+                'site-editor.php?path=/patterns',
+                '',
+                'dashicons-share-alt',
+                68
+            );
         });
     }
 }
