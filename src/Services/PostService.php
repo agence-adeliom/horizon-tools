@@ -65,4 +65,38 @@ class PostService
 
         return $readingTime;
     }
+
+    public static function getAllAssociatedTaxonomies(string $postType, array $excluded = [], bool $onlySlugs = false): array
+    {
+        $taxonomySlugs = [];
+
+        if ($postType === 'post') {
+            if (!in_array('post_tag', $excluded)) {
+                $excluded[] = 'post_tag';
+            }
+
+            if (!in_array('post_format', $excluded)) {
+                $excluded[] = 'post_format';
+            }
+        }
+
+        $taxonomySlugs = get_object_taxonomies('post');
+        $taxonomySlugs = array_values(array_diff($taxonomySlugs, $excluded));
+
+        if ($onlySlugs) {
+            return $taxonomySlugs;
+        }
+
+        $taxonomyAssociation = [];
+
+        foreach ($taxonomySlugs as $taxonomySlug) {
+            if ($taxonomy = get_taxonomy($taxonomySlug)) {
+                if ($taxonomy instanceof \WP_Taxonomy) {
+                    $taxonomyAssociation[$taxonomySlug] = $taxonomy->label;
+                }
+            }
+        }
+
+        return $taxonomyAssociation;
+    }
 }
