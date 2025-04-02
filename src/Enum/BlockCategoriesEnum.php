@@ -16,6 +16,8 @@ enum BlockCategoriesEnum: string
 
     case ACTION = 'action';
 
+    case BLOG = 'blog';
+
     case TRIP = 'trip';
 
     case NAVIGATION = 'navigation';
@@ -47,20 +49,25 @@ enum BlockCategoriesEnum: string
             'icon' => 'admin-post',
             'order' => 2,
         ],
+        self::BLOG->value => [
+            'title' => 'Blog',
+            'icon' => 'welcome-write-blog',
+            'order' => 3,
+        ],
         self::ACTION->value => [
             'title' => 'Actions',
             'icon' => 'button',
-            'order' => 3,
+            'order' => 4,
         ],
         self::REASSURANCE->value => [
             'title' => 'Réassurance',
             'icon' => 'admin-generic',
-            'order' => 4,
+            'order' => 5,
         ],
         self::LISTING->value => [
             'title' => 'Listes',
             'icon' => 'editor-ul',
-            'order' => 5,
+            'order' => 6,
         ],
         self::NAVIGATION->value => [
             'title' => 'Navigation',
@@ -98,7 +105,5 @@ enum BlockCategoriesEnum: string
             'title' => 'Autres',
             'icon' => 'admin-generic',
         ],
-
-
     ];
 }
