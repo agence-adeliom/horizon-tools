@@ -34,9 +34,17 @@ class PostService
         }
     }
 
-    public static function getReadingTimeInMinutes(int|\WP_Post $post): null|int|float
+    public static function getReadingTimeInMinutes(null|int|\WP_Post $post = null): null|int|float
     {
         $readingTime = null;
+
+        if (null === $post) {
+            $post = get_the_ID();
+        }
+
+        if (!$post) {
+            return null;
+        }
 
         if (is_int($post)) {
             $post = get_post($post);
