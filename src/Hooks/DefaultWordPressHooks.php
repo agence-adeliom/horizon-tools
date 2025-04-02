@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Request;
 class DefaultWordPressHooks extends AbstractHook
 {
     private const CLEAR_CACHE = 'clear-cache';
+    private const CLEAR_CACHE_ROLES = ['administrator'];
 
     public function init(): void
     {
@@ -81,11 +82,21 @@ class DefaultWordPressHooks extends AbstractHook
 
     public function addClearCacheButton(\WP_Admin_Bar $wpAdminBar): void
     {
-        $wpAdminBar->add_menu([
-            'id' => 'clear-cache',
-            'title' => 'Vider le cache serveur',
-            'href' => sprintf('%s/?%s=1', Request::url(), self::CLEAR_CACHE),
-        ]);
+        if ($currentUser = get_user(get_current_user_id())) {
+            if ($currentUser instanceof \WP_User) {
+                foreach (self::CLEAR_CACHE_ROLES as $CACHE_ROLE) {
+                    if (in_array($CACHE_ROLE, $currentUser->roles)) {
+                        $wpAdminBar->add_menu([
+                            'id' => 'clear-cache',
+                            'title' => 'Vider le cache serveur',
+                            'href' => sprintf('%s/?%s=1', Request::url(), self::CLEAR_CACHE),
+                        ]);
+
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     public function handleClearCache(): void
@@ -93,8 +104,12 @@ class DefaultWordPressHooks extends AbstractHook
         if (Request::get(self::CLEAR_CACHE)) {
             if ($currentUser = get_user(get_current_user_id())) {
                 if ($currentUser instanceof \WP_User) {
-                    if (in_array('administrator', $currentUser->roles)) {
-                        Cache::clear();
+                    foreach (self::CLEAR_CACHE_ROLES as $CACHE_ROLE) {
+                        if (in_array($CACHE_ROLE, $currentUser->roles)) {
+                            Cache::clear();
+
+                            break;
+                        }
                     }
                 }
             }
