@@ -80,7 +80,7 @@ class PostService
             }
         }
 
-        $taxonomySlugs = get_object_taxonomies('post');
+        $taxonomySlugs = get_object_taxonomies($postType);
         $taxonomySlugs = array_values(array_diff($taxonomySlugs, $excluded));
 
         if ($onlySlugs) {
