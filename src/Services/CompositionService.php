@@ -26,4 +26,22 @@ class CompositionService
 
         return $choices;
     }
+
+    public static function renderComposition(int $id): ?string
+    {
+        $renderedBlock = null;
+        $block = (new QueryBuilder())->postType(postType: 'wp_block')->whereIdIn(ids: $id)->getOneOrNull();
+
+        if ($block) {
+            $parsedBlock = parse_blocks($block->post_content);
+
+            $blockData = $parsedBlock[0] ?? null;
+
+            if ($blockData) {
+                $renderedBlock = render_block($blockData);
+            }
+        }
+
+        return $renderedBlock;
+    }
 }
