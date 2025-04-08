@@ -17,7 +17,9 @@ class BlogPostService
     {
         $pageId = !is_admin() ? get_the_ID() : $_GET['post'] ?? ($_POST['post_id'] ?? null);
 
-        $blocks = parse_blocks(get_the_content());
+        $post = get_post($pageId);
+
+        $blocks = parse_blocks($post?->post_content);
 
         if (!$onlyInSummary) {
             return $blocks;
@@ -88,7 +90,7 @@ class BlogPostService
 
             if (null !== $currentId) {
                 return Cache::remember('post-titles-' . $currentId, 60, function () {
-                    self::getPostTitlesLogic();
+                    return self::getPostTitlesLogic();
                 });
             } else {
                 return self::getPostTitlesLogic();
