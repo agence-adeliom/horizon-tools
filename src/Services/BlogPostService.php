@@ -79,7 +79,7 @@ class BlogPostService
         return $hasClosingTag;
     }
 
-    public static function getPostTitles(array $blocks = []): array
+    public static function getPostTitles(array $blocks = []): ?array
     {
         if (!empty($blocks)) {
             return self::getPostTitlesLogic(blocks: $blocks);
@@ -87,7 +87,9 @@ class BlogPostService
             $currentId = is_admin() ? $_GET['post'] ?? ($_POST['post_id'] ?? null) : get_the_ID();
 
             if (null !== $currentId) {
-                return Cache::remember('post-titles-' . $currentId, 60, static fn() => self::getPostTitlesLogic());
+                return Cache::remember('post-titles-' . $currentId, 60, function () {
+                    self::getPostTitlesLogic();
+                });
             } else {
                 return self::getPostTitlesLogic();
             }
