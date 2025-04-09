@@ -34,7 +34,7 @@ class MenuViewModel
         }
     }
 
-    private function setItems(?array &$flatItems = null, ?MenuItemViewModel $parent = null): void
+    private function setItems(?array &$flatItems = null, ?MenuItemViewModel $parent = null, int $level = 0): void
     {
         if (null === $flatItems) {
             $flatItems = wp_get_nav_menu_items($this->id);
@@ -44,9 +44,9 @@ class MenuViewModel
 
         foreach ($flatItems as $flatItem) {
             if ($flatItem->menu_item_parent == $parentId) {
-                $item = new MenuItemViewModel($flatItem);
+                $item = new MenuItemViewModel($flatItem, $level);
 
-                $this->setItems($flatItems, $item);
+                $this->setItems($flatItems, $item, $level + 1);
 
                 if ($parent) {
                     $parent->addItem($item);
