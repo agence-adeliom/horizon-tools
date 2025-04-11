@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Request;
 
 class SeoService
 {
-    public const OBFUSCATE_ATTRIBUTE = 'data-href';
+    public const OBFUSCATE_ATTRIBUTE = 'data-obfuscated-href';
 
     public static function isRankMathActive(): bool
     {
