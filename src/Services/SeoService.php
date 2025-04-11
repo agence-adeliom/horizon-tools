@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Request;
 
 class SeoService
 {
+    public const OBFUSCATE_ATTRIBUTE = 'data-href';
+
     public static function isRankMathActive(): bool
     {
         if (function_exists('is_plugin_active')) {
@@ -25,5 +27,18 @@ class SeoService
     public static function getCurrentTitle(): ?string
     {
         return get_the_title();
+    }
+
+    public static function getHrefAttribute(?string $url = null, bool $obfuscate = false): ?string
+    {
+        if (null === $url) {
+            return null;
+        }
+
+        if (!$obfuscate) {
+            return sprintf('href="%s"', $url);
+        }
+
+        return sprintf('%s="%s"', self::OBFUSCATE_ATTRIBUTE, base64_encode($url));
     }
 }
