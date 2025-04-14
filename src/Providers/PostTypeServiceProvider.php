@@ -17,6 +17,8 @@ class PostTypeServiceProvider extends SageServiceProvider
 {
     private ?array $templates = null;
 
+    public const TEMPLATE_BLOCK_CLASS_KEY = 'blockClass';
+
     public function boot(): void
     {
         add_filter('register_post_type_args', [$this, 'setTemplates'], accepted_args: 2);
@@ -62,13 +64,20 @@ class PostTypeServiceProvider extends SageServiceProvider
                             $template = [];
 
                             foreach ($class->getBlocks() as $block => $fields) {
-                                $blockClass = new $block();
-                                if ($blockClass instanceof CompositionBlock) {
-                                    if (isset($fields['id'])) {
-                                        $template[] = ['core/block', ['ref' => $fields['id']]];
+                                if (is_numeric($block) && isset($fields[self::TEMPLATE_BLOCK_CLASS_KEY])) {
+                                    $block = $fields[self::TEMPLATE_BLOCK_CLASS_KEY];
+                                }
+
+                                if (is_string($block)) {
+                                    $blockClass = new $block();
+
+                                    if ($blockClass instanceof CompositionBlock) {
+                                        if (isset($fields['id'])) {
+                                            $template[] = ['core/block', ['ref' => $fields['id']]];
+                                        }
+                                    } elseif ($blockClass instanceof AbstractBlock) {
+                                        $template[] = ['acf/' . $blockClass::$slug, $fields];
                                     }
-                                } elseif ($blockClass instanceof AbstractBlock) {
-                                    $template[] = ['acf/' . $blockClass::$slug, $fields];
                                 }
                             }
 
