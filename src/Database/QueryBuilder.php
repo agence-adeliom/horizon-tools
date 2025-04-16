@@ -16,6 +16,8 @@ class QueryBuilder
     public const SEARCH_COLUMN_EXCERPT = 'post_excerpt';
     public const SEARCH_COLUMN_NAME = 'post_name';
 
+    public const TAX_PREFIX = 'tax_';
+
     public const CACHE_DEFAULT_DURATION = 3600;
 
     public const DEFAULT_POST_SEARCH_COLUMNS = [self::SEARCH_COLUMN_TITLE, self::SEARCH_COLUMN_CONTENT, self::SEARCH_COLUMN_EXCERPT];
@@ -293,6 +295,16 @@ class QueryBuilder
 
             $this->orderMetaKey = $orderBy;
         }
+
+        return $this;
+    }
+
+    /**
+     * Allows to order a posts query by the name of the terms of a taxonomy
+     */
+    public function orderByTaxonomy(string $taxonomy, string $order = 'DESC'): self
+    {
+        $this->orderBy($order, sprintf('%s%s', self::TAX_PREFIX, $taxonomy));
 
         return $this;
     }
