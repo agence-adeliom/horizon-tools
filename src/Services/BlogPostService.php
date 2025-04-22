@@ -39,7 +39,7 @@ class BlogPostService
                         $exitReached = true;
                     }
                 }
-            } else {
+            } elseif ($entryReached) {
                 if (isset($block['blockName']) && $block['blockName']) {
                     $blocksInSummary[] = $block;
                 }
