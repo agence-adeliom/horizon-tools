@@ -17,7 +17,7 @@
     "require": {
         "php": ">=8.2",
         "vinkla/extended-acf": "^14.0",
-        "roots/acorn": "^4.0",
+        "roots/acorn": "^5.0",
         "enshrined/svg-sanitize": "^0.19.0",
         "livewire/livewire": "^3.5"
     }
