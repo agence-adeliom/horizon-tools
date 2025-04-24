@@ -69,7 +69,7 @@ class CommandService
         ?string $slug = null,
         ?string $parentClass = null,
         ?string $parentPath = null,
-        string $postTypes = null,
+        ?string $postTypes = null,
         bool $taxonomyVisibleInQuickEdit = true,
         bool $taxonomyVisibleInPost = true,
         array $postTypeSupports = [],
