@@ -19,6 +19,15 @@ class SeoService
         return false;
     }
 
+    public static function isSEOPressActive(): bool
+    {
+        if (function_exists('is_plugin_active')) {
+            return is_plugin_active('wp-seopress/seopress.php');
+        }
+
+        return false;
+    }
+
     public static function getCurrentUrl(): ?string
     {
         return Request::fullUrl();
