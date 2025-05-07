@@ -107,12 +107,21 @@ class BlogPostService
         }
 
         $titleKey = sprintf('%s_%s', HeadingField::NAME, HeadingField::CONTENT_NAME);
+        $titleTag = sprintf('%s_%s', HeadingField::NAME, HeadingField::TAGS_NAME);
+
+        $retrieveOnly = ['h2'];
 
         foreach ($blocks as $block) {
             if (isset($block['blockName']) && !in_array($block['blockName'], self::EXCLUDED_BLOCKS)) {
                 if (isset($block['attrs'], $block['attrs']['data'], $block['attrs']['data'][$titleKey])) {
                     if ($title = $block['attrs']['data'][$titleKey]) {
-                        $titles[] = $title;
+                        if ($retrieveOnly) {
+                            if(in_array($block['attrs']['data'][$titleTag], $retrieveOnly)){
+                                $titles[] = $title;
+                            }
+                        } else {
+                            $titles[] = $title;
+                        }
                     }
                 }
             }
