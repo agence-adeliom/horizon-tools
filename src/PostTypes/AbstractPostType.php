@@ -17,6 +17,7 @@ abstract class AbstractPostType
     public const CUSTOM_COLUMN_KEY = 'key';
     public const CUSTOM_COLUMN_DISPLAY = 'display';
     public const CUSTOM_COLUMN_CALLBACK = 'callback';
+    public const CUSTOM_COLUMN_SORTABLE = 'sortable';
 
     public function __construct()
     {

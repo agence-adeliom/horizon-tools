@@ -201,6 +201,13 @@ class PostTypeServiceProvider extends SageServiceProvider
                         10,
                         2
                     );
+                    add_filter(
+                        sprintf('manage_edit-%s_sortable_columns', $postTypeInstance::$slug),
+                        fn($columns) => $this->handlePostTypeCustomColumnSortable($postTypeInstance, $columns)
+                    );
+                    add_action('pre_get_posts', function ($query) use ($postTypeInstance) {
+                        $this->handleOrderByCustomColumn($postTypeInstance, $query);
+                    });
                 }
             }
         }
@@ -257,6 +264,63 @@ class PostTypeServiceProvider extends SageServiceProvider
                     } else {
                         echo $value;
                     }
+                }
+            }
+        }
+    }
+
+    public function handlePostTypeCustomColumnSortable(AbstractPostType $postType, array $columns)
+    {
+        if (null !== $postType->getCustomColumns()) {
+            foreach ($postType->getCustomColumns() as $customColumn) {
+                if (
+                    !empty($customColumn[AbstractPostType::CUSTOM_COLUMN_SORTABLE]) &&
+                    $customColumn[AbstractPostType::CUSTOM_COLUMN_SORTABLE] === true
+                ) {
+                    if (!empty($customColumn[AbstractPostType::CUSTOM_COLUMN_KEY])) {
+                        $columns[$customColumn[AbstractPostType::CUSTOM_COLUMN_KEY]] = [
+                            $customColumn[AbstractPostType::CUSTOM_COLUMN_KEY],
+                            false,
+                            $customColumn[AbstractPostType::CUSTOM_COLUMN_LABEL] ?? 'Tri',
+                            sprintf('Tableau trié par %s', $customColumn[AbstractPostType::CUSTOM_COLUMN_LABEL] ?? 'colonne'),
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $columns;
+    }
+
+    public function handleOrderByCustomColumn(AbstractPostType $postType, \WP_Query $query)
+    {
+        if (!is_admin() || !$query->is_main_query()) {
+            return;
+        }
+
+        if ($orderBy = $query->get('orderby')) {
+            $column = null;
+            $isOrderByMeta = true;
+
+            foreach ($postType->getCustomColumns() as $customColumn) {
+                if (!empty($customColumn[AbstractPostType::CUSTOM_COLUMN_KEY])) {
+                    if ($customColumn[AbstractPostType::CUSTOM_COLUMN_KEY] === $orderBy) {
+                        $column = $customColumn;
+                        break;
+                    }
+                }
+            }
+
+            if (
+                null !== $column &&
+                !empty($column[AbstractPostType::CUSTOM_COLUMN_SORTABLE]) &&
+                $column[AbstractPostType::CUSTOM_COLUMN_SORTABLE] === true
+            ) {
+                if ($isOrderByMeta) {
+                    $query->set('orderby', 'meta_value');
+                    $query->set('meta_key', $column[AbstractPostType::CUSTOM_COLUMN_KEY]);
+                } else {
+                    $query->set('orderby', $column[AbstractPostType::CUSTOM_COLUMN_KEY]);
                 }
             }
         }
