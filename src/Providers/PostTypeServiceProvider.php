@@ -20,6 +20,7 @@ class PostTypeServiceProvider extends SageServiceProvider
     private ?array $templates = null;
 
     public const TEMPLATE_BLOCK_CLASS_KEY = 'blockClass';
+    private const MOVE_DATE_COLUMN_AT_THE_END = true;
 
     public function boot(): void
     {
@@ -215,6 +216,8 @@ class PostTypeServiceProvider extends SageServiceProvider
 
     public function handlePostTypeColumns(AbstractPostType $postType, $columns): array
     {
+        $hasDateCustomColumn = false;
+
         if (null !== $postType->getCustomColumns()) {
             foreach ($postType->getCustomColumns() as $customColumn) {
                 if (
@@ -229,10 +232,21 @@ class PostTypeServiceProvider extends SageServiceProvider
                         !isset($customColumn[AbstractPostType::CUSTOM_COLUMN_DISPLAY]) ||
                         $customColumn[AbstractPostType::CUSTOM_COLUMN_DISPLAY] === true
                     ) {
+                        if (!$hasDateCustomColumn && $customColumn[AbstractPostType::CUSTOM_COLUMN_KEY] === 'date') {
+                            $hasDateCustomColumn = true;
+                        }
+
                         $columns[$customColumn[AbstractPostType::CUSTOM_COLUMN_KEY]] = $customColumn[AbstractPostType::CUSTOM_COLUMN_LABEL];
                     }
                 }
             }
+        }
+
+        if (!$hasDateCustomColumn && !empty($columns['date']) && self::MOVE_DATE_COLUMN_AT_THE_END) {
+            $tempDateColumn = $columns['date'];
+            unset($columns['date']);
+
+            $columns['date'] = $tempDateColumn;
         }
 
         return $columns;
