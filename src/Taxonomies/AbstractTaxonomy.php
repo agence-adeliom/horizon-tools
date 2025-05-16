@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Taxonomies;
 
+use Adeliom\HorizonTools\Database\QueryBuilder;
 use Roots\Acorn\Exceptions\SkipProviderException;
 
 abstract class AbstractTaxonomy
@@ -21,16 +22,19 @@ abstract class AbstractTaxonomy
 
     public function getConfig(array $config = []): array
     {
-        return array_replace_recursive([
-            'taxonomy' => $this::$slug,
-            'object_type' => $this->getPostTypes(),
-            'args' => [
-                'public' => true,
-                'show_in_menu' => true,
-                'show_in_rest' => true,
-                'show_in_nav_menus' => true,
-            ]
-        ], $config);
+        return array_replace_recursive(
+            [
+                'taxonomy' => $this::$slug,
+                'object_type' => $this->getPostTypes(),
+                'args' => [
+                    'public' => true,
+                    'show_in_menu' => true,
+                    'show_in_rest' => true,
+                    'show_in_nav_menus' => true,
+                ],
+            ],
+            $config
+        );
     }
 
     public function getFieldsTitle(): string
@@ -45,22 +49,22 @@ abstract class AbstractTaxonomy
 
     public function getStyle(): string
     {
-        return "default";
+        return 'default';
     }
 
     public function getPosition(): string
     {
-        return "acf_after_title";
+        return 'acf_after_title';
     }
 
     public function getLabelPlacement(): string
     {
-        return "top";
+        return 'top';
     }
 
     public function getInstructionPlacement(): string
     {
-        return "label";
+        return 'label';
     }
 
     public function getHideOnScreen(): array
@@ -76,12 +80,21 @@ abstract class AbstractTaxonomy
             'categories',
             'tags',
             'send-trackbacks',
-            'featured_image'
+            'featured_image',
         ];
     }
 
     public function getMenuOrder(): int
     {
         return 0;
+    }
+
+    public function createQueryBuilder(): false|QueryBuilder
+    {
+        if (empty(static::$slug)) {
+            return false;
+        }
+
+        return (new QueryBuilder())->taxonomy(static::$slug);
     }
 }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Adeliom\HorizonTools\Providers;
 
 use Adeliom\HorizonTools\Blocks\CompositionBlock;
+use Adeliom\HorizonTools\Database\MetaQuery;
+use Adeliom\HorizonTools\PostTypes\AbstractPostType;
 use Extended\ACF\Location;
 use Adeliom\HorizonTools\Blocks\AbstractBlock;
 use Adeliom\HorizonTools\Services\ClassService;
@@ -25,6 +27,7 @@ class PostTypeServiceProvider extends SageServiceProvider
 
         $this->initPostTypes();
         $this->initTaxonomies();
+        $this->initListings();
     }
 
     public function getTemplates(): array
@@ -178,6 +181,84 @@ class PostTypeServiceProvider extends SageServiceProvider
             }
         } catch (\Exception $e) {
             throw new SkipProviderException($e->getMessage());
+        }
+    }
+
+    public function initListings(): void
+    {
+        foreach (ClassService::getAllCustomPostTypeClasses() as $postTypeClass) {
+            $postTypeInstance = new $postTypeClass();
+
+            if ($postTypeInstance instanceof AbstractPostType) {
+                if (!empty($postTypeInstance->getCustomColumns())) {
+                    add_filter(
+                        sprintf('manage_%s_posts_columns', $postTypeInstance::$slug),
+                        fn($columns) => $this->handlePostTypeColumns($postTypeInstance, $columns)
+                    );
+                    add_action(
+                        sprintf('manage_%s_posts_custom_column', $postTypeInstance::$slug),
+                        fn($column, $postId) => $this->handlePostTypeCustomColumnContent($postTypeInstance, $column, $postId),
+                        10,
+                        2
+                    );
+                }
+            }
+        }
+    }
+
+    public function handlePostTypeColumns(AbstractPostType $postType, $columns): array
+    {
+        if (null !== $postType->getCustomColumns()) {
+            foreach ($postType->getCustomColumns() as $customColumn) {
+                if (
+                    !empty($customColumn[AbstractPostType::CUSTOM_COLUMN_LABEL]) &&
+                    !empty($customColumn[AbstractPostType::CUSTOM_COLUMN_KEY])
+                ) {
+                    if (isset($columns[$customColumn[AbstractPostType::CUSTOM_COLUMN_KEY]])) {
+                        unset($columns[$customColumn[AbstractPostType::CUSTOM_COLUMN_KEY]]);
+                    }
+
+                    if (
+                        !isset($customColumn[AbstractPostType::CUSTOM_COLUMN_DISPLAY]) ||
+                        $customColumn[AbstractPostType::CUSTOM_COLUMN_DISPLAY] === true
+                    ) {
+                        $columns[$customColumn[AbstractPostType::CUSTOM_COLUMN_KEY]] = $customColumn[AbstractPostType::CUSTOM_COLUMN_LABEL];
+                    }
+                }
+            }
+        }
+
+        return $columns;
+    }
+
+    public function handlePostTypeCustomColumnContent(AbstractPostType $postType, string $columnName, int $postId): void
+    {
+        $columns = $postType->getCustomColumns();
+
+        if (!empty($columns)) {
+            $columnData = null;
+
+            foreach ($columns as $column) {
+                if (!empty($column[AbstractPostType::CUSTOM_COLUMN_KEY])) {
+                    if ($column[AbstractPostType::CUSTOM_COLUMN_KEY] === $columnName) {
+                        $columnData = $column;
+                        break;
+                    }
+                }
+            }
+
+            if (is_array($columnData)) {
+                if ($value = get_field($columnData[AbstractPostType::CUSTOM_COLUMN_KEY], $postId)) {
+                    if (
+                        !empty($columnData[AbstractPostType::CUSTOM_COLUMN_CALLBACK]) &&
+                        is_callable($columnData[AbstractPostType::CUSTOM_COLUMN_CALLBACK])
+                    ) {
+                        $columnData[AbstractPostType::CUSTOM_COLUMN_CALLBACK]($value);
+                    } else {
+                        echo $value;
+                    }
+                }
+            }
         }
     }
 }
