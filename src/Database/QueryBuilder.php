@@ -35,6 +35,7 @@ class QueryBuilder
     private int $page = 1;
     private ?int $offset = null;
     private ?string $slug = null;
+    private ?string $fields = null;
     private string $orderBy = 'date';
     private string $order = 'DESC';
     private ?string $orderMetaKey = null;
@@ -116,6 +117,52 @@ class QueryBuilder
         $this->triggerChange();
 
         $this->slug = $slug;
+
+        return $this;
+    }
+
+    public function fields(?string $fields): self
+    {
+        if (null !== $fields) {
+            switch (true) {
+                case $this->isTaxonomy:
+                    $allowedForTaxonomy = [
+                        'all',
+                        'all_with_object_id',
+                        'ids',
+                        'tt_ids',
+                        'names',
+                        'slugs',
+                        'count',
+                        'id=>parent',
+                        'id=>name',
+                        'id=>slug',
+                    ];
+
+                    if (!in_array($fields, $allowedForTaxonomy)) {
+                        throw new \Exception(
+                            sprintf('Invalid fields for taxonomy, it should be one of %s', implode(', ', $allowedForTaxonomy))
+                        );
+                    }
+
+                    $this->fields = $fields;
+                    break;
+                case $this->isPostType:
+                default:
+                    $allowedForPostType = ['', 'ids', 'id=>parent'];
+
+                    if (!in_array($fields, $allowedForPostType)) {
+                        throw new \Exception(
+                            sprintf('Invalid fields for post type, it should be one of %s', implode(', ', $allowedForPostType))
+                        );
+                    }
+
+                    $this->fields = $fields;
+                    break;
+            }
+        } else {
+            $this->fields = null;
+        }
 
         return $this;
     }
@@ -348,6 +395,10 @@ class QueryBuilder
             $args['name'] = $this->slug;
         }
 
+        if (null !== $this->fields) {
+            $args['fields'] = $this->fields;
+        }
+
         if ($this->postTypes) {
             $args['post_type'] = $this->postTypes;
         }
@@ -453,6 +504,10 @@ class QueryBuilder
 
         if ($this->slug) {
             $args['slug'] = $this->slug;
+        }
+
+        if (null !== $this->fields) {
+            $args['fields'] = $this->fields;
         }
 
         $args['hide_empty'] = $this->hideEmpty;
