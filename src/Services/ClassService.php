@@ -94,6 +94,44 @@ class ClassService
         });
     }
 
+    public static function getAllCustomBlockClassesWithSlugAsKey(): array
+    {
+        $classes = [];
+
+        foreach (self::getAllCustomBlockClasses() as $customBlockClass) {
+            if (isset($customBlockClass::$slug)) {
+                $classes[$customBlockClass::$slug] = $customBlockClass;
+            }
+        }
+
+        return $classes;
+    }
+
+    private static function getAllCustomBlockClassesByAllowedOrNotInSummary(bool $allowed): array
+    {
+        $classes = [];
+
+        foreach (self::getAllCustomBlockClasses() as $customBlockClass) {
+            if (isset($customBlockClass::$slug, $customBlockClass::$inSummary)) {
+                if ($customBlockClass::$inSummary === $allowed) {
+                    $classes[$customBlockClass::$slug] = $customBlockClass;
+                }
+            }
+        }
+
+        return $classes;
+    }
+
+    public static function getAllCustomBlockClassesAllowedInSummary(): array
+    {
+        return self::getAllCustomBlockClassesByAllowedOrNotInSummary(allowed: true);
+    }
+
+    public static function getAllCustomBlockClassesNotAllowedInSummary(): array
+    {
+        return self::getAllCustomBlockClassesByAllowedOrNotInSummary(allowed: false);
+    }
+
     public static function getAllCustomTaxonomyClasses(): array
     {
         return array_values(

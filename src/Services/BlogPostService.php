@@ -111,12 +111,21 @@ class BlogPostService
 
         $retrieveOnly = ['h2'];
 
+        $excluded = array_values(
+            array_merge(
+                self::EXCLUDED_BLOCKS,
+                array_map(function ($class) {
+                    return sprintf('acf/%s', $class::$slug);
+                }, ClassService::getAllCustomBlockClassesNotAllowedInSummary())
+            )
+        );
+
         foreach ($blocks as $block) {
-            if (isset($block['blockName']) && !in_array($block['blockName'], self::EXCLUDED_BLOCKS)) {
+            if (isset($block['blockName']) && !in_array($block['blockName'], $excluded)) {
                 if (isset($block['attrs'], $block['attrs']['data'], $block['attrs']['data'][$titleKey])) {
                     if ($title = $block['attrs']['data'][$titleKey]) {
                         if ($retrieveOnly) {
-                            if(in_array($block['attrs']['data'][$titleTag], $retrieveOnly)){
+                            if (in_array($block['attrs']['data'][$titleTag], $retrieveOnly)) {
                                 $titles[] = $title;
                             }
                         } else {
