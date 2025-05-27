@@ -1,8 +1,25 @@
-{{-- Fields are stored inside $fields --}}
-{{-- AddToContext values are stored inside $context --}}
-{{-- Block values are stored inside $block --}}
+<x-block :fields="$fields" :block="$block">
+    <div>
+        <div>Block : %%BLOCK_PATH%%</div>
+        <div>Template:  %%TEMPLATE_PATH%%</div>
+    </div>
+    <div class="grid-12">
+        <div class="lg:col-span-12">
+            @if(!empty($fields['uptitle']))
+                <x-typography.uptitle :content="$fields['uptitle']" />
+            @endif
 
-<div>
-    <div>Block : %%BLOCK_PATH%%</div>
-    <div>Template:  %%TEMPLATE_PATH%%</div>
-</div>
+             @if(!empty($fields['title']))
+                <x-typography.heading :fields="$fields['title']" size="3" />
+            @endif
+
+             @if(!empty($fields['wysiwyg']))
+                <x-typography.text :content="$fields['wysiwyg']" />
+            @endif
+
+             @if(!empty($fields['buttons']))
+                <x-action.buttons :buttons="$fields['buttons']" class="mt-button-text-mobile lg:mt-button-text-desktop" />
+            @endif
+        </div>
+    </div>
+</x-block>
