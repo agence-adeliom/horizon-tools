@@ -12,6 +12,7 @@ use Adeliom\HorizonTools\Blocks\AbstractBlock;
 use Adeliom\HorizonTools\Services\ClassService;
 use Adeliom\HorizonTools\Services\FileService;
 use Adeliom\HorizonTools\Taxonomies\AbstractTaxonomy;
+use Illuminate\Support\Facades\Config;
 use Roots\Acorn\Sage\SageServiceProvider;
 use Roots\Acorn\Exceptions\SkipProviderException;
 
@@ -187,39 +188,48 @@ class PostTypeServiceProvider extends SageServiceProvider
 
     public function initListings(): void
     {
+        $postColumns = Config::get('posts.columns');
+
+        $this->initCustomColumns($postColumns, 'post');
+
         foreach (ClassService::getAllCustomPostTypeClasses() as $postTypeClass) {
             $postTypeInstance = new $postTypeClass();
 
             if ($postTypeInstance instanceof AbstractPostType) {
-                if (!empty($postTypeInstance->getCustomColumns())) {
-                    add_filter(
-                        sprintf('manage_%s_posts_columns', $postTypeInstance::$slug),
-                        fn($columns) => $this->handlePostTypeColumns($postTypeInstance, $columns)
-                    );
-                    add_action(
-                        sprintf('manage_%s_posts_custom_column', $postTypeInstance::$slug),
-                        fn($column, $postId) => $this->handlePostTypeCustomColumnContent($postTypeInstance, $column, $postId),
-                        10,
-                        2
-                    );
-                    add_filter(
-                        sprintf('manage_edit-%s_sortable_columns', $postTypeInstance::$slug),
-                        fn($columns) => $this->handlePostTypeCustomColumnSortable($postTypeInstance, $columns)
-                    );
-                    add_action('pre_get_posts', function ($query) use ($postTypeInstance) {
-                        $this->handleOrderByCustomColumn($postTypeInstance, $query);
-                    });
-                }
+                $this->initCustomColumns($postTypeInstance->getCustomColumns(), $postTypeInstance::$slug);
             }
         }
     }
 
-    public function handlePostTypeColumns(AbstractPostType $postType, $columns): array
+    private function initCustomColumns(?array $customColumns, string $postTypeSlug)
+    {
+        if (!empty($customColumns)) {
+            add_filter(
+                sprintf('manage_%s_posts_columns', $postTypeSlug),
+                fn($columns) => $this->handlePostTypeColumns($customColumns, $columns)
+            );
+            add_action(
+                sprintf('manage_%s_posts_custom_column', $postTypeSlug),
+                fn($column, $postId) => $this->handlePostTypeCustomColumnContent($customColumns, $column, $postId),
+                10,
+                2
+            );
+            add_filter(
+                sprintf('manage_edit-%s_sortable_columns', $postTypeSlug),
+                fn($columns) => $this->handlePostTypeCustomColumnSortable($customColumns, $columns)
+            );
+            add_action('pre_get_posts', function ($query) use ($customColumns) {
+                $this->handleOrderByCustomColumn($customColumns, $query);
+            });
+        }
+    }
+
+    public function handlePostTypeColumns(?array $customColumns, $columns): array
     {
         $hasDateCustomColumn = false;
 
-        if (null !== $postType->getCustomColumns()) {
-            foreach ($postType->getCustomColumns() as $customColumn) {
+        if (null !== $customColumns) {
+            foreach ($customColumns as $customColumn) {
                 if (
                     !empty($customColumn[AbstractPostType::CUSTOM_COLUMN_LABEL]) &&
                     !empty($customColumn[AbstractPostType::CUSTOM_COLUMN_KEY])
@@ -252,14 +262,12 @@ class PostTypeServiceProvider extends SageServiceProvider
         return $columns;
     }
 
-    public function handlePostTypeCustomColumnContent(AbstractPostType $postType, string $columnName, int $postId): void
+    public function handlePostTypeCustomColumnContent(?array $customColumns, string $columnName, int $postId): void
     {
-        $columns = $postType->getCustomColumns();
-
-        if (!empty($columns)) {
+        if (!empty($customColumns)) {
             $columnData = null;
 
-            foreach ($columns as $column) {
+            foreach ($customColumns as $column) {
                 if (!empty($column[AbstractPostType::CUSTOM_COLUMN_KEY])) {
                     if ($column[AbstractPostType::CUSTOM_COLUMN_KEY] === $columnName) {
                         $columnData = $column;
@@ -274,7 +282,7 @@ class PostTypeServiceProvider extends SageServiceProvider
                         !empty($columnData[AbstractPostType::CUSTOM_COLUMN_CALLBACK]) &&
                         is_callable($columnData[AbstractPostType::CUSTOM_COLUMN_CALLBACK])
                     ) {
-                        $columnData[AbstractPostType::CUSTOM_COLUMN_CALLBACK]($value);
+                        $columnData[AbstractPostType::CUSTOM_COLUMN_CALLBACK]($value, $postId);
                     } else {
                         echo $value;
                     }
@@ -283,10 +291,10 @@ class PostTypeServiceProvider extends SageServiceProvider
         }
     }
 
-    public function handlePostTypeCustomColumnSortable(AbstractPostType $postType, array $columns)
+    public function handlePostTypeCustomColumnSortable(?array $customColumns, array $columns)
     {
-        if (null !== $postType->getCustomColumns()) {
-            foreach ($postType->getCustomColumns() as $customColumn) {
+        if (null !== $customColumns) {
+            foreach ($customColumns as $customColumn) {
                 if (
                     !empty($customColumn[AbstractPostType::CUSTOM_COLUMN_SORTABLE]) &&
                     $customColumn[AbstractPostType::CUSTOM_COLUMN_SORTABLE] === true
@@ -306,7 +314,7 @@ class PostTypeServiceProvider extends SageServiceProvider
         return $columns;
     }
 
-    public function handleOrderByCustomColumn(AbstractPostType $postType, \WP_Query $query)
+    public function handleOrderByCustomColumn(?array $customColumns, \WP_Query $query)
     {
         if (!is_admin() || !$query->is_main_query()) {
             return;
@@ -316,7 +324,7 @@ class PostTypeServiceProvider extends SageServiceProvider
             $column = null;
             $isOrderByMeta = true;
 
-            foreach ($postType->getCustomColumns() as $customColumn) {
+            foreach ($customColumns as $customColumn) {
                 if (!empty($customColumn[AbstractPostType::CUSTOM_COLUMN_KEY])) {
                     if ($customColumn[AbstractPostType::CUSTOM_COLUMN_KEY] === $orderBy) {
                         $column = $customColumn;
