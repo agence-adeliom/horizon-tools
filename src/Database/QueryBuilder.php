@@ -36,6 +36,7 @@ class QueryBuilder
     private ?int $offset = null;
     private ?string $slug = null;
     private ?string $fields = null;
+    private ?array $parentIdsIn = [];
     private string $orderBy = 'date';
     private string $order = 'DESC';
     private ?string $orderMetaKey = null;
@@ -89,6 +90,27 @@ class QueryBuilder
         foreach ($taxonomy as $item) {
             if (!in_array($item, $this->taxonomies)) {
                 $this->taxonomies[] = $item;
+            }
+        }
+
+        return $this;
+    }
+
+    public function whereParentIn(int|\WP_Post|array $ids): self
+    {
+        $this->triggerChange();
+
+        if (is_int($ids)) {
+            $ids = [$ids];
+        }
+
+        if ($ids instanceof \WP_Post) {
+            $ids = [$ids->ID];
+        }
+
+        foreach ($ids as $item) {
+            if (!in_array($item, $this->parentIdsIn) && is_int($item)) {
+                $this->parentIdsIn[] = $item;
             }
         }
 
@@ -409,6 +431,10 @@ class QueryBuilder
 
         if ($this->idNotIn) {
             $args['post__not_in'] = $this->idNotIn;
+        }
+
+        if ($this->parentIdsIn) {
+            $args['post_parent__in'] = $this->parentIdsIn;
         }
 
         if ($this->search) {

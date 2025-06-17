@@ -101,4 +101,11 @@ abstract class AbstractRepository
 
         return $qb->get();
     }
+
+    public static function getByParent(int|\WP_Post $parent, ?int $perPage = null, int $page = 1): array
+    {
+        $qb = static::getBaseQueryBuilder(perPage: $perPage, page: $page)->whereParentIn($parent);
+
+        return $qb->get();
+    }
 }
