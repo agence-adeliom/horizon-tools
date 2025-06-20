@@ -96,4 +96,17 @@ class FileService
 
         return [];
     }
+
+    public static function filePutContentsAndCreateMissingDirectories(string $filePath, string $data): bool
+    {
+        $directory = dirname($filePath);
+
+        if (!is_dir($directory)) {
+            if (!mkdir($directory, 0755, true) && !is_dir($directory)) {
+                return false;
+            }
+        }
+
+        return file_put_contents($filePath, $data) !== false;
+    }
 }
