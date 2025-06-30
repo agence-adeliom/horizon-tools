@@ -47,6 +47,11 @@ abstract class AbstractBlock
         return null;
     }
 
+    public function getExcludedPostTypes(): ?array
+    {
+        return null;
+    }
+
     public function renderBlockCallback(): void
     {
         // do nothing
