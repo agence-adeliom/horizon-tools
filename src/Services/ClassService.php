@@ -183,6 +183,23 @@ class ClassService
         return $classes;
     }
 
+    public static function getAllClassesFromPath(string $path): array
+    {
+        $classes = [];
+
+        if (is_dir($path)) {
+            $files = FileService::getClassesPathsFromPath($path);
+
+            foreach ($files as $file) {
+                if ($className = self::getClassNameFromFilePath($file)) {
+                    $classes[$file] = $className;
+                }
+            }
+        }
+
+        return $classes;
+    }
+
     public static function getClassNameFromFilePath(string $filePath): ?string
     {
         $content = file_get_contents($filePath);
