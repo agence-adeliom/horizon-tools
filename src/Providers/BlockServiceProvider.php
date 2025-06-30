@@ -21,14 +21,8 @@ class BlockServiceProvider extends SageServiceProvider
         $this->initBlocks();
 
         if (self::UNREGISTER_DEFAULT_BLOCKS) {
-            add_filter('allowed_block_types_all', [
-                $this,
-                'unregisterBlocks',
-            ], 10, 2);
-            add_filter('block_categories_all', [
-                $this,
-                'registerCustomBlockCategories',
-            ], 10, 2);
+            add_filter('allowed_block_types_all', [$this, 'unregisterBlocks'], 10, 2);
+            add_filter('block_categories_all', [$this, 'registerCustomBlockCategories'], 10, 2);
         }
     }
 
@@ -47,34 +41,47 @@ class BlockServiceProvider extends SageServiceProvider
                         if (function_exists('register_extended_field_group')) {
                             $category = null;
 
-                            if ($class::$category != "common") {
+                            if ($class::$category != 'common') {
                                 $category = $class::$category;
-                            } else if ($blockClass !== 'App\\Blocks\\' . ClassService::getClassNameFromFullName($blockClass)) {
+                            } elseif ($blockClass !== 'App\\Blocks\\' . ClassService::getClassNameFromFullName($blockClass)) {
                                 $category = ClassService::getFolderNameFromFullName(
                                     fullName: $blockClass,
                                     replacements: [
                                         'app/blocks/' => '',
                                     ]
                                 );
-
                             }
 
                             if (ClassService::isAcfInstalledAndEnabled()) {
                                 register_extended_field_group([
-                                    'key'      => $class::$slug,
-                                    'title'    => $class::$title,
-                                    'fields'   => $class->getFields() ? iterator_to_array($class->getFields(), false) : [],
+                                    'key' => $class::$slug,
+                                    'title' => $class::$title,
+                                    'fields' => $class->getFields() ? iterator_to_array($class->getFields(), false) : [],
                                     'location' => [Location::where('block', 'acf/' . $class::$slug)],
                                 ]);
 
+                                $allowedPostTypes = null;
+
+                                if (function_exists('get_post_types')) {
+                                    $allowedPostTypes = array_keys(get_post_types(['public' => true], 'names'));
+
+                                    if (null !== $class->getPostTypes() && !empty($class->getPostTypes())) {
+                                        $allowedPostTypes = $class->getPostTypes();
+                                    }
+
+                                    if (null !== $class->getExcludedPostTypes()) {
+                                        $allowedPostTypes = array_values(array_diff($allowedPostTypes, $class->getExcludedPostTypes()));
+                                    }
+                                }
+
                                 acf_register_block_type([
-                                    'name'            => $class::$slug,
-                                    'title'           => $class::$title,
-                                    'category'        => $category,
-                                    'mode'            => $class::$mode,
-                                    'description'     => $class::$description,
-                                    'icon'            => $class::$icon,
-                                    'post_types'      => $class->getPostTypes(),
+                                    'name' => $class::$slug,
+                                    'title' => $class::$title,
+                                    'category' => $category,
+                                    'mode' => $class::$mode,
+                                    'description' => $class::$description,
+                                    'icon' => $class::$icon,
+                                    'post_types' => $allowedPostTypes,
                                     'render_callback' => function ($block) use ($class, $category) {
                                         $template =
                                             'blocks/' . ($category ? $category . '/' : '') . str_replace('acf/', '', $block['name']);
@@ -92,16 +99,16 @@ class BlockServiceProvider extends SageServiceProvider
                                             }
 
                                             echo view('blocks/' . $category . '/' . str_replace('acf/', '', $block['name']), [
-                                                'block'   => $block,
-                                                'fields'  => get_fields(),
+                                                'block' => $block,
+                                                'fields' => get_fields(),
                                                 'context' => $class->addToContext(),
                                             ]);
                                         } else {
                                             throw new SkipProviderException('Template not found: ' . $template . '.blade.php');
                                         }
                                     },
-                                    'supports'        => $class->getSupports(),
-                                    'example'         => $class->getExample(),
+                                    'supports' => $class->getSupports(),
+                                    'example' => $class->getExample(),
                                 ]);
                             }
 
@@ -146,11 +153,9 @@ class BlockServiceProvider extends SageServiceProvider
         try {
             $this->registerCategoriesFromCases(BlockCategoriesEnum::class, $categories);
 
-
             if (class_exists(self::THEME_BLOCK_CATEGORIES_CLASS)) {
                 $this->registerCategoriesFromCases(self::THEME_BLOCK_CATEGORIES_CLASS, $categories);
             }
-
 
             return $categories;
         } catch (\Exception $e) {
@@ -185,9 +190,9 @@ class BlockServiceProvider extends SageServiceProvider
                 }
 
                 $categories[] = [
-                    'slug'  => $case->value,
+                    'slug' => $case->value,
                     'title' => $title,
-                    'icon'  => $icon,
+                    'icon' => $icon,
                     'order' => $order,
                 ];
             }
