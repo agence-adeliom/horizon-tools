@@ -35,6 +35,7 @@ class QueryBuilder
     private int $page = 1;
     private ?int $offset = null;
     private ?int $forcedOffset = null;
+    private ?int $forcedPageNumber = null;
     private ?string $slug = null;
     private ?string $fields = null;
     private ?array $parentIdsIn = [];
@@ -282,6 +283,15 @@ class QueryBuilder
         $this->triggerChange();
 
         $this->forcedOffset = $forcedOffset;
+
+        return $this;
+    }
+
+    public function forcedPageNumber(int $forcedPageNumber): self
+    {
+        $this->triggerChange();
+
+        $this->forcedPageNumber = $forcedPageNumber;
 
         return $this;
     }
@@ -741,7 +751,7 @@ class QueryBuilder
 
         if ($this->isPostType) {
             $total = $this->getCount();
-            $pages = $this->getPagesCount();
+            $pages = null === $this->forcedPageNumber ? $this->getPagesCount() : $this->forcedPageNumber;
         } elseif ($this->isTaxonomy) {
             $clone = clone $this;
             $clone->perPage(null);
@@ -753,7 +763,7 @@ class QueryBuilder
                 $total -= $this->offset;
             }
 
-            $pages = intval(ceil($total / $this->perPage));
+            $pages = null === $this->forcedPageNumber ? intval(ceil($total / $this->perPage)) : $this->forcedPageNumber;
         }
 
         return [
