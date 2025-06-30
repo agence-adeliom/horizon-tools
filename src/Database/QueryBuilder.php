@@ -34,6 +34,7 @@ class QueryBuilder
     private ?int $perPage = null;
     private int $page = 1;
     private ?int $offset = null;
+    private ?int $forcedOffset = null;
     private ?string $slug = null;
     private ?string $fields = null;
     private ?array $parentIdsIn = [];
@@ -276,6 +277,15 @@ class QueryBuilder
         return $this;
     }
 
+    public function forcedOffset(int $forcedOffset): self
+    {
+        $this->triggerChange();
+
+        $this->forcedOffset = $forcedOffset;
+
+        return $this;
+    }
+
     public function page(int $page): self
     {
         $this->triggerChange();
@@ -458,18 +468,28 @@ class QueryBuilder
         if ($this->page) {
             $args['page'] = $this->page;
 
+            $forcedOffset = null;
+
+            if (null !== $this->forcedOffset) {
+                $forcedOffset = $this->forcedOffset;
+            }
+
             if ($this->perPage) {
                 $args['posts_per_page'] = $this->perPage;
 
-                $offset = ($this->page - 1) * $this->perPage;
+                $offset = $forcedOffset;
 
-                if (null !== $this->offset) {
-                    $offset += $this->offset;
+                if (null === $offset) {
+                    $offset = ($this->page - 1) * $this->perPage;
+
+                    if (null !== $this->offset) {
+                        $offset += $this->offset;
+                    }
                 }
 
                 $args['offset'] = $offset;
             } else {
-                $args['offset'] = 0;
+                $args['offset'] = $forcedOffset ?? 0;
             }
         }
 
