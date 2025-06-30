@@ -250,4 +250,23 @@ class ClassService
             return null;
         }
     }
+
+    public static function convertComponentClassNameToBladeComponentName(string $className): string
+    {
+        $parts = explode('\\', $className);
+        $realParts = [];
+
+        $componentReached = false;
+
+        foreach ($parts as $part) {
+            if ($componentReached) {
+                $realParts[] = strtolower(preg_replace('/(?<!^)[A-Z]/', '-$0', $part));
+            }
+            if ($part === 'Components') {
+                $componentReached = true;
+            }
+        }
+
+        return implode('.', $realParts);
+    }
 }

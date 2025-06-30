@@ -285,6 +285,11 @@ class QueryBuilder
         return $this;
     }
 
+    public function getPage(): int
+    {
+        return $this->page;
+    }
+
     /**
      * @deprecated
      */
@@ -300,6 +305,11 @@ class QueryBuilder
         $this->perPage = $perPage;
 
         return $this;
+    }
+
+    public function getPerPage(): ?int
+    {
+        return $this->perPage;
     }
 
     /**
