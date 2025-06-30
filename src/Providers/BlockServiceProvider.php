@@ -28,6 +28,12 @@ class BlockServiceProvider extends SageServiceProvider
 
     private function initBlocks(): void
     {
+        $allPostTypes = null;
+
+        if (function_exists('get_post_types')) {
+            $allPostTypes = array_keys(get_post_types(['public' => true], 'names'));
+        }
+
         try {
             foreach (FileService::getCustomBlockFiles() as $classPath) {
                 require_once $classPath;
@@ -62,14 +68,15 @@ class BlockServiceProvider extends SageServiceProvider
 
                                 $allowedPostTypes = null;
 
-                                if (function_exists('get_post_types')) {
-                                    $allowedPostTypes = array_keys(get_post_types(['public' => true], 'names'));
+                                if (null !== $allPostTypes) {
+                                    $allowedPostTypes = $allPostTypes;
 
                                     if (null !== $class->getPostTypes() && !empty($class->getPostTypes())) {
                                         $allowedPostTypes = $class->getPostTypes();
                                     }
 
                                     if (null !== $class->getExcludedPostTypes()) {
+                                        // Remove excluded post types from allowed post types
                                         $allowedPostTypes = array_values(array_diff($allowedPostTypes, $class->getExcludedPostTypes()));
                                     }
                                 }
