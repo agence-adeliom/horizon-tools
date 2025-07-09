@@ -185,7 +185,7 @@ EOF;
             if (null !== $iconUrl) {
                 $height = min(Config::get('back-office.login.header.logo.height', 120) ?? 120, 320);
                 $width = min(Config::get('back-office.login.header.logo.width', 120) ?? 120, 320);
-                $radius = Config::get('back-office.login.header.logo.radius', 4) ?? 4;
+                $radius = Config::get('back-office.login.header.logo.radius', 120) ?? 120;
                 $backgroundColor = Config::get('back-office.login.header.logo.backgroundColor', '#FFFFFF') ?? '#FFFFFF';
 
                 echo <<<EOF
