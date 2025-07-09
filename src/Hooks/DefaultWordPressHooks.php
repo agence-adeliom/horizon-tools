@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Hooks;
 
+use Adeliom\HorizonTools\Services\ImageService;
 use enshrined\svgSanitize\Sanitizer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Request;
+use League\ColorExtractor\Color;
+use League\ColorExtractor\ColorExtractor;
+use League\ColorExtractor\Palette;
 
 class DefaultWordPressHooks extends AbstractHook
 {
@@ -185,8 +189,9 @@ EOF;
             if (null !== $iconUrl) {
                 $height = min(Config::get('back-office.login.header.logo.height', 120) ?? 120, 320);
                 $width = min(Config::get('back-office.login.header.logo.width', 120) ?? 120, 320);
-                $radius = Config::get('back-office.login.header.logo.radius', 120) ?? 120;
+                $radius = Config::get('back-office.login.header.logo.radius', 4) ?? 4;
                 $backgroundColor = Config::get('back-office.login.header.logo.backgroundColor', '#FFFFFF') ?? '#FFFFFF';
+                $useMainColor = Config::get('back-office.login.useMainColor', false);
 
                 echo <<<EOF
 <style>
@@ -207,6 +212,29 @@ EOF;
 }
 </style>
 EOF;
+
+                if ($useMainColor) {
+                    $mainColor = ImageService::getMainColorFromImageByUrl($iconUrl);
+
+                    if (null !== $mainColor) {
+                        echo <<<EOF
+<style>
+#login .button, #login .button-secondary {
+color: $mainColor;
+}
+#login .button-primary {
+background: $mainColor;
+border-color: $mainColor;
+color: #FFFFFF;
+}
+#login input[type=text]:focus, #login input[type=password]:focus {
+	border-color: $mainColor;
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+</style>
+EOF;
+                    }
+                }
             }
         }
     }
