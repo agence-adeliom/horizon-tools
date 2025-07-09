@@ -122,7 +122,7 @@ class DefaultWordPressHooks extends AbstractHook
 
     public function handleFooterText(string $text): string
     {
-        $manualText = Config::get('back-office.footer_text');
+        $manualText = Config::get('back-office.bo.footerText');
 
         if (empty($manualText)) {
             $defaultTranslatableContent = __('Développé avec soin par l’agence digitale');
@@ -174,15 +174,27 @@ EOF;
     public function handleLoginHeaderImage(): void
     {
         if (function_exists('get_site_icon_url')) {
-            if ($iconUrl = get_site_icon_url()) {
+            $iconUrl = null;
+
+            if ($configLogoUrl = Config::get('back-office.login.header.logo.url')) {
+                $iconUrl = $configLogoUrl;
+            } elseif ($faviconUrl = get_site_icon_url()) {
+                $iconUrl = $faviconUrl;
+            }
+
+            if (null !== $iconUrl) {
+                $height = min(Config::get('back-office.login.header.logo.height', 120) ?? 120, 320);
+                $width = min(Config::get('back-office.login.header.logo.width', 120) ?? 120, 320);
+                $radius = Config::get('back-office.login.header.logo.radius', 4) ?? 4;
+
                 echo <<<EOF
 <style>
 #login h1 a, .login h1 a {
     background-image: url("$iconUrl");
     background-size: contain;
-    height: 120px;
-    width: 120px;
-    border-radius: 4px;
+    height: {$height}px;
+    width: {$width}px;
+    border-radius: {$radius}px;
 }
 </style>
 EOF;
