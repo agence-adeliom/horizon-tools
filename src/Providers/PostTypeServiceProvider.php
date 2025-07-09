@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Adeliom\HorizonTools\Providers;
 
 use Adeliom\HorizonTools\Blocks\CompositionBlock;
-use Adeliom\HorizonTools\Database\MetaQuery;
 use Adeliom\HorizonTools\PostTypes\AbstractPostType;
 use Extended\ACF\Location;
 use Adeliom\HorizonTools\Blocks\AbstractBlock;
@@ -224,29 +223,68 @@ class PostTypeServiceProvider extends SageServiceProvider
         }
     }
 
+    private function handleBasicPostTypeColumn(array &$columns, array $customColumn, bool &$hasDateCustomColumn): void
+    {
+        if (isset($columns[$customColumn[AbstractPostType::CUSTOM_COLUMN_KEY]])) {
+            unset($columns[$customColumn[AbstractPostType::CUSTOM_COLUMN_KEY]]);
+        }
+
+        if (
+            !isset($customColumn[AbstractPostType::CUSTOM_COLUMN_DISPLAY]) ||
+            $customColumn[AbstractPostType::CUSTOM_COLUMN_DISPLAY] === true
+        ) {
+            if (!$hasDateCustomColumn && $customColumn[AbstractPostType::CUSTOM_COLUMN_KEY] === 'date') {
+                $hasDateCustomColumn = true;
+            }
+
+            $columns[$customColumn[AbstractPostType::CUSTOM_COLUMN_KEY]] = $customColumn[AbstractPostType::CUSTOM_COLUMN_LABEL];
+        }
+    }
+
+    private function getColumnKeyByTaxonomySlug(string $taxonomySlug): string
+    {
+        return sprintf('taxonomy_%s', $taxonomySlug);
+    }
+
+    private function handleTaxonomyPostTypeColumn(array &$columns, array $customColumn, bool &$hasDateCustomColumn): void
+    {
+        $taxonomySlug = $customColumn[AbstractPostType::CUSTOM_COLUMN_TAXONOMY] ?? null;
+
+        if ($taxonomySlug) {
+            $taxonomyKey = $this->getColumnKeyByTaxonomySlug($taxonomySlug);
+
+            if (isset($columns[$taxonomyKey])) {
+                unset($columns[$taxonomyKey]);
+            }
+
+            if (
+                !isset($customColumn[AbstractPostType::CUSTOM_COLUMN_DISPLAY]) ||
+                $customColumn[AbstractPostType::CUSTOM_COLUMN_DISPLAY] === true
+            ) {
+                $columns[$taxonomyKey] = $customColumn[AbstractPostType::CUSTOM_COLUMN_LABEL];
+            }
+        }
+    }
+
     public function handlePostTypeColumns(?array $customColumns, $columns): array
     {
         $hasDateCustomColumn = false;
 
         if (null !== $customColumns) {
             foreach ($customColumns as $customColumn) {
-                if (
-                    !empty($customColumn[AbstractPostType::CUSTOM_COLUMN_LABEL]) &&
-                    !empty($customColumn[AbstractPostType::CUSTOM_COLUMN_KEY])
-                ) {
-                    if (isset($columns[$customColumn[AbstractPostType::CUSTOM_COLUMN_KEY]])) {
-                        unset($columns[$customColumn[AbstractPostType::CUSTOM_COLUMN_KEY]]);
-                    }
-
-                    if (
-                        !isset($customColumn[AbstractPostType::CUSTOM_COLUMN_DISPLAY]) ||
-                        $customColumn[AbstractPostType::CUSTOM_COLUMN_DISPLAY] === true
-                    ) {
-                        if (!$hasDateCustomColumn && $customColumn[AbstractPostType::CUSTOM_COLUMN_KEY] === 'date') {
-                            $hasDateCustomColumn = true;
-                        }
-
-                        $columns[$customColumn[AbstractPostType::CUSTOM_COLUMN_KEY]] = $customColumn[AbstractPostType::CUSTOM_COLUMN_LABEL];
+                if (!empty($customColumn[AbstractPostType::CUSTOM_COLUMN_LABEL])) {
+                    if (!empty($customColumn[AbstractPostType::CUSTOM_COLUMN_TAXONOMY])) {
+                        $this->handleTaxonomyPostTypeColumn(
+                            columns: $columns,
+                            customColumn: $customColumn,
+                            hasDateCustomColumn: $hasDateCustomColumn
+                        );
+                    } elseif (!empty($customColumn[AbstractPostType::CUSTOM_COLUMN_KEY])) {
+                        $this->handleBasicPostTypeColumn(
+                            columns: $columns,
+                            customColumn: $customColumn,
+                            hasDateCustomColumn: $hasDateCustomColumn
+                        );
                     }
                 }
             }
@@ -262,31 +300,97 @@ class PostTypeServiceProvider extends SageServiceProvider
         return $columns;
     }
 
-    public function handlePostTypeCustomColumnContent(?array $customColumns, string $columnName, int $postId): void
+    private function handleBasicPostTypeCustomColumnContent(mixed &$columnData, array $column, string $columnName): void
     {
-        if (!empty($customColumns)) {
-            $columnData = null;
+        if ($column[AbstractPostType::CUSTOM_COLUMN_KEY] === $columnName) {
+            $columnData = $column;
+        }
+    }
 
-            foreach ($customColumns as $column) {
-                if (!empty($column[AbstractPostType::CUSTOM_COLUMN_KEY])) {
-                    if ($column[AbstractPostType::CUSTOM_COLUMN_KEY] === $columnName) {
-                        $columnData = $column;
-                        break;
-                    }
-                }
-            }
+    private function handleTaxonomyPostTypeCustomColumnContent(mixed &$columnData, array $column, string $columnName): void
+    {
+        $taxonomySlug = $column[AbstractPostType::CUSTOM_COLUMN_TAXONOMY] ?? null;
 
-            if (is_array($columnData)) {
-                if ($value = get_field($columnData[AbstractPostType::CUSTOM_COLUMN_KEY], $postId)) {
-                    if (
-                        !empty($columnData[AbstractPostType::CUSTOM_COLUMN_CALLBACK]) &&
-                        is_callable($columnData[AbstractPostType::CUSTOM_COLUMN_CALLBACK])
-                    ) {
-                        $columnData[AbstractPostType::CUSTOM_COLUMN_CALLBACK]($value, $postId);
+        if ($columnName === $this->getColumnKeyByTaxonomySlug($taxonomySlug)) {
+            $columnData = $column;
+        }
+    }
+
+    private function handleBasicPostTypeCustomColumnStringContent(?array $columnData = null, int $postId): void
+    {
+        if (is_array($columnData)) {
+            if ($value = get_field($columnData[AbstractPostType::CUSTOM_COLUMN_KEY], $postId)) {
+                if (
+                    !empty($columnData[AbstractPostType::CUSTOM_COLUMN_CALLBACK]) &&
+                    is_callable($columnData[AbstractPostType::CUSTOM_COLUMN_CALLBACK])
+                ) {
+                    $columnData[AbstractPostType::CUSTOM_COLUMN_CALLBACK]($value, $postId);
+                } else {
+                    if (is_array($value)) {
+                        echo implode(', ', $value);
                     } else {
                         echo $value;
                     }
                 }
+            }
+        }
+    }
+
+    private function handleTaxonomyPostTypeCustomColumnStringContent(?array $columnData = null, int $postId): void
+    {
+        if (is_array($columnData)) {
+            if ($terms = get_the_terms($postId, $columnData[AbstractPostType::CUSTOM_COLUMN_TAXONOMY])) {
+                $termsUrls = [];
+
+                foreach ($terms as $term) {
+                    if ($term instanceof \WP_Term) {
+                        // Get admin url for the term
+                        $termsUrls[] = sprintf(
+                            '<a href="%s">%s</a>',
+                            get_edit_term_link($term->term_id, $columnData[AbstractPostType::CUSTOM_COLUMN_TAXONOMY]),
+                            esc_html($term->name)
+                        );
+                    }
+                }
+
+                if (
+                    !empty($columnData[AbstractPostType::CUSTOM_COLUMN_CALLBACK]) &&
+                    is_callable($columnData[AbstractPostType::CUSTOM_COLUMN_CALLBACK])
+                ) {
+                    $columnData[AbstractPostType::CUSTOM_COLUMN_CALLBACK]($terms, $postId);
+                } else {
+                    echo implode(', ', $termsUrls);
+                }
+            }
+        }
+    }
+
+    public function handlePostTypeCustomColumnContent(?array $customColumns, string $columnName, int $postId): void
+    {
+        if (!empty($customColumns)) {
+            $columnData = null;
+            $isTaxonomy = false;
+
+            foreach ($customColumns as $column) {
+                if (!empty($column[AbstractPostType::CUSTOM_COLUMN_TAXONOMY])) {
+                    $this->handleTaxonomyPostTypeCustomColumnContent(columnData: $columnData, column: $column, columnName: $columnName);
+                } elseif (!empty($column[AbstractPostType::CUSTOM_COLUMN_KEY])) {
+                    $this->handleBasicPostTypeCustomColumnContent(columnData: $columnData, column: $column, columnName: $columnName);
+                }
+
+                if (null !== $columnData && !empty($column[AbstractPostType::CUSTOM_COLUMN_TAXONOMY])) {
+                    $isTaxonomy = true;
+                    break;
+                }
+            }
+
+            switch (true) {
+                case $isTaxonomy:
+                    $this->handleTaxonomyPostTypeCustomColumnStringContent(columnData: $columnData, postId: $postId);
+                    break;
+                default:
+                    $this->handleBasicPostTypeCustomColumnStringContent(columnData: $columnData, postId: $postId);
+                    break;
             }
         }
     }

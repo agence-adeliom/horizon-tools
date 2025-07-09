@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Adeliom\HorizonTools\PostTypes;
 
 use Adeliom\HorizonTools\Database\QueryBuilder;
-use Extended\ACF\Location;
 use Roots\Acorn\Exceptions\SkipProviderException;
 
 abstract class AbstractPostType
@@ -18,6 +17,7 @@ abstract class AbstractPostType
     public const CUSTOM_COLUMN_DISPLAY = 'display';
     public const CUSTOM_COLUMN_CALLBACK = 'callback';
     public const CUSTOM_COLUMN_SORTABLE = 'sortable';
+    public const CUSTOM_COLUMN_TAXONOMY = 'taxonomy';
 
     public function __construct()
     {
