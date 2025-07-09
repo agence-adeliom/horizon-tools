@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Hooks;
 
+use Adeliom\HorizonTools\Services\ColorService;
 use Adeliom\HorizonTools\Services\ImageService;
 use enshrined\svgSanitize\Sanitizer;
 use Illuminate\Support\Facades\Cache;
@@ -217,19 +218,54 @@ EOF;
                     $mainColor = ImageService::getMainColorFromImageByUrl($iconUrl);
 
                     if (null !== $mainColor) {
+                        $mainColorLight = ColorService::adjustBrightness($mainColor, 0.9);
+                        $mainColorDark = ColorService::adjustBrightness($mainColor, -0.25);
+
                         echo <<<EOF
 <style>
 #login .button, #login .button-secondary {
-color: $mainColor;
+    color: $mainColor;
+}
+#login #backtoblog a:hover {
+    color: $mainColor;
+}
+#login #nav a:hover {
+    color: $mainColor;
+}
+#login .message, #login .notice, #login .sucess {
+    border-left-color: $mainColor;
+}
+.login .language-switcher .button {
+    color: $mainColor;
+    border-color: $mainColor;
+}
+.login .language-switcher .button:hover {
+    color: $mainColorDark;
+    border-color: $mainColorDark;
+    background: $mainColorLight;
+}
+.login .language-switcher select:focus {
+    border-color: $mainColor;
+    color:$mainColor;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+.login .language-switcher select:hover {
+    color:$mainColor;
 }
 #login .button-primary {
-background: $mainColor;
-border-color: $mainColor;
-color: #FFFFFF;
+    background: $mainColor;
+    border-color: $mainColor;
+    color: #FFFFFF;
 }
 #login input[type=text]:focus, #login input[type=password]:focus {
 	border-color: $mainColor;
 	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+#login a {
+	color: $mainColor;
+}
+#login a:hover {
+    color: $mainColorDark;
 }
 </style>
 EOF;
