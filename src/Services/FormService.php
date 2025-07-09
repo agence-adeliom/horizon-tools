@@ -8,11 +8,20 @@ use GFFormsModel;
 
 class FormService
 {
+    public static function isGravityFormsActive(): bool
+    {
+        if (function_exists('is_plugin_active')) {
+            return is_plugin_active('gravityforms/gravityforms.php');
+        }
+
+        return false;
+    }
+
     public static function getAllForms(): array
     {
         $forms = [];
 
-        if (class_exists(('GFFormsModel'))) {
+        if (class_exists('GFFormsModel')) {
             $forms = GFFormsModel::get_forms();
         }
 
