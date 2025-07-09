@@ -9,11 +9,11 @@ use Adeliom\HorizonTools\Services\FormService;
 class DefaultGravityFormsHooks extends AbstractHook
 {
     public const SETTING_DISPLAY_OPTIONNAL_LABEL_NAME = 'displayOptionnalLabel';
-    public const SETTING_DISPLAY_OPTIONNAL_LABEL_LABEL = 'Remplacer le label Nécessaire par le label Optionnel';
+    public const SETTING_DISPLAY_OPTIONNAL_LABEL_LABEL = 'Remplacer le label Nécessaire par un label "facultatif"';
     public const SETTING_DISPLAY_OPTIONNAL_LABEL_TOOLTIP = 'Permet d’afficher le label des champs optionnels à la place du label nécessaire dans les formulaires Gravity Forms.';
 
     public const SETTING_OPTIONNAL_TEXT_NAME = 'optionnalText';
-    public const SETTING_OPTIONNAL_TEXT_LABEL = 'Texte pour les champs optionnels';
+    public const SETTING_OPTIONNAL_TEXT_LABEL = 'Texte pour les champs facultatifs';
     public const SETTING_OPTIONNAL_TEXT_DEFAULT = 'Facultatif';
     public const SETTING_OPTIONNAL_TEXT_TOOLTIP = 'Texte à afficher pour les champs optionnels. Par défaut, il s’agit de %DEFAULT%.';
 
