@@ -14,7 +14,8 @@ class DefaultGravityFormsHooks extends AbstractHook
 
     public const SETTING_OPTIONNAL_TEXT_NAME = 'optionnalText';
     public const SETTING_OPTIONNAL_TEXT_LABEL = 'Texte pour les champs optionnels';
-    public const SETTING_OPTIONNAL_TEXT_TOOLTIP = 'Texte à afficher pour les champs optionnels. Par défaut, il s’agit de "Optionnel".';
+    public const SETTING_OPTIONNAL_TEXT_DEFAULT = 'Facultatif';
+    public const SETTING_OPTIONNAL_TEXT_TOOLTIP = 'Texte à afficher pour les champs optionnels. Par défaut, il s’agit de %DEFAULT%.';
 
     public function init(): void
     {
@@ -37,8 +38,10 @@ class DefaultGravityFormsHooks extends AbstractHook
             'name' => self::SETTING_OPTIONNAL_TEXT_NAME,
             'type' => 'text',
             'label' => self::SETTING_OPTIONNAL_TEXT_LABEL,
-            'tooltip' => $this->generateTooltip(self::SETTING_OPTIONNAL_TEXT_TOOLTIP),
-            'default_value' => 'Optionnel',
+            'tooltip' => $this->generateTooltip(
+                str_replace('%DEFAULT%', self::SETTING_OPTIONNAL_TEXT_DEFAULT, self::SETTING_OPTIONNAL_TEXT_TOOLTIP)
+            ),
+            'default_value' => self::SETTING_OPTIONNAL_TEXT_DEFAULT,
             'dependency' => [
                 'live' => true,
                 'fields' => [
@@ -58,7 +61,9 @@ class DefaultGravityFormsHooks extends AbstractHook
     public function changeFieldLabels(string $content, \GF_Field $field, mixed $value, int $leadId, int $formId)
     {
         if ($form = \GFAPI::get_form($formId)) {
-            $optionalText = $form[self::SETTING_OPTIONNAL_TEXT_NAME] ?? 'Optionnel';
+            $optionalText = !empty($form[self::SETTING_OPTIONNAL_TEXT_NAME])
+                ? $form[self::SETTING_OPTIONNAL_TEXT_NAME]
+                : self::SETTING_OPTIONNAL_TEXT_DEFAULT;
 
             if (!empty($form[self::SETTING_DISPLAY_OPTIONNAL_LABEL_NAME]) && 1 == $form[self::SETTING_DISPLAY_OPTIONNAL_LABEL_NAME]) {
                 if (property_exists($field, 'isRequired')) {
