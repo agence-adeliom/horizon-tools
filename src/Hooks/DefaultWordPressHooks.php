@@ -180,14 +180,22 @@ EOF;
     {
         if (function_exists('get_site_icon_url')) {
             $iconUrl = null;
+            $iconPath = null;
 
             if ($configLogoUrl = Config::get('back-office.login.header.logo.url')) {
                 $iconUrl = $configLogoUrl;
             } elseif ($faviconUrl = get_site_icon_url()) {
                 $iconUrl = $faviconUrl;
+
+                $faviconPath = parse_url($faviconUrl, PHP_URL_PATH);
+                $iconPath = getcwd() . '/..' . $faviconPath;
+
+                if (!file_exists($iconPath)) {
+                    $iconPath = null;
+                }
             }
 
-            if (null !== $iconUrl) {
+            if (null !== $iconUrl || null !== $iconPath) {
                 $height = min(Config::get('back-office.login.header.logo.height', 120) ?? 120, 320);
                 $width = min(Config::get('back-office.login.header.logo.width', 120) ?? 120, 320);
                 $radius = Config::get('back-office.login.header.logo.radius', 4) ?? 4;
@@ -215,7 +223,10 @@ EOF;
 EOF;
 
                 if ($useMainColor) {
-                    $mainColor = ImageService::getMainColorFromImageByUrl($iconUrl);
+                    $mainColor =
+                        null !== $iconPath
+                            ? ImageService::getMainColorFromImageByPath(imagePath: $iconPath)
+                            : ImageService::getMainColorFromImageByUrl(imageUrl: $iconUrl);
                     $boxShadow = 'inset 0 1px 1px rgba(0, 0, 0, 0.075)';
 
                     if (null !== $mainColor) {

@@ -15,6 +15,11 @@ class ImageService
         return self::getMainColorFromPalette(palette: Palette::fromUrl($imageUrl));
     }
 
+    public static function getMainColorFromImageByPath(string $imagePath): ?string
+    {
+        return self::getMainColorFromPalette(palette: Palette::fromFilename($imagePath));
+    }
+
     private static function getMainColorFromPalette(Palette $palette)
     {
         $mainColor = null;
