@@ -186,15 +186,24 @@ EOF;
                 $height = min(Config::get('back-office.login.header.logo.height', 120) ?? 120, 320);
                 $width = min(Config::get('back-office.login.header.logo.width', 120) ?? 120, 320);
                 $radius = Config::get('back-office.login.header.logo.radius', 4) ?? 4;
+                $backgroundColor = Config::get('back-office.login.header.logo.backgroundColor', '#FFFFFF') ?? '#FFFFFF';
 
                 echo <<<EOF
 <style>
+#login h1, .login h1 {
+    height: {$height}px;
+    width: {$width}px;
+    margin: 0 auto 16px;
+    background-color: $backgroundColor;
+    border-radius: {$radius}px;
+}
 #login h1 a, .login h1 a {
     background-image: url("$iconUrl");
     background-size: contain;
     height: {$height}px;
     width: {$width}px;
     border-radius: {$radius}px;
+    position: relative;
 }
 </style>
 EOF;
