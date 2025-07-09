@@ -216,6 +216,7 @@ EOF;
 
                 if ($useMainColor) {
                     $mainColor = ImageService::getMainColorFromImageByUrl($iconUrl);
+                    $boxShadow = 'inset 0 1px 1px rgba(0, 0, 0, 0.075)';
 
                     if (null !== $mainColor) {
                         $mainColorLight = ColorService::adjustBrightness($mainColor, 0.9);
@@ -225,6 +226,10 @@ EOF;
 <style>
 #login .button, #login .button-secondary {
     color: $mainColor;
+}
+#login .button:focus, #login .button-secondary:focus {
+	border-color: $mainColor;
+	box-shadow: $boxShadow;
 }
 #login #backtoblog a:hover {
     color: $mainColor;
@@ -247,7 +252,7 @@ EOF;
 .login .language-switcher select:focus {
     border-color: $mainColor;
     color:$mainColor;
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    box-shadow: $boxShadow;
 }
 .login .language-switcher select:hover {
     color:$mainColor;
@@ -259,7 +264,7 @@ EOF;
 }
 #login input[type=text]:focus, #login input[type=password]:focus {
 	border-color: $mainColor;
-	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+	box-shadow: $boxShadow;
 }
 #login a {
 	color: $mainColor;
