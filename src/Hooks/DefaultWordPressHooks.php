@@ -20,6 +20,7 @@ class DefaultWordPressHooks extends AbstractHook
             ['upload_mimes', [$this, 'allowedMimeTypes']],
             ['wp_handle_upload_prefilter', [$this, 'cleanMedias']],
             ['image_downsize', [$this, 'svgAttributes'], 10, 2],
+            ['admin_footer_text', [$this, 'handleFooterText'], 10, 1],
         ];
 
         foreach ($filters as $filter) {
@@ -114,5 +115,24 @@ class DefaultWordPressHooks extends AbstractHook
                 }
             }
         }
+    }
+
+    public function handleFooterText(string $text): string
+    {
+        $manualText = Config::get('back-office.footer_text');
+
+        if (empty($manualText)) {
+            $defaultTranslatableContent = __('Développé avec soin par l’agence digitale');
+
+            $text = <<<EOF
+<span id="footer-thankyou">
+$defaultTranslatableContent <a href="https://adeliom.com/">Adeliom</a>
+</span>
+EOF;
+        } else {
+            $text = $manualText;
+        }
+
+        return $text;
     }
 }
