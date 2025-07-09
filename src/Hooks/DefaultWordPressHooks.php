@@ -21,6 +21,9 @@ class DefaultWordPressHooks extends AbstractHook
             ['wp_handle_upload_prefilter', [$this, 'cleanMedias']],
             ['image_downsize', [$this, 'svgAttributes'], 10, 2],
             ['admin_footer_text', [$this, 'handleFooterText'], 10, 1],
+            ['login_headerurl', [$this, 'handleLoginHeaderUrl'], 10, 1],
+            ['login_headertitle', [$this, 'handleLoginHeaderTitle'], 10, 1],
+            ['login_enqueue_scripts', [$this, 'handleLoginHeaderImage'], 10, 1],
         ];
 
         foreach ($filters as $filter) {
@@ -134,5 +137,56 @@ EOF;
         }
 
         return $text;
+    }
+
+    public function handleLoginHeaderUrl(string $url): string
+    {
+        $manualUrl = Config::get('back-office.login.header.url');
+
+        if (empty($manualUrl)) {
+            if (function_exists('home_url')) {
+                $url = home_url();
+            }
+        } else {
+            $url = $manualUrl;
+        }
+
+        return $url;
+    }
+
+    public function handleLoginHeaderTitle(string $title): string
+    {
+        $manualTitle = Config::get('back-office.login.header.title');
+
+        if (empty($manualTitle)) {
+            if (function_exists('get_bloginfo')) {
+                if ($name = get_bloginfo('name')) {
+                    $title = !empty($name) ? $name : $title;
+                }
+            }
+        } else {
+            $title = $manualTitle;
+        }
+
+        return $title;
+    }
+
+    public function handleLoginHeaderImage(): void
+    {
+        if (function_exists('get_site_icon_url')) {
+            if ($iconUrl = get_site_icon_url()) {
+                echo <<<EOF
+<style>
+#login h1 a, .login h1 a {
+    background-image: url("$iconUrl");
+    background-size: contain;
+    height: 120px;
+    width: 120px;
+    border-radius: 4px;
+}
+</style>
+EOF;
+            }
+        }
     }
 }
