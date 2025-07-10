@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Adeliom\HorizonTools\Services;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 
 class ColorService
 {
@@ -39,6 +40,11 @@ class ColorService
         return self::getSiteMainColorFromIconLogic();
     }
 
+    public static function getSiteMainColorBrightnessCoefficient(): null|int|float
+    {
+        return Config::get('back-office.login.mainColorBrightnessCoefficient', 0);
+    }
+
     private static function getSiteMainColorFromIconLogic(): ?string
     {
         $mainColor = null;
@@ -59,6 +65,10 @@ class ColorService
                 null !== $iconPath
                     ? ImageService::getMainColorFromImageByPath(imagePath: $iconPath)
                     : ImageService::getMainColorFromImageByUrl(imageUrl: $iconUrl);
+        }
+
+        if ($mainColor && ($coefficient = self::getSiteMainColorBrightnessCoefficient())) {
+            $mainColor = self::adjustBrightness($mainColor, $coefficient);
         }
 
         return $mainColor;

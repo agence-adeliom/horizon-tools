@@ -6,7 +6,6 @@ namespace Adeliom\HorizonTools\Hooks;
 
 use Adeliom\HorizonTools\Services\BackOfficeService;
 use Adeliom\HorizonTools\Services\ColorService;
-use Adeliom\HorizonTools\Services\FileService;
 use enshrined\svgSanitize\Sanitizer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
