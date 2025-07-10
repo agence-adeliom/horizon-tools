@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Services;
 
+use Illuminate\Support\Facades\Cache;
+
 class ColorService
 {
     public static function adjustBrightness(string $hexCode, int|float $adjustPercent): string
@@ -24,5 +26,41 @@ class ColorService
         }
 
         return '#' . implode($hexCode);
+    }
+
+    public static function getSiteMainColorFromIcon(bool $useCache = true): ?string
+    {
+        if ($useCache) {
+            return Cache::remember('site_main_color_from_icon', 3600, function () {
+                return self::getSiteMainColorFromIconLogic();
+            });
+        }
+
+        return self::getSiteMainColorFromIconLogic();
+    }
+
+    private static function getSiteMainColorFromIconLogic(): ?string
+    {
+        $mainColor = null;
+        $iconPath = null;
+        $iconUrl = BackOfficeService::getBackOfficeIconUrl();
+
+        if (null !== $iconUrl) {
+            $faviconPath = parse_url($iconUrl, PHP_URL_PATH);
+            $iconPath = getcwd() . '/..' . $faviconPath;
+
+            if (!file_exists($iconPath)) {
+                $iconPath = null;
+            }
+        }
+
+        if (null !== $iconUrl || null !== $iconPath) {
+            $mainColor =
+                null !== $iconPath
+                    ? ImageService::getMainColorFromImageByPath(imagePath: $iconPath)
+                    : ImageService::getMainColorFromImageByUrl(imageUrl: $iconUrl);
+        }
+
+        return $mainColor;
     }
 }

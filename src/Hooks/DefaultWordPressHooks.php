@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Hooks;
 
+use Adeliom\HorizonTools\Services\BackOfficeService;
 use Adeliom\HorizonTools\Services\ColorService;
-use Adeliom\HorizonTools\Services\ImageService;
 use enshrined\svgSanitize\Sanitizer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Request;
-use League\ColorExtractor\Color;
-use League\ColorExtractor\ColorExtractor;
-use League\ColorExtractor\Palette;
 
 class DefaultWordPressHooks extends AbstractHook
 {
@@ -178,31 +175,14 @@ EOF;
 
     public function handleLoginHeaderImage(): void
     {
-        if (function_exists('get_site_icon_url')) {
-            $iconUrl = null;
-            $iconPath = null;
+        $height = min(Config::get('back-office.login.header.logo.height', 120) ?? 120, 320);
+        $width = min(Config::get('back-office.login.header.logo.width', 120) ?? 120, 320);
+        $radius = Config::get('back-office.login.header.logo.radius', 4) ?? 4;
+        $backgroundColor = Config::get('back-office.login.header.logo.backgroundColor', '#FFFFFF') ?? '#FFFFFF';
+        $useMainColor = Config::get('back-office.login.useMainColor', false);
+        $iconUrl = BackOfficeService::getBackOfficeIconUrl();
 
-            if ($configLogoUrl = Config::get('back-office.login.header.logo.url')) {
-                $iconUrl = $configLogoUrl;
-            } elseif ($faviconUrl = get_site_icon_url()) {
-                $iconUrl = $faviconUrl;
-
-                $faviconPath = parse_url($faviconUrl, PHP_URL_PATH);
-                $iconPath = getcwd() . '/..' . $faviconPath;
-
-                if (!file_exists($iconPath)) {
-                    $iconPath = null;
-                }
-            }
-
-            if (null !== $iconUrl || null !== $iconPath) {
-                $height = min(Config::get('back-office.login.header.logo.height', 120) ?? 120, 320);
-                $width = min(Config::get('back-office.login.header.logo.width', 120) ?? 120, 320);
-                $radius = Config::get('back-office.login.header.logo.radius', 4) ?? 4;
-                $backgroundColor = Config::get('back-office.login.header.logo.backgroundColor', '#FFFFFF') ?? '#FFFFFF';
-                $useMainColor = Config::get('back-office.login.useMainColor', false);
-
-                echo <<<EOF
+        echo <<<EOF
 <style>
 #login h1, .login h1 {
     height: {$height}px;
@@ -212,8 +192,6 @@ EOF;
     border-radius: {$radius}px;
 }
 #login h1 a, .login h1 a {
-    background-image: url("$iconUrl");
-    background-size: contain;
     height: {$height}px;
     width: {$width}px;
     border-radius: {$radius}px;
@@ -222,18 +200,24 @@ EOF;
 </style>
 EOF;
 
-                if ($useMainColor) {
-                    $mainColor =
-                        null !== $iconPath
-                            ? ImageService::getMainColorFromImageByPath(imagePath: $iconPath)
-                            : ImageService::getMainColorFromImageByUrl(imageUrl: $iconUrl);
-                    $boxShadow = 'inset 0 1px 1px rgba(0, 0, 0, 0.075)';
+        if (null !== $iconUrl) {
+            echo <<<EOF
+<style>
+#login h1 a, .login h1 a {
+	background-image: url("$iconUrl");
+	background-size: contain;
+}
+</style>
+EOF;
+        }
 
-                    if (null !== $mainColor) {
-                        $mainColorLight = ColorService::adjustBrightness($mainColor, 0.9);
-                        $mainColorDark = ColorService::adjustBrightness($mainColor, -0.25);
+        if ($useMainColor && ($mainColor = ColorService::getSiteMainColorFromIcon())) {
+            if (null !== $mainColor) {
+                $boxShadow = 'inset 0 1px 1px rgba(0, 0, 0, 0.075)';
+                $mainColorLight = ColorService::adjustBrightness($mainColor, 0.9);
+                $mainColorDark = ColorService::adjustBrightness($mainColor, -0.25);
 
-                        echo <<<EOF
+                echo <<<EOF
 <style>
 #login .button, #login .button-secondary {
     color: $mainColor;
@@ -285,8 +269,6 @@ EOF;
 }
 </style>
 EOF;
-                    }
-                }
             }
         }
     }
