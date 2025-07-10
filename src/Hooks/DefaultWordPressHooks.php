@@ -27,6 +27,8 @@ class DefaultWordPressHooks extends AbstractHook
             ['login_headerurl', [$this, 'handleLoginHeaderUrl'], 10, 1],
             ['login_headertitle', [$this, 'handleLoginHeaderTitle'], 10, 1],
             ['login_enqueue_scripts', [$this, 'handleLoginHeaderImage'], 10, 1],
+            ['admin_enqueue_scripts', [$this, 'handleAdminStyles'], 10, 1],
+            ['admin_init', [$this, 'disabledCustomThemes'], 10, 0],
         ];
 
         foreach ($filters as $filter) {
@@ -180,7 +182,7 @@ EOF;
         $width = min(Config::get('back-office.login.header.logo.width', 120) ?? 120, 320);
         $radius = Config::get('back-office.login.header.logo.radius', 4) ?? 4;
         $backgroundColor = Config::get('back-office.login.header.logo.backgroundColor', '#FFFFFF') ?? '#FFFFFF';
-        $useMainColor = Config::get('back-office.login.useMainColor', false);
+        $useMainColor = self::useMainColor();
         $iconUrl = BackOfficeService::getBackOfficeIconUrl();
 
         $loginHeaderStylePath = sprintf('%s/../../resources/styles/back-office/login/header.css', __DIR__);
@@ -204,11 +206,11 @@ EOF;
 EOF;
         }
 
-        if ($useMainColor && ($mainColor = ColorService::getSiteMainColorFromIcon())) {
+        if ($useMainColor && ($mainColor = self::getMainColor())) {
             if (null !== $mainColor) {
                 $boxShadow = 'inset 0 1px 1px rgba(0, 0, 0, 0.075)';
-                $mainColorLight = ColorService::adjustBrightness($mainColor, 0.9);
-                $mainColorDark = ColorService::adjustBrightness($mainColor, -0.25);
+                $mainColorLight = self::getMainColorLight(mainColor: $mainColor);
+                $mainColorDark = self::getMainColorDark(mainColor: $mainColor);
 
                 $styleVars['horizon-admin-main-color'] = $mainColor;
                 $styleVars['horizon-admin-main-color-light'] = $mainColorLight;
@@ -231,5 +233,99 @@ EOF;
         $vars = sprintf(':root { %s }', $vars);
 
         echo sprintf('<style>%s%s</style>', $vars, $styleContent);
+    }
+
+    public function handleAdminStyles(): void
+    {
+        $useMainColor = self::useMainColor();
+        $useMainColorTheme = self::useMainColorTheme();
+
+        if ($useMainColor && $useMainColorTheme) {
+            $styleVars = [];
+            $styleContent = '';
+
+            $adminStylePath = sprintf('%s/../../resources/styles/back-office/global.css', __DIR__);
+            $adminStyle = file_exists($adminStylePath) ? file_get_contents($adminStylePath) : null;
+
+            $adminScriptPath = sprintf('%s/../../resources/scripts/back-office/global.js', __DIR__);
+            $adminScript = file_exists($adminScriptPath) ? file_get_contents($adminScriptPath) : null;
+
+            if (null !== $adminScript) {
+                echo sprintf('<script>%s</script>', $adminScript);
+            }
+
+            if ($mainColor = self::getMainColor()) {
+                if (null !== $mainColor) {
+                    $boxShadow = 'inset 0 1px 1px rgba(0, 0, 0, 0.075)';
+                    $mainColorLight = self::getMainColorLight(mainColor: $mainColor);
+                    $mainColorDark = self::getMainColorDark(mainColor: $mainColor);
+
+                    $styleVars['horizon-admin-main-color'] = $mainColor;
+                    $styleVars['horizon-admin-main-color-light'] = $mainColorLight;
+                    $styleVars['horizon-admin-main-color-dark'] = $mainColorDark;
+                    $styleVars['horizon-admin-box-shadow'] = $boxShadow;
+
+                    $styleContent .= $adminStyle;
+                }
+            }
+
+            $vars = '';
+
+            foreach ($styleVars as $styleName => $styleValue) {
+                $vars .= sprintf('--%s: %s; ', $styleName, $styleValue);
+            }
+
+            $vars = sprintf(':root { %s }', $vars);
+
+            echo sprintf('<style id="test">%s%s</style>', $vars, $styleContent);
+        }
+    }
+
+    public static function disabledCustomThemes()
+    {
+        global $_wp_admin_css_colors;
+
+        if (self::useMainColor() && self::useMainColorTheme()) {
+            $allowed = ['fresh'];
+
+            foreach ($_wp_admin_css_colors as $key => $value) {
+                if (!in_array($key, $allowed)) {
+                    unset($_wp_admin_css_colors[$key]);
+                }
+            }
+        }
+    }
+
+    private static function getMainColor(): ?string
+    {
+        return ColorService::getSiteMainColorFromIcon();
+    }
+
+    private static function getMainColorLight(?string $mainColor = null): ?string
+    {
+        if (null === $mainColor) {
+            $mainColor = self::getMainColor();
+        }
+
+        return $mainColor ? ColorService::adjustBrightness($mainColor, 0.9) : null;
+    }
+
+    private static function getMainColorDark(?string $mainColor = null): ?string
+    {
+        if (null === $mainColor) {
+            $mainColor = self::getMainColor();
+        }
+
+        return $mainColor ? ColorService::adjustBrightness($mainColor, -0.25) : null;
+    }
+
+    private static function useMainColor(): bool
+    {
+        return Config::get('back-office.login.useMainColor', false);
+    }
+
+    private static function useMainColorTheme(): bool
+    {
+        return Config::get('back-office.login.useMainColorTheme', false);
     }
 }

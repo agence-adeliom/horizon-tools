@@ -1,0 +1,354 @@
+.wp-admin {
+    #adminmenu {
+        li.wp-has-current-submenu {
+            a.wp-has-current-submenu {
+                background-color: var(--horizon-admin-main-color);
+            }
+        }
+
+        .wp-submenu {
+            a:hover {
+                color: var(--horizon-admin-main-color-light);
+            }
+        }
+
+        a:hover {
+            color: var(--horizon-admin-main-color-light);
+        }
+
+        li.menu-top:hover, li.menu-top:focus {
+            color: var(--horizon-admin-main-color-light);
+        }
+
+        li {
+            div.wp-menu-image.svg {
+                i {
+                    background-color: rgba(240,246,252,.6);
+                }
+            }
+        }
+
+        li:hover {
+            div.wp-menu-image:before {
+                color: var(--horizon-admin-main-color-light);
+            }
+
+            div.wp-menu-image.svg {
+                i {
+                    background-color: var(--horizon-admin-main-color-light);
+                }
+            }
+        }
+
+        li.opensub {
+            div.wp-menu-image:before {
+                color: var(--horizon-admin-main-color-light);
+            }
+        }
+
+        li.opensub > a.menu-top {
+            color: var(--horizon-admin-main-color-light);
+        }
+    }
+
+    &.wp-core-ui {
+        .button {
+            border-color: var(--horizon-admin-main-color);
+
+            &:not(.button-primary) {
+                color: var(--horizon-admin-main-color);
+                &:hover {
+                    color: var(--horizon-admin-main-color-dark);
+                    border-color: var(--horizon-admin-main-color-dark);
+                    background-color: var(--horizon-admin-main-color-light);
+                }
+            }
+        }
+
+        .button-link {
+            color: var(--horizon-admin-main-color);
+            &:hover {
+                color: var(--horizon-admin-main-color-dark);
+            }
+        }
+
+        .button-primary {
+            background: var(--horizon-admin-main-color);
+            border-color: var(--horizon-admin-main-color);
+
+            &:hover {
+                background: var(--horizon-admin-main-color-dark);
+                border-color: var(--horizon-admin-main-color-dark);
+            }
+        }
+    }
+
+    a {
+        &:hover {
+            color: var(--horizon-admin-main-color-dark);
+        }
+    }
+
+    .notice-info {
+        border-left-color: var(--horizon-admin-main-color);
+    }
+
+    #the-list {
+        &[data-wp-lists="list:user"] {
+            .username {
+                a {
+                    color: var(--horizon-admin-main-color);
+                    &:hover {
+                        color: var(--horizon-admin-main-color-dark);
+                    }
+                }
+            }
+        }
+        a.row-title {
+            color: var(--horizon-admin-main-color);
+            &:hover {
+                color: var(--horizon-admin-main-color-dark);
+            }
+        }
+    }
+
+    .components-button {
+        &.is-primary {
+            background: var(--horizon-admin-main-color);
+            &:not(:disabled) {
+                &:hover {
+                    background: var(--horizon-admin-main-color-dark);
+                    border-color: var(--horizon-admin-main-color-dark);
+                }
+            }
+        }
+        &.is-tertiary {
+            color: var(--horizon-admin-main-color);
+            &:not(:disabled, [aria-disabled="true"], .is-pressed) {
+                &:hover {
+                    color: var(--horizon-admin-main-color-dark);
+                    background: var(--horizon-admin-main-color-light);
+                }
+            }
+        }
+        &.is-link {
+            color:var(--horizon-admin-main-color);
+        }
+        &:not(:disabled, [aria-display="true"], .is-pressed) {
+            &:hover {
+                color: var(--horizon-admin-main-color-dark);
+            }
+        }
+    }
+
+    .components-panel__header {
+        [data-select-on-move] {
+            &:before {
+                border-color: var(--horizon-admin-main-color);
+            }
+        }
+
+        [data-tab-id] {
+            &[aria-selected="true"] {
+                color: var(--horizon-admin-main-color);
+            }
+
+            &:not([aria-disabled="true"]) {
+                &:is(:hover, [data-focus-visible]) {
+                    color: var(--horizon-admin-main-color);
+                }
+            }
+        }
+    }
+
+    .block-editor-tabbed-sidebar__tablist-and-close-button {
+        .block-editor-tabbed-sidebar__tablist {
+            &:before {
+                border-color: var(--horizon-admin-main-color);
+            }
+
+            button {
+                &.block-editor-tabbed-sidebar__tab {
+                    &:not([aria-disabled="true"]) {
+                        &:is(:hover, [data-focus-visible]) {
+                            color: var(--horizon-admin-main-color);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .components-form-toggle {
+        &.is-checked {
+            .components-form-toggle__track {
+                background-color: var(--horizon-admin-main-color);
+                border-color: var(--horizon-admin-main-color);
+            }
+        }
+    }
+
+    .acf-switch {
+        border-color: var(--horizon-admin-main-color-dark);
+
+        .acf-switch-on {
+            text-shadow: var(--horizon-admin-main-color-dark) 1px 0;
+        }
+
+        &.-on {
+            background: var(--horizon-admin-main-color);
+            border-color: var(--horizon-admin-main-color-dark);
+
+            &:hover {
+                border-color: var(--horizon-admin-main-color-dark);
+            }
+
+            .acf-switch-slider {
+                border-color: var(--horizon-admin-main-color-dark);
+            }
+        }
+    }
+
+    .media-frame {
+        a {
+            color: var(--horizon-admin-main-color);
+            &:hover {
+                color: var(--horizon-admin-main-color-dark);
+            }
+        }
+    }
+
+    .rank-math-generate-alt-button {
+        background-color: transparent;
+        border-color: var(--horizon-admin-main-color);
+        color: var(--horizon-admin-main-color);
+
+        &:hover {
+            background-color: var(--horizon-admin-main-color-light);
+            border-color: var(--horizon-admin-main-color-dark);
+            color: var(--horizon-admin-main-color-dark);
+        }
+    }
+
+    a {
+        &.acf-icon {
+            &.dark {
+                &:hover {
+                    color: var(--horizon-admin-main-color);
+                }
+            }
+        }
+    }
+
+    .block-editor-block-list__layout {
+        .block-editor-block-list__block {
+            &:not([contenteditable="true"]) {
+                &:focus {
+                    &:after {
+                        outline-color: var(--horizon-admin-main-color-dark);
+                    }
+                }
+            }
+        }
+    }
+
+    .gforms_edit_form {
+        button {
+            &.primary {
+                &.gform-add-new-form {
+                    background-color: var(--horizon-admin-main-color);
+                    color:white;
+
+                    &:hover {
+                        background-color: var(--horizon-admin-main-color-dark);
+                        color:white;
+                    }
+                }
+            }
+        }
+    }
+
+    .view-switch {
+        a {
+            &.current {
+                &:before {
+                    color: var(--horizon-admin-main-color);
+                }
+            }
+        }
+    }
+
+    .wrap {
+        .page-title-action {
+            border-color: var(--horizon-admin-main-color);
+            color: var(--horizon-admin-main-color);
+
+            &:hover {
+                border-color: var(--horizon-admin-main-color-dark);
+                color: var(--horizon-admin-main-color-dark);
+                background-color: var(--horizon-admin-main-color-light);
+            }
+        }
+    }
+
+    .acf-tab-wrap {
+        &.-left {
+            .acf-tab-group {
+                li {
+                    a {
+                        color: var(--horizon-admin-main-color-dark);
+                        &:hover {
+                            color: var(--horizon-admin-main-color);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #wpadminbar {
+        &:not(.mobile) {
+            .ab-top-menu {
+                & > li {
+                    &:hover {
+                        & > .ab-item {
+                            color: var(--horizon-admin-main-color-light);
+
+                            &:before {
+                                color: var(--horizon-admin-main-color-light);
+                            }
+                        }
+                    }
+                }
+            }
+
+            & > #wp-toolbar {
+                li {
+                    &:hover {
+                        span {
+                            &.ab-label {
+                                color: var(--horizon-admin-main-color-light);
+                            }
+                        }
+
+                        .ab-icon {
+                            &:before {
+                                color: var(--horizon-admin-main-color-light);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #wp-admin-bar-rank-math {
+        &:hover {
+            .rank-math-icon {
+                svg {
+                    fill: var(--horizon-admin-main-color-light);
+                }
+            }
+        }
+    }
+}
