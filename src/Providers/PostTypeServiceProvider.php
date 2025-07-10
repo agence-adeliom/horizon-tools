@@ -316,7 +316,7 @@ class PostTypeServiceProvider extends SageServiceProvider
         }
     }
 
-    private function handleBasicPostTypeCustomColumnStringContent(?array $columnData = null, int $postId): void
+    private function handleBasicPostTypeCustomColumnStringContent(?array $columnData, int $postId): void
     {
         if (is_array($columnData)) {
             if ($value = get_field($columnData[AbstractPostType::CUSTOM_COLUMN_KEY], $postId)) {
@@ -389,7 +389,7 @@ class PostTypeServiceProvider extends SageServiceProvider
                     $this->handleTaxonomyPostTypeCustomColumnStringContent(columnData: $columnData, postId: $postId);
                     break;
                 default:
-                    $this->handleBasicPostTypeCustomColumnStringContent(columnData: $columnData, postId: $postId);
+                    $this->handleBasicPostTypeCustomColumnStringContent(columnData: $columnData ?? null, postId: $postId);
                     break;
             }
         }
