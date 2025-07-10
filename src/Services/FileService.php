@@ -109,4 +109,9 @@ class FileService
 
         return file_put_contents($filePath, $data) !== false;
     }
+
+    public static function getPathToWpConfigFolder(): ?string
+    {
+        return ABSPATH . '../';
+    }
 }

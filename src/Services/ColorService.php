@@ -53,7 +53,7 @@ class ColorService
 
         if (null !== $iconUrl) {
             $faviconPath = parse_url($iconUrl, PHP_URL_PATH);
-            $iconPath = getcwd() . '/..' . $faviconPath;
+            $iconPath = rtrim(FileService::getPathToWpConfigFolder(), '/') . $faviconPath;
 
             if (!file_exists($iconPath)) {
                 $iconPath = null;
