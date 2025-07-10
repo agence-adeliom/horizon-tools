@@ -310,7 +310,7 @@
         &:not(.mobile) {
             .ab-top-menu {
                 & > li {
-                    &:hover {
+                    &:hover, &.hover {
                         & > .ab-item {
                             color: var(--horizon-admin-main-color-light);
 
@@ -324,7 +324,12 @@
 
             & > #wp-toolbar {
                 li {
-                    &:hover {
+                    & > .ab-item {
+                        i {
+                            background-color: #dedede;
+                        }
+                    }
+                    &:hover, &.hover {
                         span {
                             &.ab-label {
                                 color: var(--horizon-admin-main-color-light);
@@ -334,6 +339,14 @@
                         .ab-icon {
                             &:before {
                                 color: var(--horizon-admin-main-color-light);
+                            }
+                        }
+
+                        & > .ab-item {
+                            color: var(--horizon-admin-main-color-light);
+
+                            i {
+                                background-color: var(--horizon-admin-main-color-light);
                             }
                         }
                     }
