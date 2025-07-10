@@ -306,7 +306,7 @@ EOF;
             $mainColor = self::getMainColor();
         }
 
-        return $mainColor ? ColorService::adjustBrightness($mainColor, 0.9) : null;
+        return $mainColor ? ColorService::adjustBrightness($mainColor, 0.75) : null;
     }
 
     private static function getMainColorDark(?string $mainColor = null): ?string
