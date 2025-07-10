@@ -6,6 +6,7 @@ namespace Adeliom\HorizonTools\Hooks;
 
 use Adeliom\HorizonTools\Services\BackOfficeService;
 use Adeliom\HorizonTools\Services\ColorService;
+use Adeliom\HorizonTools\Services\FileService;
 use enshrined\svgSanitize\Sanitizer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -182,32 +183,24 @@ EOF;
         $useMainColor = Config::get('back-office.login.useMainColor', false);
         $iconUrl = BackOfficeService::getBackOfficeIconUrl();
 
-        echo <<<EOF
-<style>
-#login h1, .login h1 {
-    height: {$height}px;
-    width: {$width}px;
-    margin: 0 auto 16px;
-    background-color: $backgroundColor;
-    border-radius: {$radius}px;
-}
-#login h1 a, .login h1 a {
-    height: {$height}px;
-    width: {$width}px;
-    border-radius: {$radius}px;
-    position: relative;
-}
-</style>
-EOF;
+        $loginHeaderStylePath = sprintf('%s/../../resources/styles/back-office/login/header.css', __DIR__);
+        $loginHeaderStyle = file_exists($loginHeaderStylePath) ? file_get_contents($loginHeaderStylePath) : null;
+
+        $styleVars = [];
+        $styleContent = '';
+
+        $styleVars['horizon-login-header-height'] = sprintf('%dpx', $height);
+        $styleVars['horizon-login-header-width'] = sprintf('%dpx', $width);
+        $styleVars['horizon-login-header-border-radius'] = sprintf('%dpx', $radius);
+        $styleVars['horizon-login-header-background-color'] = $backgroundColor;
+
+        $styleContent .= $loginHeaderStyle;
 
         if (null !== $iconUrl) {
-            echo <<<EOF
-<style>
+            $styleContent .= <<<EOF
 #login h1 a, .login h1 a {
 	background-image: url("$iconUrl");
-	background-size: contain;
 }
-</style>
 EOF;
         }
 
@@ -217,59 +210,26 @@ EOF;
                 $mainColorLight = ColorService::adjustBrightness($mainColor, 0.9);
                 $mainColorDark = ColorService::adjustBrightness($mainColor, -0.25);
 
-                echo <<<EOF
-<style>
-#login .button, #login .button-secondary {
-    color: $mainColor;
-}
-#login .button:focus, #login .button-secondary:focus {
-	border-color: $mainColor;
-	box-shadow: $boxShadow;
-}
-#login #backtoblog a:hover {
-    color: $mainColor;
-}
-#login #nav a:hover {
-    color: $mainColor;
-}
-#login .message, #login .notice, #login .sucess {
-    border-left-color: $mainColor;
-}
-.login .language-switcher .button {
-    color: $mainColor;
-    border-color: $mainColor;
-}
-.login .language-switcher .button:hover {
-    color: $mainColorDark;
-    border-color: $mainColorDark;
-    background: $mainColorLight;
-}
-.login .language-switcher select:focus {
-    border-color: $mainColor;
-    color:$mainColor;
-    box-shadow: $boxShadow;
-}
-.login .language-switcher select:hover {
-    color:$mainColor;
-}
-#login .button-primary {
-    background: $mainColor;
-    border-color: $mainColor;
-    color: #FFFFFF;
-}
-#login input[type=text]:focus, #login input[type=password]:focus {
-	border-color: $mainColor;
-	box-shadow: $boxShadow;
-}
-#login a {
-	color: $mainColor;
-}
-#login a:hover {
-    color: $mainColorDark;
-}
-</style>
-EOF;
+                $styleVars['horizon-admin-main-color'] = $mainColor;
+                $styleVars['horizon-admin-main-color-light'] = $mainColorLight;
+                $styleVars['horizon-admin-main-color-dark'] = $mainColorDark;
+                $styleVars['horizon-admin-box-shadow'] = $boxShadow;
+
+                $loginStylePath = sprintf('%s/../../resources/styles/back-office/login/login.css', __DIR__);
+                $loginStyle = file_exists($loginStylePath) ? file_get_contents($loginStylePath) : null;
+
+                $styleContent .= $loginStyle;
             }
         }
+
+        $vars = '';
+
+        foreach ($styleVars as $styleName => $styleValue) {
+            $vars .= sprintf('--%s: %s; ', $styleName, $styleValue);
+        }
+
+        $vars = sprintf(':root { %s }', $vars);
+
+        echo sprintf('<style>%s%s</style>', $vars, $styleContent);
     }
 }

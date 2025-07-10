@@ -1,0 +1,15 @@
+#login h1, .login h1 {
+    height: var(--horizon-login-header-height, 120px);
+    width: var(--horizon-login-header-width, 120px);
+    margin: 0 auto 16px;
+    background-color: var(--horizon-login-header-background-color, #fff);
+    border-radius: var(--horizon-login-header-border-radius, 50%);
+}
+#login h1 a, .login h1 a {
+    height: var(--horizon-login-header-height, 120px);
+    width: var(--horizon-login-header-width, 120px);
+    border-radius: var(--horizon-login-header-border-radius, 50%);
+    position: relative;
+    background-size: cover;
+    background-position: center;
+}

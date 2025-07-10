@@ -1,0 +1,48 @@
+#login .button, #login .button-secondary {
+    color: var(--horizon-admin-main-color);
+}
+#login .button:focus, #login .button-secondary:focus {
+    border-color: var(--horizon-admin-main-color);
+    box-shadow: var(--horizon-admin-box-shadow);
+}
+#login #backtoblog a:hover {
+    color: var(--horizon-admin-main-color);
+}
+#login #nav a:hover {
+    color: var(--horizon-admin-main-color);
+}
+#login .message, #login .notice, #login .sucess {
+    border-left-color: var(--horizon-admin-main-color);
+}
+.login .language-switcher .button {
+    color: var(--horizon-admin-main-color);
+    border-color: var(--horizon-admin-main-color);
+}
+.login .language-switcher .button:hover {
+    color: var(--horizon-admin-main-color-dark);
+    border-color: var(--horizon-admin-main-color-dark);
+    background: var(--horizon-admin-main-color-light);
+}
+.login .language-switcher select:focus {
+    border-color: var(--horizon-admin-main-color);
+    color: var(--horizon-admin-main-color);
+    box-shadow: var(--horizon-admin-box-shadow);
+}
+.login .language-switcher select:hover {
+    color: var(--horizon-admin-main-color);
+}
+#login .button-primary {
+    background: var(--horizon-admin-main-color);
+    border-color: var(--horizon-admin-main-color);
+    color: #FFFFFF;
+}
+#login input[type=text]:focus, #login input[type=password]:focus {
+    border-color: var(--horizon-admin-main-color);
+    box-shadow: var(--horizon-admin-box-shadow);
+}
+#login a {
+    color: var(--horizon-admin-main-color);
+}
+#login a:hover {
+    color: var(--horizon-admin-main-color-dark);
+}
