@@ -38,4 +38,19 @@ class SearchEngineService
 
         return $config && !empty($config[SearchEngineOptionsAdmin::FIELD_SEARCH_RESULTS_PAGE]);
     }
+
+    public static function getSearchEngineResultsPage(): ?\WP_Post
+    {
+        $page = null;
+
+        if ($config = self::getSearchEngineConfig()) {
+            if (!empty($config[SearchEngineOptionsAdmin::FIELD_SEARCH_RESULTS_PAGE])) {
+                if ($config[SearchEngineOptionsAdmin::FIELD_SEARCH_RESULTS_PAGE] instanceof \WP_Post) {
+                    $page = $config[SearchEngineOptionsAdmin::FIELD_SEARCH_RESULTS_PAGE];
+                }
+            }
+        }
+
+        return $page;
+    }
 }
