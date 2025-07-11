@@ -14,6 +14,15 @@ class SearchEngineService
         return Config::get('search-engine.enabled', false);
     }
 
+    public static function getSearchEngineConfigPageUrl(): false|string
+    {
+        if (!self::isSearchEngineEnabled()) {
+            return false;
+        }
+
+        return admin_url(sprintf('?page=%s', SearchEngineOptionsAdmin::$slug));
+    }
+
     public static function getSearchEngineConfig(): false|array
     {
         if (!self::isSearchEngineEnabled()) {
