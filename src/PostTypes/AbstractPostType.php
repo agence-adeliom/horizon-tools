@@ -99,6 +99,11 @@ abstract class AbstractPostType
         return null;
     }
 
+    public static function getSearchableFields(): ?array
+    {
+        return null;
+    }
+
     public function createQueryBuilder(): false|QueryBuilder
     {
         if (empty(static::$slug)) {

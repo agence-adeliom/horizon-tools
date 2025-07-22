@@ -45,6 +45,7 @@ class QueryBuilder
     private ?string $status = 'publish';
     private ?string $search = null;
     private array $searchColumns = [];
+    private ?string $searchRelationWithOtherWheres = 'AND';
     private bool $hideEmpty = false;
     private ?\WP_Query $WP_Query = null;
     private ?\WP_Term_Query $WP_Term_Query = null;
@@ -359,12 +360,21 @@ class QueryBuilder
         return $this->status(status: $status);
     }
 
-    public function search(string $search, array $columns = self::DEFAULT_POST_SEARCH_COLUMNS): self
-    {
+    public function search(
+        string $search,
+        array $columns = self::DEFAULT_POST_SEARCH_COLUMNS,
+        string $relationWithOtherWheres = 'AND'
+    ): self {
         $this->triggerChange();
 
         $this->search = $search;
         $this->searchColumns = $columns;
+
+        if (!in_array($relationWithOtherWheres, ['AND', 'OR'])) {
+            throw new \InvalidArgumentException('The relation with other wheres must be either "AND" or "OR".');
+        }
+
+        $this->searchRelationWithOtherWheres = $relationWithOtherWheres;
 
         return $this;
     }
@@ -473,6 +483,10 @@ class QueryBuilder
 
         if ($this->searchColumns) {
             $args['search_columns'] = $this->searchColumns;
+        }
+
+        if ($this->searchRelationWithOtherWheres) {
+            $args['search_relation_with_other_wheres'] = $this->searchRelationWithOtherWheres;
         }
 
         if ($this->page) {

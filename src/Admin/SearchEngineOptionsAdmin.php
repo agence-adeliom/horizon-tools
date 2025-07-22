@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Adeliom\HorizonTools\Admin;
 
 use Adeliom\HorizonTools\Fields\Select\PostTypeSelectField;
-use Adeliom\HorizonTools\Services\SearchEngineService;
 use Extended\ACF\ConditionalLogic;
 use Extended\ACF\Fields\Group;
 use Extended\ACF\Fields\Number;
@@ -24,6 +23,7 @@ class SearchEngineOptionsAdmin extends AbstractAdmin
     public const FIELD_SEARCH_RESULTS_PAGE = 'searchResultsPage';
     public const FIELD_SEARCH_TYPES = 'searchTypes';
     public const FIELD_SEPARATE_BY_TYPES = 'separateByTypes';
+    public const FIELD_ALLOW_FILTER_BY_TYPE = 'allowFilterByType';
     public const FIELD_PER_PAGE = 'perPage';
     public const FIELD_SEARCH_GET_PARAMETER = 'searchGetParameter';
 
@@ -42,6 +42,11 @@ class SearchEngineOptionsAdmin extends AbstractAdmin
                 ->default(false)
                 ->conditionalLogic([$this->getCondition()])
                 ->helperText(__('Si activé, les résultats seront séparés par type de contenu.')),
+            TrueFalse::make(__('Permettre de filtrer par type'), self::FIELD_ALLOW_FILTER_BY_TYPE)
+                ->stylized()
+                ->default(true)
+                ->conditionalLogic([$this->getCondition()->and(self::FIELD_SEPARATE_BY_TYPES, '==', '0')])
+                ->helperText(__('Active ou non la possibilité de filtrer les résultats par type de contenu')),
             Number::make(__('Éléments par page'), self::FIELD_PER_PAGE)
                 ->min(-1)
                 ->step(1)
