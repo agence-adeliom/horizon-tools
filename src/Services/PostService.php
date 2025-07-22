@@ -99,4 +99,33 @@ class PostService
 
         return $taxonomyAssociation;
     }
+
+    public static function getPostPrettyNameBySlug(string $slug): ?string
+    {
+        $prettyName = null;
+
+        switch ($slug) {
+            case 'page':
+                $prettyName = __('Page');
+                break;
+            case 'post':
+                $prettyName = __('Article');
+                break;
+            default:
+                if ($postTypeClass = ClassService::getPostTypeClassBySlug($slug)) {
+                    $postTypeInstance = new $postTypeClass();
+
+                    if (method_exists($postTypeInstance, 'getConfig')) {
+                        if ($postTypeConfig = $postTypeInstance->getConfig()) {
+                            if (!empty($postTypeConfig['args']['labels']['name'])) {
+                                $prettyName = $postTypeConfig['args']['labels']['name'];
+                            }
+                        }
+                    }
+                }
+                break;
+        }
+
+        return $prettyName;
+    }
 }
