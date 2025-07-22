@@ -124,7 +124,7 @@ class DefaultWordPressHooks extends AbstractHook
         }
     }
 
-    public function handleFooterText(string $text): string
+    public function handleFooterText(?string $text): string
     {
         $manualText = Config::get('back-office.bo.footerText');
 
