@@ -64,7 +64,7 @@ class SearchEngineService
         string|array $postTypes,
         string $query,
         bool $separateResultsByType = false,
-        int $page = 1,
+        int|array $page = 1,
         int $perPage = -1
     ) {
         $results = [];
@@ -112,33 +112,53 @@ class SearchEngineService
                 $searchableFields = $postTypeClass::getSearchableFields() ?? [];
             }
 
+            $realPage = $page;
+
+            if ($separateResultsByType) {
+                $realPage = 1;
+
+                if (!empty($page[$typeToFetch])) {
+                    $realPage = $page[$typeToFetch];
+                }
+            }
+
             $resultsPerType[$typeToFetch] = self::fetchDataByType(
                 query: $query,
                 postTypeSlug: $typeToFetch,
                 postTypeClass: $postTypeClass,
                 searchableFields: $searchableFields,
                 all: true,
-                page: $page,
+                page: $realPage,
                 perPage: $perPage
             );
         }
 
         if ($separateResultsByType) {
             foreach ($resultsPerType as $postTypeSlug => $posts) {
-                $qb = new QueryBuilder();
-                $qb->postType($postTypeSlug)
-                    ->page($page)
-                    ->perPage($perPage)
-                    ->whereIdIn(array_column($posts, 'ID'))
-                    ->as(BasePostViewModel::class);
+                $realPage = 1;
 
-                $results[$postTypeSlug] = $qb->getPaginatedData(
-                    callback: function (BasePostViewModel $result) {
-                        return $result->toStdClass();
-                    }
-                );
+                if (!empty($page[$postTypeSlug])) {
+                    $realPage = $page[$postTypeSlug];
+                }
 
-                $results[$postTypeSlug]['title'] = $postTypeTitles[$postTypeSlug] ? $postTypeTitles[$postTypeSlug] : __('Résultats');
+                $allIDs = array_column($posts, 'ID');
+
+                if (!empty($allIDs)) {
+                    $qb = new QueryBuilder();
+                    $qb->postType($postTypeSlug)
+                        ->page($realPage)
+                        ->perPage($perPage)
+                        ->whereIdIn($allIDs)
+                        ->as(BasePostViewModel::class);
+
+                    $results[$postTypeSlug] = $qb->getPaginatedData(
+                        callback: function (BasePostViewModel $result) {
+                            return $result->toStdClass();
+                        }
+                    );
+
+                    $results[$postTypeSlug]['title'] = $postTypeTitles[$postTypeSlug] ? $postTypeTitles[$postTypeSlug] : __('Résultats');
+                }
             }
         } else {
             $qb = new QueryBuilder();
@@ -148,17 +168,21 @@ class SearchEngineService
                 $IDs[] = array_column($posts, 'ID');
             }
 
-            $qb->postType($postTypes)
-                ->whereIdIn(array_merge(...$IDs))
-                ->as(BasePostViewModel::class)
-                ->page($page)
-                ->perPage($perPage);
+            $allIDs = array_merge(...$IDs);
 
-            $results = $qb->getPaginatedData(
-                callback: function (BasePostViewModel $result) {
-                    return $result->toStdClass();
-                }
-            );
+            if (!empty($allIDs)) {
+                $qb->postType($postTypes)
+                    ->whereIdIn($allIDs)
+                    ->as(BasePostViewModel::class)
+                    ->page($page)
+                    ->perPage($perPage);
+
+                $results = $qb->getPaginatedData(
+                    callback: function (BasePostViewModel $result) {
+                        return $result->toStdClass();
+                    }
+                );
+            }
         }
 
         return $results;
@@ -170,13 +194,29 @@ class SearchEngineService
         ?string $postTypeClass,
         array $searchableFields = [],
         bool $all = false,
-        int $page = 1,
-        int $perPage = -1
+        int|string $page = 1,
+        int|string $perPage = -1
     ): array {
         $relationWithOtherWheres = 'AND';
 
         if ($searchableFields) {
             $relationWithOtherWheres = 'OR';
+        }
+
+        if (is_string($page)) {
+            if (is_numeric($page)) {
+                $page = intval($page);
+            } else {
+                throw new \Exception('Page must be an integer or numeric string.');
+            }
+        }
+
+        if (is_string($perPage)) {
+            if (is_numeric($perPage)) {
+                $perPage = intval($perPage);
+            } else {
+                throw new \Exception('Per page must be an integer or numeric string.');
+            }
         }
 
         $qb = self::getBaseSearchQueryBuilder(query: $query, page: 1, perPage: -1, relationWithOtherWheres: $relationWithOtherWheres)
