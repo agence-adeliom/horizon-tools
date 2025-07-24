@@ -8,6 +8,7 @@ use Adeliom\HorizonTools\Admin\SearchEngineOptionsAdmin;
 use Adeliom\HorizonTools\Database\MetaQuery;
 use Adeliom\HorizonTools\Database\QueryBuilder;
 use Adeliom\HorizonTools\ViewModels\Post\BasePostViewModel;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 
 class SearchEngineService
@@ -28,11 +29,13 @@ class SearchEngineService
 
     public static function getSearchEngineConfig(): false|array
     {
-        if (!self::isSearchEngineEnabled()) {
-            return false;
-        }
+        return Cache::remember('search_engine_config', 60 * 60, function () {
+            if (!self::isSearchEngineEnabled()) {
+                return false;
+            }
 
-        return get_field(SearchEngineOptionsAdmin::FIELD_HORIZON_SEARCH, 'option') ?? false;
+            return get_field(SearchEngineOptionsAdmin::FIELD_HORIZON_SEARCH, 'option') ?? false;
+        });
     }
 
     public static function canSearchEngineBeUsed(): bool
