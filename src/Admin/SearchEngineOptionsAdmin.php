@@ -28,6 +28,7 @@ class SearchEngineOptionsAdmin extends AbstractAdmin
     public const FIELD_PER_PAGE = 'perPage';
     public const FIELD_SEARCH_GET_PARAMETER = 'searchGetParameter';
     public const FIELD_META_TITLE = 'metaTitle';
+    public const FIELD_SEARCH_HEADER_TITLE = 'searchHeaderTitle';
 
     public const SEARCH_PLACEHOLDER = '%SEARCH%';
 
@@ -42,6 +43,11 @@ class SearchEngineOptionsAdmin extends AbstractAdmin
                 ->multiple()
                 ->conditionalLogic([$this->getCondition()])
                 ->helperText(__('Permet de sélectionner les types de contenus inclus dans le moteur de recherche')),
+            Text::make(__('Titre affiché dans le header'), self::FIELD_SEARCH_HEADER_TITLE)
+                ->required()
+                ->helperText($this->getHelperText())
+                ->conditionalLogic([$this->getCondition()])
+                ->default(sprintf('%s "%s"', __('Recherche pour'), self::SEARCH_PLACEHOLDER)),
             Tab::make(__('Apparence'))->placement('left'),
             TrueFalse::make(__('Séparer par types'), self::FIELD_SEPARATE_BY_TYPES)
                 ->stylized()
@@ -66,9 +72,14 @@ class SearchEngineOptionsAdmin extends AbstractAdmin
                 ->default('recherche'),
             Tab::make(__('SEO'))->placement('left'),
             Text::make(__('Titre de la page de résultats'), self::FIELD_META_TITLE)
-                ->helperText(sprintf('%s %s', __('Pour afficher la recherche courant, utilisez :'), self::SEARCH_PLACEHOLDER))
+                ->helperText($this->getHelperText())
                 ->default(sprintf('%s "%s"', __('Recherche pour'), self::SEARCH_PLACEHOLDER)),
         ]);
+    }
+
+    private function getHelperText(): string
+    {
+        return sprintf('%s %s', __('Pour afficher la recherche courante, utilisez :'), self::SEARCH_PLACEHOLDER);
     }
 
     private function getCondition(): ConditionalLogic
