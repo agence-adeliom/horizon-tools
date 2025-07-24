@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Config;
 
 class SearchEngineService
 {
+    public const HORIZON_SEARCH_ENGINE_CONFIG_CACHE_KEY = 'search_engine_config';
+
     public static function isSearchEngineEnabled(): bool
     {
         return Config::get('search-engine.enabled', false);
@@ -29,7 +31,7 @@ class SearchEngineService
 
     public static function getSearchEngineConfig(): false|array
     {
-        return Cache::remember('search_engine_config', 60 * 60, function () {
+        return Cache::remember('', 60 * 60, function () {
             if (!self::isSearchEngineEnabled()) {
                 return false;
             }

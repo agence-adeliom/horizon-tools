@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Hooks;
 
+use Adeliom\HorizonTools\Admin\SearchEngineOptionsAdmin;
 use Adeliom\HorizonTools\Services\BackOfficeService;
 use Adeliom\HorizonTools\Services\ColorService;
+use Adeliom\HorizonTools\Services\SearchEngineService;
 use enshrined\svgSanitize\Sanitizer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -29,6 +31,15 @@ class DefaultWordPressHooks extends AbstractHook
             ['admin_enqueue_scripts', [$this, 'handleAdminStyles'], 10, 1],
             ['admin_init', [$this, 'disabledCustomThemes'], 10, 0],
         ];
+
+        if (SearchEngineService::isSearchEngineEnabled()) {
+            $filters[] = [
+                sprintf('acf/update_value/name=%s', SearchEngineOptionsAdmin::FIELD_HORIZON_SEARCH),
+                [$this, 'handleSearchEngineConfigUpdate'],
+                10,
+                4,
+            ];
+        }
 
         foreach ($filters as $filter) {
             add_filter(...$filter);
@@ -326,5 +337,12 @@ EOF;
     private static function useMainColorTheme(): bool
     {
         return Config::get('back-office.login.useMainColorTheme', false);
+    }
+
+    public function handleSearchEngineConfigUpdate(mixed $value, int|string $postId, array $field, mixed $original)
+    {
+        Cache::forget(SearchEngineService::HORIZON_SEARCH_ENGINE_CONFIG_CACHE_KEY);
+
+        return $value;
     }
 }
