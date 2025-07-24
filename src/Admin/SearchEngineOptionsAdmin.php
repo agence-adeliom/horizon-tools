@@ -45,7 +45,7 @@ class SearchEngineOptionsAdmin extends AbstractAdmin
             TrueFalse::make(__('Permettre de filtrer par type'), self::FIELD_ALLOW_FILTER_BY_TYPE)
                 ->stylized()
                 ->default(true)
-                ->conditionalLogic([$this->getCondition()->and(self::FIELD_SEPARATE_BY_TYPES, '==', '0')])
+                ->conditionalLogic([$this->getCondition()])
                 ->helperText(__('Active ou non la possibilité de filtrer les résultats par type de contenu')),
             Number::make(__('Éléments par page'), self::FIELD_PER_PAGE)
                 ->min(-1)
