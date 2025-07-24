@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Services;
 
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
+
 class PostService
 {
     private const WORDS_PER_MINUTE = 200;
+    private const DEFAULT_POST_TYPES = ['post', 'page'];
 
     private static function handleBlock(array $block, int &$wordCount): void
     {
@@ -127,5 +131,40 @@ class PostService
         }
 
         return $prettyName;
+    }
+
+    public static function getCardByPostType(string $postType): ?string
+    {
+        return Cache::remember('card_for_' . $postType, 60 * 60, function () use ($postType) {
+            $card = null;
+
+            if (in_array($postType, self::DEFAULT_POST_TYPES)) {
+                $card = Config::get(sprintf('posts.listing.cards.%s', $postType));
+
+                if (empty($card)) {
+                    throw new \Exception(
+                        sprintf(
+                            'You have to set a card for the post-type "%s" in the "posts.php" config file (posts.listing.cards.%s)',
+                            $postType,
+                            $postType
+                        )
+                    );
+                }
+            } elseif (null !== $postType) {
+                $postTypeClass = ClassService::getPostTypeClassBySlug($postType);
+                $card = $postTypeClass::$card;
+
+                if (empty($card)) {
+                    throw new \Exception(
+                        sprintf(
+                            'You have to set a card for the post-type in the class "%s". It should be a static var $card',
+                            $postTypeClass
+                        )
+                    );
+                }
+            }
+
+            return $card;
+        });
     }
 }

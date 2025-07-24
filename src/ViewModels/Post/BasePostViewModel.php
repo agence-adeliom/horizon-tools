@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\ViewModels\Post;
 
+use Adeliom\HorizonTools\Services\PostService;
+
 class BasePostViewModel
 {
     public ?int $id = null;
@@ -14,6 +16,7 @@ class BasePostViewModel
     public ?int $thumbnail = null;
     public ?string $slug = null;
     public null|false|array $fields = null;
+    public ?string $card = null;
 
     public function __construct(\WP_Post $post, bool $withFields = true)
     {
@@ -27,6 +30,10 @@ class BasePostViewModel
 
         if ($withFields) {
             $this->fields = get_fields($post);
+        }
+
+        if ($card = PostService::getCardByPostType($post->post_type)) {
+            $this->card = $card;
         }
     }
 
