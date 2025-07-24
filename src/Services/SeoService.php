@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Services;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Request;
 
 class SeoService
@@ -49,5 +50,23 @@ class SeoService
         }
 
         return sprintf('%s="%s"', self::OBFUSCATE_ATTRIBUTE, base64_encode($url));
+    }
+
+    public static function getTitleSeparator(): string
+    {
+        return Cache::remember('seo_title_separator', 60 * 60, function () {
+            if (self::isRankMathActive()) {
+                return get_option('rank-math-options-titles')['title_separator'] ?? '-';
+            }
+
+            return '-';
+        });
+    }
+
+    public static function getMetaTitleSuffix(): string
+    {
+        return Cache::remember('seo_title_suffix', 60 * 60, function () {
+            return sprintf('%s %s', self::getTitleSeparator(), get_bloginfo('name'));
+        });
     }
 }

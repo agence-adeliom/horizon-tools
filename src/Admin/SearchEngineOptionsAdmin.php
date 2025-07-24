@@ -9,6 +9,7 @@ use Extended\ACF\ConditionalLogic;
 use Extended\ACF\Fields\Group;
 use Extended\ACF\Fields\Number;
 use Extended\ACF\Fields\PostObject;
+use Extended\ACF\Fields\Tab;
 use Extended\ACF\Fields\Text;
 use Extended\ACF\Fields\TrueFalse;
 
@@ -26,10 +27,14 @@ class SearchEngineOptionsAdmin extends AbstractAdmin
     public const FIELD_ALLOW_FILTER_BY_TYPE = 'allowFilterByType';
     public const FIELD_PER_PAGE = 'perPage';
     public const FIELD_SEARCH_GET_PARAMETER = 'searchGetParameter';
+    public const FIELD_META_TITLE = 'metaTitle';
+
+    public const SEARCH_PLACEHOLDER = '%SEARCH%';
 
     public function getFields(): ?iterable
     {
         yield Group::make(__('Moteur de recherche'), self::FIELD_HORIZON_SEARCH)->fields([
+            Tab::make(__('Général'))->placement('left'),
             PostObject::make(__('Page des résultats'), self::FIELD_SEARCH_RESULTS_PAGE)
                 ->nullable()
                 ->helperText(__('Laisser vide pour désactiver le moteur de recherche')),
@@ -37,16 +42,19 @@ class SearchEngineOptionsAdmin extends AbstractAdmin
                 ->multiple()
                 ->conditionalLogic([$this->getCondition()])
                 ->helperText(__('Permet de sélectionner les types de contenus inclus dans le moteur de recherche')),
+            Tab::make(__('Apparence'))->placement('left'),
             TrueFalse::make(__('Séparer par types'), self::FIELD_SEPARATE_BY_TYPES)
                 ->stylized()
                 ->default(false)
                 ->conditionalLogic([$this->getCondition()])
-                ->helperText(__('Si activé, les résultats seront séparés par type de contenu.')),
+                ->helperText(__('Si activé, les résultats seront séparés par type de contenu.'))
+                ->wrapper(['width' => 50]),
             TrueFalse::make(__('Permettre de filtrer par type'), self::FIELD_ALLOW_FILTER_BY_TYPE)
                 ->stylized()
                 ->default(true)
                 ->conditionalLogic([$this->getCondition()])
-                ->helperText(__('Active ou non la possibilité de filtrer les résultats par type de contenu')),
+                ->helperText(__('Active ou non la possibilité de filtrer les résultats par type de contenu'))
+                ->wrapper(['width' => 50]),
             Number::make(__('Éléments par page'), self::FIELD_PER_PAGE)
                 ->min(-1)
                 ->step(1)
@@ -56,6 +64,10 @@ class SearchEngineOptionsAdmin extends AbstractAdmin
                 ->conditionalLogic([$this->getCondition()])
                 ->helperText(__('Permet de définir le nom du paramètre GET utilisé pour la recherche.'))
                 ->default('recherche'),
+            Tab::make(__('SEO'))->placement('left'),
+            Text::make(__('Titre de la page de résultats'), self::FIELD_META_TITLE)
+                ->helperText(sprintf('%s %s', __('Pour afficher la recherche courant, utilisez :'), self::SEARCH_PLACEHOLDER))
+                ->default(sprintf('%s "%s"', __('Recherche pour'), self::SEARCH_PLACEHOLDER)),
         ]);
     }
 

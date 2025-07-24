@@ -16,7 +16,11 @@ class RankMathHooks extends AbstractHook
     {
         if (SeoService::isRankMathActive()) {
             add_filter('rank_math/frontend/breadcrumb/items', [$this, 'filterCrumbs'], accepted_args: 2);
-            add_filter('rank_math/frontend/robots', [$this, 'disableIndexOnSearchEnginePage'], accepted_args: 1);
+
+            if (SearchEngineService::isSearchEngineEnabled()) {
+                add_filter('rank_math/frontend/robots', [$this, 'disableIndexOnSearchEnginePage'], accepted_args: 1);
+                add_filter('rank_math/frontend/title', [$this, 'applyCustomTitleForSearchEnginePage'], accepted_args: 1);
+            }
         }
     }
 
@@ -82,5 +86,38 @@ class RankMathHooks extends AbstractHook
         }
 
         return $robots;
+    }
+
+    public function applyCustomTitleForSearchEnginePage(string $title)
+    {
+        $searchEnginePage = SearchEngineService::getSearchEngineResultsPage();
+        $isCurrentPage = !is_admin() && $searchEnginePage instanceof \WP_Post ? get_the_ID() === $searchEnginePage->ID : false;
+
+        if ($isCurrentPage) {
+            if ($searchEngineConfig = SearchEngineService::getSearchEngineConfig()) {
+                if (
+                    !empty($searchEngineConfig[SearchEngineOptionsAdmin::FIELD_META_TITLE]) &&
+                    !empty($searchEngineConfig[SearchEngineOptionsAdmin::FIELD_SEARCH_GET_PARAMETER])
+                ) {
+                    $metaTitle = $searchEngineConfig[SearchEngineOptionsAdmin::FIELD_META_TITLE];
+
+                    if (str_contains($metaTitle, SearchEngineOptionsAdmin::SEARCH_PLACEHOLDER)) {
+                        $getParam = $searchEngineConfig[SearchEngineOptionsAdmin::FIELD_SEARCH_GET_PARAMETER];
+
+                        $searchQuery = '';
+
+                        if (!empty($_GET[$getParam])) {
+                            $searchQuery = sanitize_text_field($_GET[$getParam]);
+                        }
+
+                        $metaTitle = str_replace(SearchEngineOptionsAdmin::SEARCH_PLACEHOLDER, $searchQuery, $metaTitle);
+                    }
+
+                    $title = sprintf('%s %s', $metaTitle, SeoService::getMetaTitleSuffix());
+                }
+            }
+        }
+
+        return $title;
     }
 }
