@@ -13,6 +13,7 @@ class BasePostViewModel
     public ?string $title = null;
     public ?string $post_title = null;
     public ?string $post_excerpt = null;
+    public ?string $post_type = null;
     public ?int $thumbnail = null;
     public ?string $slug = null;
     public null|false|array $fields = null;
@@ -25,6 +26,7 @@ class BasePostViewModel
         $this->title = $post->post_title;
         $this->post_title = $post->post_title;
         $this->post_excerpt = $post->post_excerpt;
+        $this->post_type = $post->post_type;
         $this->slug = $post->post_name;
         $this->thumbnail = get_post_thumbnail_id($post);
 

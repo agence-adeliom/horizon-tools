@@ -68,10 +68,12 @@ class SearchEngineService
 
     public static function searchPostTypes(
         string|array $postTypes,
+        string|array $onlyGetResultsFromPostTypes = [],
         string $query,
         bool $separateResultsByType = false,
         int|array $page = 1,
-        int $perPage = -1
+        int $perPage = -1,
+        array &$foundPostTypes = []
     ) {
         $results = [];
         $postTypeNames = [];
@@ -79,6 +81,14 @@ class SearchEngineService
 
         if (is_string($postTypes)) {
             $postTypes = [$postTypes];
+        }
+
+        if (is_string($onlyGetResultsFromPostTypes)) {
+            $onlyGetResultsFromPostTypes = [$onlyGetResultsFromPostTypes];
+        }
+
+        if (empty($onlyGetResultsFromPostTypes)) {
+            $onlyGetResultsFromPostTypes = $postTypes;
         }
 
         foreach ($postTypes as $typeToFetch) {
@@ -137,42 +147,56 @@ class SearchEngineService
                 page: $realPage,
                 perPage: $perPage
             );
+
+            if (!empty($resultsPerType[$typeToFetch])) {
+                $foundPostTypes[] = $typeToFetch;
+            }
         }
 
         if ($separateResultsByType) {
-            foreach ($resultsPerType as $postTypeSlug => $posts) {
-                $realPage = 1;
+            foreach ($onlyGetResultsFromPostTypes as $onlyGetResultsFromPostType) {
+                if (!empty($resultsPerType[$onlyGetResultsFromPostType])) {
+                    $postTypeSlug = $onlyGetResultsFromPostType;
+                    $posts = $resultsPerType[$postTypeSlug];
 
-                if (!empty($page[$postTypeSlug])) {
-                    $realPage = $page[$postTypeSlug];
-                }
+                    $realPage = 1;
 
-                $allIDs = array_column($posts, 'ID');
+                    if (!empty($page[$postTypeSlug])) {
+                        $realPage = $page[$postTypeSlug];
+                    }
 
-                if (!empty($allIDs)) {
-                    $qb = new QueryBuilder();
-                    $qb->postType($postTypeSlug)
-                        ->page($realPage)
-                        ->perPage($perPage)
-                        ->whereIdIn($allIDs)
-                        ->orderBy(order: 'DESC', orderBy: 'date')
-                        ->as(BasePostViewModel::class);
+                    $allIDs = array_column($posts, 'ID');
 
-                    $results[$postTypeSlug] = $qb->getPaginatedData(
-                        callback: function (BasePostViewModel $result) {
-                            return $result->toStdClass();
-                        }
-                    );
+                    if (!empty($allIDs)) {
+                        $qb = new QueryBuilder();
+                        $qb->postType($postTypeSlug)
+                            ->page($realPage)
+                            ->perPage($perPage)
+                            ->whereIdIn($allIDs)
+                            ->orderBy(order: 'DESC', orderBy: 'date')
+                            ->as(BasePostViewModel::class);
 
-                    $results[$postTypeSlug]['title'] = $postTypeTitles[$postTypeSlug] ? $postTypeTitles[$postTypeSlug] : __('Résultats');
+                        $results[$postTypeSlug] = $qb->getPaginatedData(
+                            callback: function (BasePostViewModel $result) {
+                                return $result->toStdClass();
+                            }
+                        );
+
+                        $results[$postTypeSlug]['title'] = $postTypeTitles[$postTypeSlug]
+                            ? $postTypeTitles[$postTypeSlug]
+                            : __('Résultats');
+                    }
                 }
             }
         } else {
             $qb = new QueryBuilder();
 
             $IDs = [];
-            foreach ($resultsPerType as $posts) {
-                $IDs[] = array_column($posts, 'ID');
+
+            foreach ($onlyGetResultsFromPostTypes as $onlyGetResultsFromPostType) {
+                if (!empty($resultsPerType[$onlyGetResultsFromPostType])) {
+                    $IDs[] = array_column($resultsPerType[$onlyGetResultsFromPostType], 'ID');
+                }
             }
 
             $allIDs = array_merge(...$IDs);

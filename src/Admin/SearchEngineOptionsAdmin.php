@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Admin;
 
+use Adeliom\HorizonTools\Fields\Medias\ImageField;
 use Adeliom\HorizonTools\Fields\Select\PostTypeSelectField;
 use Extended\ACF\ConditionalLogic;
 use Extended\ACF\Fields\Group;
@@ -29,7 +30,9 @@ class SearchEngineOptionsAdmin extends AbstractAdmin
     public const FIELD_PER_PAGE = 'perPage';
     public const FIELD_SEARCH_GET_PARAMETER = 'searchGetParameter';
     public const FIELD_META_TITLE = 'metaTitle';
+    public const FIELD_SEARCH_HEADER_HAS_BREADCRUMBS = 'searchHeaderHasBreadcrumbs';
     public const FIELD_SEARCH_HEADER_TITLE = 'searchHeaderTitle';
+    public const FIELD_SEARCH_HEADER_IMAGE = 'searchHeaderImage';
 
     public const SEARCH_PLACEHOLDER = '%SEARCH%';
 
@@ -44,11 +47,18 @@ class SearchEngineOptionsAdmin extends AbstractAdmin
                 ->multiple()
                 ->conditionalLogic([$this->getCondition()])
                 ->helperText(__('Permet de sélectionner les types de contenus inclus dans le moteur de recherche')),
+            Tab::make(__('Header'))->placement('left'),
+            TrueFalse::make(__('Afficher le fil d’ariane'), self::FIELD_SEARCH_HEADER_HAS_BREADCRUMBS)
+                ->stylized()
+                ->conditionalLogic([$this->getCondition()]),
             Text::make(__('Titre affiché dans le header'), self::FIELD_SEARCH_HEADER_TITLE)
                 ->required()
                 ->helperText($this->getHelperText())
                 ->conditionalLogic([$this->getCondition()])
                 ->default(sprintf('%s "%s"', __('Recherche pour'), self::SEARCH_PLACEHOLDER)),
+            ImageField::make(__('Image d’arrière-plan'), self::FIELD_SEARCH_HEADER_IMAGE)
+                ->helperText(__('Laisser vide pour la désactiver'))
+                ->previewSize('thumbnail'),
             Tab::make(__('Apparence'))->placement('left'),
             Message::make(__('Apparence - Aucune page définie'))
                 ->body(__('Veuillez sélectionner une page de résultats pour configurer l’apparence du moteur de recherche.'))

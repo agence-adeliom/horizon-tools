@@ -69,4 +69,13 @@ class SeoService
             return sprintf('%s %s', self::getTitleSeparator(), get_bloginfo('name'));
         });
     }
+
+    public static function getBreadcrumbs(): ?string
+    {
+        if (self::isRankMathActive()) {
+            return rank_math_the_breadcrumbs();
+        }
+
+        return null;
+    }
 }
