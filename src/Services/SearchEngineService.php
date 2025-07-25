@@ -42,6 +42,10 @@ class SearchEngineService
 
     public static function canSearchEngineBeUsed(): bool
     {
+        if (!self::isSearchEngineEnabled()) {
+            return false;
+        }
+
         $config = self::getSearchEngineConfig();
 
         return $config && !empty($config[SearchEngineOptionsAdmin::FIELD_SEARCH_RESULTS_PAGE]);
@@ -151,6 +155,7 @@ class SearchEngineService
                         ->page($realPage)
                         ->perPage($perPage)
                         ->whereIdIn($allIDs)
+                        ->orderBy(order: 'DESC', orderBy: 'date')
                         ->as(BasePostViewModel::class);
 
                     $results[$postTypeSlug] = $qb->getPaginatedData(
@@ -176,6 +181,7 @@ class SearchEngineService
                 $qb->postType($postTypes)
                     ->whereIdIn($allIDs)
                     ->as(BasePostViewModel::class)
+                    ->orderBy(order: 'DESC', orderBy: 'date')
                     ->page($page)
                     ->perPage($perPage);
 

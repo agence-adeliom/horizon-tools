@@ -7,6 +7,7 @@ namespace Adeliom\HorizonTools\Admin;
 use Adeliom\HorizonTools\Fields\Select\PostTypeSelectField;
 use Extended\ACF\ConditionalLogic;
 use Extended\ACF\Fields\Group;
+use Extended\ACF\Fields\Message;
 use Extended\ACF\Fields\Number;
 use Extended\ACF\Fields\PostObject;
 use Extended\ACF\Fields\Tab;
@@ -49,6 +50,9 @@ class SearchEngineOptionsAdmin extends AbstractAdmin
                 ->conditionalLogic([$this->getCondition()])
                 ->default(sprintf('%s "%s"', __('Recherche pour'), self::SEARCH_PLACEHOLDER)),
             Tab::make(__('Apparence'))->placement('left'),
+            Message::make(__('Apparence - Aucune page définie'))
+                ->body(__('Veuillez sélectionner une page de résultats pour configurer l’apparence du moteur de recherche.'))
+                ->conditionalLogic([$this->getNotCondition()]),
             TrueFalse::make(__('Séparer par types'), self::FIELD_SEPARATE_BY_TYPES)
                 ->stylized()
                 ->default(false)
@@ -71,8 +75,12 @@ class SearchEngineOptionsAdmin extends AbstractAdmin
                 ->helperText(__('Permet de définir le nom du paramètre GET utilisé pour la recherche.'))
                 ->default('recherche'),
             Tab::make(__('SEO'))->placement('left'),
+            Message::make(__('SEO - Aucune page définie'))
+                ->body(__('Veuillez sélectionner une page de résultats pour configurer le SEO du moteur de recherche.'))
+                ->conditionalLogic([$this->getNotCondition()]),
             Text::make(__('Titre de la page de résultats'), self::FIELD_META_TITLE)
                 ->helperText($this->getHelperText())
+                ->conditionalLogic([$this->getCondition()])
                 ->default(sprintf('%s "%s"', __('Recherche pour'), self::SEARCH_PLACEHOLDER)),
         ]);
     }
@@ -85,6 +93,11 @@ class SearchEngineOptionsAdmin extends AbstractAdmin
     private function getCondition(): ConditionalLogic
     {
         return ConditionalLogic::where(self::FIELD_SEARCH_RESULTS_PAGE, '!=empty');
+    }
+
+    private function getNotCondition(): ConditionalLogic
+    {
+        return ConditionalLogic::where(self::FIELD_SEARCH_RESULTS_PAGE, '==empty');
     }
 
     public function getStyle(): string
