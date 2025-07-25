@@ -31,4 +31,9 @@ class StringService
     {
         return $count === 1 ? $singular : $plural;
     }
+
+    public static function toCamelCase(string $string): string
+    {
+        return str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $string)));
+    }
 }

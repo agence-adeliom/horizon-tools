@@ -15,6 +15,8 @@ class SearchEngineService
 {
     public const HORIZON_SEARCH_ENGINE_CONFIG_CACHE_KEY = 'search_engine_config';
 
+    public static $excludedIDs = [];
+
     public static function isSearchEngineEnabled(): bool
     {
         return Config::get('search-engine.enabled', false);
@@ -89,7 +91,8 @@ class SearchEngineService
         bool $separateResultsByType = false,
         int|array $page = 1,
         int $perPage = -1,
-        array &$foundPostTypes = []
+        array &$foundPostTypes = [],
+        ?array &$totalPerType = []
     ) {
         $results = [];
         $postTypeNames = [];
@@ -154,6 +157,8 @@ class SearchEngineService
                 }
             }
 
+            $totalPerType[$typeToFetch] = 0;
+
             $resultsPerType[$typeToFetch] = self::fetchDataByType(
                 query: $query,
                 postTypeSlug: $typeToFetch,
@@ -161,7 +166,8 @@ class SearchEngineService
                 searchableFields: $searchableFields,
                 all: true,
                 page: $realPage,
-                perPage: $perPage
+                perPage: $perPage,
+                count: $totalPerType[$typeToFetch]
             );
 
             if (!empty($resultsPerType[$typeToFetch])) {
@@ -238,10 +244,12 @@ class SearchEngineService
 
     private static function handleIDsBeforeSearch(array $IDs): array
     {
-        if ($excludedIDs = self::getExcludedIDs()) {
-            if (is_array($excludedIDs)) {
-                $IDs = array_diff($IDs, $excludedIDs);
-            }
+        if (empty(self::$excludedIDs)) {
+            $excludedIDs = self::getExcludedIDs();
+        }
+
+        if (!empty(self::$excludedIDs) && is_array(self::$excludedIDs)) {
+            $IDs = array_diff($IDs, $excludedIDs);
         }
 
         return $IDs;
@@ -254,7 +262,8 @@ class SearchEngineService
         array $searchableFields = [],
         bool $all = false,
         int|string $page = 1,
-        int|string $perPage = -1
+        int|string $perPage = -1,
+        int &$count = 0
     ): array {
         $relationWithOtherWheres = 'AND';
 
@@ -299,6 +308,8 @@ class SearchEngineService
 
             $qb->addMetaQuery($orQuery);
         }
+
+        $count = $qb->getCount();
 
         return $qb->get(
             callback: function (BasePostViewModel $result) {
