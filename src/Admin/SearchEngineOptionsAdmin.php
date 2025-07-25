@@ -6,11 +6,13 @@ namespace Adeliom\HorizonTools\Admin;
 
 use Adeliom\HorizonTools\Fields\Medias\ImageField;
 use Adeliom\HorizonTools\Fields\Select\PostTypeSelectField;
+use Adeliom\HorizonTools\Services\PostService;
 use Extended\ACF\ConditionalLogic;
 use Extended\ACF\Fields\Group;
 use Extended\ACF\Fields\Message;
 use Extended\ACF\Fields\Number;
 use Extended\ACF\Fields\PostObject;
+use Extended\ACF\Fields\Relationship;
 use Extended\ACF\Fields\Tab;
 use Extended\ACF\Fields\Text;
 use Extended\ACF\Fields\TrueFalse;
@@ -33,6 +35,7 @@ class SearchEngineOptionsAdmin extends AbstractAdmin
     public const FIELD_SEARCH_HEADER_HAS_BREADCRUMBS = 'searchHeaderHasBreadcrumbs';
     public const FIELD_SEARCH_HEADER_TITLE = 'searchHeaderTitle';
     public const FIELD_SEARCH_HEADER_IMAGE = 'searchHeaderImage';
+    public const FIELD_EXCLUDED_POSTS = 'searchExcludedPosts';
 
     public const SEARCH_PLACEHOLDER = '%SEARCH%';
 
@@ -47,6 +50,12 @@ class SearchEngineOptionsAdmin extends AbstractAdmin
                 ->multiple()
                 ->conditionalLogic([$this->getCondition()])
                 ->helperText(__('Permet de sélectionner les types de contenus inclus dans le moteur de recherche')),
+            Relationship::make(__('Éléments exclus'), self::FIELD_EXCLUDED_POSTS)
+                ->postTypes(PostService::getAllPostTypeSlugs())
+                ->postStatus(['publish'])
+                ->conditionalLogic([$this->getCondition()])
+                ->helperText(__('La page de résultats est automatiquement exclue.'))
+                ->format('id'),
             Tab::make(__('Header'))->placement('left'),
             TrueFalse::make(__('Afficher le fil d’ariane'), self::FIELD_SEARCH_HEADER_HAS_BREADCRUMBS)
                 ->stylized()

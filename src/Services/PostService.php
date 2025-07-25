@@ -70,6 +70,23 @@ class PostService
         return $readingTime;
     }
 
+    public static function getAllPostTypeSlugs(): array
+    {
+        $slugs = ['post', 'page'];
+
+        foreach (ClassService::getAllCustomPostTypeClasses() as $postTypeClass) {
+            if (class_exists($postTypeClass)) {
+                $postType = new $postTypeClass();
+
+                if (property_exists($postType, 'slug')) {
+                    $slugs[] = $postType::$slug;
+                }
+            }
+        }
+
+        return $slugs;
+    }
+
     public static function getAllAssociatedTaxonomies(string $postType, array $excluded = [], bool $onlySlugs = false): array
     {
         $taxonomySlugs = [];

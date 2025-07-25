@@ -9,6 +9,7 @@ use Adeliom\HorizonTools\Services\BackOfficeService;
 use Adeliom\HorizonTools\Services\ColorService;
 use Adeliom\HorizonTools\Services\SearchEngineService;
 use enshrined\svgSanitize\Sanitizer;
+use Extended\ACF\Key;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Request;
@@ -38,6 +39,27 @@ class DefaultWordPressHooks extends AbstractHook
                 [$this, 'handleSearchEngineConfigUpdate'],
                 10,
                 4,
+            ];
+
+            $excludedPostsFieldKey = sprintf(
+                'field_%s',
+                Key::hash(
+                    strtolower(
+                        sprintf(
+                            '%s_%s_%s',
+                            sanitize_title(SearchEngineOptionsAdmin::$title),
+                            SearchEngineOptionsAdmin::FIELD_HORIZON_SEARCH,
+                            SearchEngineOptionsAdmin::FIELD_EXCLUDED_POSTS
+                        )
+                    )
+                )
+            );
+
+            $filters[] = [
+                sprintf('acf/fields/relationship/query/key=%s', $excludedPostsFieldKey),
+                [$this, 'handleSearchEngineExcludedPostsQuery'],
+                10,
+                3,
             ];
         }
 
@@ -344,5 +366,16 @@ EOF;
         Cache::forget(SearchEngineService::HORIZON_SEARCH_ENGINE_CONFIG_CACHE_KEY);
 
         return $value;
+    }
+
+    public function handleSearchEngineExcludedPostsQuery(array $args, array $field, string|int $postId): array
+    {
+        if ($searchResultsPage = SearchEngineService::getSearchEngineResultsPage()) {
+            if ($searchResultsPage instanceof \WP_Post) {
+                $args['post__not_in'] = [$searchResultsPage->ID];
+            }
+        }
+
+        return $args;
     }
 }

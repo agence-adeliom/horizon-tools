@@ -66,6 +66,22 @@ class SearchEngineService
         return $page;
     }
 
+    public static function getExcludedIDs(): array
+    {
+        $excludedIDs = [];
+
+        if ($config = self::getSearchEngineConfig()) {
+            if (
+                !empty($config[SearchEngineOptionsAdmin::FIELD_EXCLUDED_POSTS]) &&
+                is_array($config[SearchEngineOptionsAdmin::FIELD_EXCLUDED_POSTS])
+            ) {
+                $excludedIDs = $config[SearchEngineOptionsAdmin::FIELD_EXCLUDED_POSTS];
+            }
+        }
+
+        return $excludedIDs;
+    }
+
     public static function searchPostTypes(
         string|array $postTypes,
         string|array $onlyGetResultsFromPostTypes = [],
@@ -165,7 +181,7 @@ class SearchEngineService
                         $realPage = $page[$postTypeSlug];
                     }
 
-                    $allIDs = array_column($posts, 'ID');
+                    $allIDs = self::handleIDsBeforeSearch(array_column($posts, 'ID'));
 
                     if (!empty($allIDs)) {
                         $qb = new QueryBuilder();
@@ -199,7 +215,7 @@ class SearchEngineService
                 }
             }
 
-            $allIDs = array_merge(...$IDs);
+            $allIDs = self::handleIDsBeforeSearch(array_merge(...$IDs));
 
             if (!empty($allIDs)) {
                 $qb->postType($postTypes)
@@ -218,6 +234,17 @@ class SearchEngineService
         }
 
         return $results;
+    }
+
+    private static function handleIDsBeforeSearch(array $IDs): array
+    {
+        if ($excludedIDs = self::getExcludedIDs()) {
+            if (is_array($excludedIDs)) {
+                $IDs = array_diff($IDs, $excludedIDs);
+            }
+        }
+
+        return $IDs;
     }
 
     private static function fetchDataByType(
