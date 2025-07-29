@@ -68,6 +68,43 @@ class SearchEngineService
         return $page;
     }
 
+    public static function getSearchEngineResultsUrl(): ?string
+    {
+        if ($page = self::getSearchEngineResultsPage()) {
+            $url = get_permalink($page);
+        } else {
+            $url = home_url('/');
+        }
+
+        return $url;
+    }
+
+    public static function getSearchEngineCurrentSearchQuery(): ?string
+    {
+        $query = null;
+
+        if (!empty($_GET[self::getSearchEngineGETParameter()])) {
+            $query = sanitize_text_field($_GET[self::getSearchEngineGETParameter()]);
+        }
+
+        return $query;
+    }
+
+    public static function getSearchEngineGETParameter(): ?string
+    {
+        return Cache::remember('search_engine_get_parameter', 60 * 60, function () {
+            $param = null;
+
+            if ($config = self::getSearchEngineConfig()) {
+                if (!empty($config[SearchEngineOptionsAdmin::FIELD_SEARCH_GET_PARAMETER])) {
+                    $param = $config[SearchEngineOptionsAdmin::FIELD_SEARCH_GET_PARAMETER];
+                }
+            }
+
+            return $param;
+        });
+    }
+
     public static function getExcludedIDs(): array
     {
         $excludedIDs = [];
@@ -87,7 +124,7 @@ class SearchEngineService
     public static function searchPostTypes(
         string|array $postTypes,
         string|array $onlyGetResultsFromPostTypes = [],
-        string $query,
+        string $query = '',
         bool $separateResultsByType = false,
         int|array $page = 1,
         int $perPage = -1,
