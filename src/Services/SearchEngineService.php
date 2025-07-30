@@ -300,13 +300,17 @@ class SearchEngineService
         });
     }
 
-    public static function getCurrentPage(): int
+    public static function getCurrentPage(): int|array
     {
         $page = 1;
 
         if ($pageParam = self::getSearchEnginePageGETParameter()) {
-            if (!empty($_GET[$pageParam]) && is_numeric($_GET[$pageParam])) {
-                $page = intval($_GET[$pageParam]);
+            if (!empty($_GET[$pageParam])) {
+                if (is_numeric($_GET[$pageParam])) {
+                    $page = intval($_GET[$pageParam]);
+                } elseif (is_array($_GET[$pageParam])) {
+                    $page = $_GET[$pageParam];
+                }
             }
         }
 

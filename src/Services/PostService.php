@@ -121,16 +121,16 @@ class PostService
         return $taxonomyAssociation;
     }
 
-    public static function getPostPrettyNameBySlug(string $slug): ?string
+    public static function getPostPrettyNameBySlug(string $slug, bool $plural = true): ?string
     {
         $prettyName = null;
 
         switch ($slug) {
             case 'page':
-                $prettyName = __('Page');
+                $prettyName = $plural ? __('Pages') : __('Page');
                 break;
             case 'post':
-                $prettyName = __('Article');
+                $prettyName = $plural ? __('Articles') : __('Article');
                 break;
             default:
                 if ($postTypeClass = ClassService::getPostTypeClassBySlug($slug)) {
@@ -140,6 +140,10 @@ class PostService
                         if ($postTypeConfig = $postTypeInstance->getConfig()) {
                             if (!empty($postTypeConfig['args']['labels']['name'])) {
                                 $prettyName = $postTypeConfig['args']['labels']['name'];
+                            }
+
+                            if (!$plural && !empty($postTypeConfig['args']['labels']['singular_name'])) {
+                                $prettyName = $postTypeConfig['args']['labels']['singular_name'];
                             }
                         }
                     }

@@ -110,8 +110,10 @@ class RankMathHooks extends AbstractHook
                     $metaTitle = str_replace(SearchEngineOptionsAdmin::SEARCH_PLACEHOLDER, $searchQuery, $metaTitle);
                 }
 
-                if ($displayPageInMeta && ($currentPage = SearchEngineService::getCurrentPage())) {
-                    $metaTitle = SeoService::appendPageToMetaTitle($metaTitle, $currentPage);
+                if ($displayPageInMeta) {
+                    if ($currentPage = SearchEngineService::getCurrentPage()) {
+                        $metaTitle = SeoService::appendPageToMetaTitle($metaTitle, $currentPage);
+                    }
                 }
 
                 $title = sprintf('%s %s', $metaTitle, SeoService::getMetaTitleSuffix());

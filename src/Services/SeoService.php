@@ -79,10 +79,29 @@ class SeoService
         return null;
     }
 
-    public static function appendPageToMetaTitle(string $metaTitle, int $page): string
+    public static function appendPageToMetaTitle(string $metaTitle, int|array $page): string
     {
-        if ($page > 1) {
-            $metaTitle = sprintf('%s %s %s %d', $metaTitle, self::getTitleSeparator(), __('Page'), $page);
+        if (is_int($page)) {
+            if ($page > 1) {
+                $metaTitle = sprintf('%s %s %s %d', $metaTitle, self::getTitleSeparator(), __('Page'), $page);
+            }
+        } else {
+            foreach ($page as $postTypeSlug => $postTypePage) {
+                if (is_numeric($postTypePage) && ($postTypePrettyName = PostService::getPostPrettyNameBySlug(slug: $postTypeSlug))) {
+                    $postTypePage = intval($postTypePage);
+
+                    if ($postTypePage > 1) {
+                        $metaTitle = sprintf(
+                            '%s %s %s %d %s',
+                            $metaTitle,
+                            self::getTitleSeparator(),
+                            __('Page'),
+                            $postTypePage,
+                            ' des ' . strtolower($postTypePrettyName)
+                        );
+                    }
+                }
+            }
         }
 
         return $metaTitle;
