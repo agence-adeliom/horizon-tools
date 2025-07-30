@@ -300,6 +300,19 @@ class SearchEngineService
         });
     }
 
+    public static function getCurrentPage(): int
+    {
+        $page = 1;
+
+        if ($pageParam = self::getSearchEnginePageGETParameter()) {
+            if (!empty($_GET[$pageParam]) && is_numeric($_GET[$pageParam])) {
+                $page = intval($_GET[$pageParam]);
+            }
+        }
+
+        return $page;
+    }
+
     public static function searchPostTypes(
         string|array $postTypes,
         string|array $onlyGetResultsFromPostTypes = [],
