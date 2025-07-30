@@ -325,7 +325,8 @@ class SearchEngineService
         int|array $page = 1,
         int $perPage = -1,
         array &$foundPostTypes = [],
-        ?array &$totalPerType = []
+        ?array &$totalPerType = [],
+        bool &$hasResetTypeToFilter = false
     ) {
         $results = [];
         $postTypeNames = [];
@@ -451,6 +452,19 @@ class SearchEngineService
             foreach ($onlyGetResultsFromPostTypes as $onlyGetResultsFromPostType) {
                 if (!empty($resultsPerType[$onlyGetResultsFromPostType])) {
                     $IDs[] = array_column($resultsPerType[$onlyGetResultsFromPostType], 'ID');
+                }
+            }
+
+            // If no results for the given post types, we check if there are results for any post type
+            if (empty($IDs)) {
+                foreach ($resultsPerType as $resultPerType) {
+                    if (!empty($resultPerType)) {
+                        $IDs[] = array_column($resultPerType, 'ID');
+                    }
+                }
+
+                if (!empty($IDs)) {
+                    $hasResetTypeToFilter = true;
                 }
             }
 
