@@ -26,4 +26,14 @@ class StringService
 
         return mb_substr($string, 0, $length) . $suffix;
     }
+
+    public static function singularOrPlural(int $count, string $singular = 'élément', string $plural = 'éléments'): string
+    {
+        return $count === 1 ? $singular : $plural;
+    }
+
+    public static function toCamelCase(string $string): string
+    {
+        return str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $string)));
+    }
 }

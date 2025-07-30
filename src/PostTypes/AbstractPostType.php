@@ -99,6 +99,20 @@ abstract class AbstractPostType
         return null;
     }
 
+    public function getSearchResultsTitle(): string
+    {
+        return __('Tous les résultats :') . ' ' . ($this->getConfig()['args']['labels']['name'] ?? static::$slug);
+    }
+
+    /**
+     * Returns an array of field keys that should be searched in the post-type.
+     * @return string[]|null
+     */
+    public static function getSearchableFields(): ?array
+    {
+        return null;
+    }
+
     public function createQueryBuilder(): false|QueryBuilder
     {
         if (empty(static::$slug)) {

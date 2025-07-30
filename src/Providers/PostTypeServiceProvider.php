@@ -336,9 +336,9 @@ class PostTypeServiceProvider extends SageServiceProvider
         }
     }
 
-    private function handleTaxonomyPostTypeCustomColumnStringContent(?array $columnData = null, int $postId): void
+    private function handleTaxonomyPostTypeCustomColumnStringContent(?array $columnData = null, ?int $postId = null): void
     {
-        if (is_array($columnData)) {
+        if (is_array($columnData) && !is_null($postId)) {
             if ($terms = get_the_terms($postId, $columnData[AbstractPostType::CUSTOM_COLUMN_TAXONOMY])) {
                 $termsUrls = [];
 

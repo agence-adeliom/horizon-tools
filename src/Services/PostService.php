@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Services;
 
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
+
 class PostService
 {
     private const WORDS_PER_MINUTE = 200;
+    private const DEFAULT_POST_TYPES = ['post', 'page'];
 
     private static function handleBlock(array $block, int &$wordCount): void
     {
@@ -66,6 +70,23 @@ class PostService
         return $readingTime;
     }
 
+    public static function getAllPostTypeSlugs(): array
+    {
+        $slugs = ['post', 'page'];
+
+        foreach (ClassService::getAllCustomPostTypeClasses() as $postTypeClass) {
+            if (class_exists($postTypeClass)) {
+                $postType = new $postTypeClass();
+
+                if (property_exists($postType, 'slug')) {
+                    $slugs[] = $postType::$slug;
+                }
+            }
+        }
+
+        return $slugs;
+    }
+
     public static function getAllAssociatedTaxonomies(string $postType, array $excluded = [], bool $onlySlugs = false): array
     {
         $taxonomySlugs = [];
@@ -98,5 +119,73 @@ class PostService
         }
 
         return $taxonomyAssociation;
+    }
+
+    public static function getPostPrettyNameBySlug(string $slug, bool $plural = true): ?string
+    {
+        $prettyName = null;
+
+        switch ($slug) {
+            case 'page':
+                $prettyName = $plural ? __('Pages') : __('Page');
+                break;
+            case 'post':
+                $prettyName = $plural ? __('Articles') : __('Article');
+                break;
+            default:
+                if ($postTypeClass = ClassService::getPostTypeClassBySlug($slug)) {
+                    $postTypeInstance = new $postTypeClass();
+
+                    if (method_exists($postTypeInstance, 'getConfig')) {
+                        if ($postTypeConfig = $postTypeInstance->getConfig()) {
+                            if (!empty($postTypeConfig['args']['labels']['name'])) {
+                                $prettyName = $postTypeConfig['args']['labels']['name'];
+                            }
+
+                            if (!$plural && !empty($postTypeConfig['args']['labels']['singular_name'])) {
+                                $prettyName = $postTypeConfig['args']['labels']['singular_name'];
+                            }
+                        }
+                    }
+                }
+                break;
+        }
+
+        return $prettyName;
+    }
+
+    public static function getCardByPostType(string $postType): ?string
+    {
+        return Cache::remember('card_for_' . $postType, 60 * 60, function () use ($postType) {
+            $card = null;
+
+            if (in_array($postType, self::DEFAULT_POST_TYPES)) {
+                $card = Config::get(sprintf('posts.listing.cards.%s', $postType));
+
+                if (empty($card)) {
+                    throw new \Exception(
+                        sprintf(
+                            'You have to set a card for the post-type "%s" in the "posts.php" config file (posts.listing.cards.%s)',
+                            $postType,
+                            $postType
+                        )
+                    );
+                }
+            } elseif (null !== $postType) {
+                $postTypeClass = ClassService::getPostTypeClassBySlug($postType);
+                $card = $postTypeClass::$card;
+
+                if (empty($card)) {
+                    throw new \Exception(
+                        sprintf(
+                            'You have to set a card for the post-type in the class "%s". It should be a static var $card',
+                            $postTypeClass
+                        )
+                    );
+                }
+            }
+
+            return $card;
+        });
     }
 }

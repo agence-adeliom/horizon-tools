@@ -29,41 +29,46 @@ class AdminServiceProvider extends SageServiceProvider
         });
 
         foreach ($adminClasses as $adminClass) {
-            if ($className = ClassService::getClassNameFromFullName($adminClass)) {
-                if (!str_starts_with($className, 'Abstract')) {
-                    $class = new $adminClass();
+            self::registerAdminByClass(adminClass: $adminClass);
+        }
+    }
 
-                    if (ClassService::isAcfInstalledAndEnabled() && function_exists('register_extended_field_group')) {
-                        if ($fields = $class->getFields()) {
-                            if ($customFields = iterator_to_array($fields, false)) {
-                                register_extended_field_group([
-                                    'title' => $class::$title,
-                                    'fields' => $customFields,
-                                    'style' => $class->getStyle(),
-                                    'location' => iterator_to_array($class->getLocation(), false),
-                                    'position' => $class->getPosition(),
-                                    'label_placement' => $class->getLabelPlacement(),
-                                    'instruction_placement' => $class->getInstructionPlacement(),
-                                    'hide_on_screen' => $class->getHideOnScreen(),
-                                    'menu_order' => $class->getMenuOrder(),
-                                ]);
-                            }
+    public static function registerAdminByClass(string $adminClass): void
+    {
+        if ($className = ClassService::getClassNameFromFullName($adminClass)) {
+            if (!str_starts_with($className, 'Abstract')) {
+                $class = new $adminClass();
+
+                if (ClassService::isAcfInstalledAndEnabled() && function_exists('register_extended_field_group')) {
+                    if ($fields = $class->getFields()) {
+                        if ($customFields = iterator_to_array($fields, false)) {
+                            register_extended_field_group([
+                                'title' => $class::$title,
+                                'fields' => $customFields,
+                                'style' => $class->getStyle(),
+                                'location' => iterator_to_array($class->getLocation(), false),
+                                'position' => $class->getPosition(),
+                                'label_placement' => $class->getLabelPlacement(),
+                                'instruction_placement' => $class->getInstructionPlacement(),
+                                'hide_on_screen' => $class->getHideOnScreen(),
+                                'menu_order' => $class->getMenuOrder(),
+                            ]);
+                        }
+                    }
+
+                    if ($class::$isOptionPage) {
+                        $params = $class->getOptionPageParams();
+
+                        if ($class::$optionPageIcon) {
+                            $params['icon_url'] = $class::$optionPageIcon;
                         }
 
-                        if ($class::$isOptionPage) {
-                            $params = $class->getOptionPageParams();
+                        if (method_exists($class, 'getOptionPageParent')) {
+                            $params['parent_slug'] = $class->getOptionPageParent();
+                        }
 
-                            if ($class::$optionPageIcon) {
-                                $params['icon_url'] = $class::$optionPageIcon;
-                            }
-
-                            if (method_exists($class, 'getOptionPageParent')) {
-                                $params['parent_slug'] = $class->getOptionPageParent();
-                            }
-
-                            if (ClassService::isAcfInstalledAndEnabled() && function_exists('acf_add_options_page')) {
-                                acf_add_options_page($params);
-                            }
+                        if (ClassService::isAcfInstalledAndEnabled() && function_exists('acf_add_options_page')) {
+                            acf_add_options_page($params);
                         }
                     }
                 }

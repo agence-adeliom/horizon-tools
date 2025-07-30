@@ -37,6 +37,7 @@ class HorizonToolsServiceProvider extends SageServiceProvider
         (new MiddlewareServiceProvider($this->app))->boot();
         (new LivewireServiceProvider($this->app))->boot();
         (new SeoServiceProvider($this->app))->boot();
+        (new SearchEngineServiceProvider($this->app))->boot();
 
         if (ClassService::isHorizonBlocksInstalled()) {
             try {
