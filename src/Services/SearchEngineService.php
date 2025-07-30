@@ -105,20 +105,199 @@ class SearchEngineService
         });
     }
 
+    public static function getSearchEnginePageGETParameter(): ?string
+    {
+        return Cache::remember('search_engine_page_get_parameter', 60 * 60, function () {
+            $param = null;
+
+            if ($config = self::getSearchEngineConfig()) {
+                if (!empty($config[SearchEngineOptionsAdmin::FIELD_PAGE_GET_PARAMETER])) {
+                    $param = $config[SearchEngineOptionsAdmin::FIELD_PAGE_GET_PARAMETER];
+                }
+            }
+
+            return $param;
+        });
+    }
+
     public static function getExcludedIDs(): array
     {
-        $excludedIDs = [];
+        return Cache::remember('search_engine_excluded_IDs', 60 * 60, function () {
+            $excludedIDs = [];
 
-        if ($config = self::getSearchEngineConfig()) {
-            if (
-                !empty($config[SearchEngineOptionsAdmin::FIELD_EXCLUDED_POSTS]) &&
-                is_array($config[SearchEngineOptionsAdmin::FIELD_EXCLUDED_POSTS])
-            ) {
-                $excludedIDs = $config[SearchEngineOptionsAdmin::FIELD_EXCLUDED_POSTS];
+            if ($config = self::getSearchEngineConfig()) {
+                if (
+                    !empty($config[SearchEngineOptionsAdmin::FIELD_EXCLUDED_POSTS]) &&
+                    is_array($config[SearchEngineOptionsAdmin::FIELD_EXCLUDED_POSTS])
+                ) {
+                    $excludedIDs = $config[SearchEngineOptionsAdmin::FIELD_EXCLUDED_POSTS];
+                }
             }
-        }
 
-        return $excludedIDs;
+            return $excludedIDs;
+        });
+    }
+
+    public static function getPerPage(): ?int
+    {
+        return Cache::remember('search_engine_per_page', 60 * 60, function () {
+            $perPage = null;
+
+            if ($config = self::getSearchEngineConfig()) {
+                if (
+                    !empty($config[SearchEngineOptionsAdmin::FIELD_PER_PAGE]) &&
+                    is_numeric($config[SearchEngineOptionsAdmin::FIELD_PER_PAGE])
+                ) {
+                    $perPage = intval($config[SearchEngineOptionsAdmin::FIELD_PER_PAGE]);
+                }
+            }
+
+            return $perPage;
+        });
+    }
+
+    public static function getSeparateByTypes(): bool
+    {
+        return Cache::remember('search_engine_separate_by_type', 60 * 60, function () {
+            $separateByTypes = false;
+
+            if ($config = self::getSearchEngineConfig()) {
+                if (
+                    !empty($config[SearchEngineOptionsAdmin::FIELD_SEPARATE_BY_TYPES]) &&
+                    is_bool($config[SearchEngineOptionsAdmin::FIELD_SEPARATE_BY_TYPES])
+                ) {
+                    $separateByTypes = $config[SearchEngineOptionsAdmin::FIELD_SEPARATE_BY_TYPES];
+                }
+            }
+
+            return $separateByTypes;
+        });
+    }
+
+    public static function getPostTypes(): ?array
+    {
+        return Cache::remember('search_engine_post_types', 60 * 60, function () {
+            $postTypes = null;
+
+            if ($config = self::getSearchEngineConfig()) {
+                if (
+                    !empty($config[SearchEngineOptionsAdmin::FIELD_SEARCH_TYPES]) &&
+                    is_array($config[SearchEngineOptionsAdmin::FIELD_SEARCH_TYPES])
+                ) {
+                    $postTypes = $config[SearchEngineOptionsAdmin::FIELD_SEARCH_TYPES];
+                }
+            }
+
+            return $postTypes;
+        });
+    }
+
+    public static function getAllowFilterByType(): bool
+    {
+        return Cache::remember('search_engine_filter_by_type', 60 * 60, function () {
+            $allowFilterByType = false;
+
+            if ($config = self::getSearchEngineConfig()) {
+                if (
+                    !empty($config[SearchEngineOptionsAdmin::FIELD_ALLOW_FILTER_BY_TYPE]) &&
+                    is_bool($config[SearchEngineOptionsAdmin::FIELD_ALLOW_FILTER_BY_TYPE])
+                ) {
+                    $allowFilterByType = $config[SearchEngineOptionsAdmin::FIELD_ALLOW_FILTER_BY_TYPE];
+                }
+            }
+
+            return $allowFilterByType;
+        });
+    }
+
+    public static function getHeaderTitle(): ?string
+    {
+        return Cache::remember('search_engine_header_title', 60 * 60, function () {
+            $headerTitle = null;
+
+            if ($config = self::getSearchEngineConfig()) {
+                if (
+                    !empty($config[SearchEngineOptionsAdmin::FIELD_SEARCH_HEADER_TITLE]) &&
+                    is_string($config[SearchEngineOptionsAdmin::FIELD_SEARCH_HEADER_TITLE])
+                ) {
+                    $headerTitle = $config[SearchEngineOptionsAdmin::FIELD_SEARCH_HEADER_TITLE];
+                }
+            }
+
+            return $headerTitle;
+        });
+    }
+
+    public static function getMetaTitle(): ?string
+    {
+        return Cache::remember('search_engine_meta_title', 60 * 60, function () {
+            $metaTitle = null;
+
+            if ($config = self::getSearchEngineConfig()) {
+                if (
+                    !empty($config[SearchEngineOptionsAdmin::FIELD_META_TITLE]) &&
+                    is_string($config[SearchEngineOptionsAdmin::FIELD_META_TITLE])
+                ) {
+                    $metaTitle = $config[SearchEngineOptionsAdmin::FIELD_META_TITLE];
+                }
+            }
+
+            return $metaTitle;
+        });
+    }
+
+    public static function getDisplayBreadcrumbs(): bool
+    {
+        return Cache::remember('search_engine_display_breadcrumbs', 60 * 60, function () {
+            $displayBreadcrumbs = false;
+
+            if ($config = self::getSearchEngineConfig()) {
+                if (
+                    !empty($config[SearchEngineOptionsAdmin::FIELD_SEARCH_HEADER_HAS_BREADCRUMBS]) &&
+                    is_bool($config[SearchEngineOptionsAdmin::FIELD_SEARCH_HEADER_HAS_BREADCRUMBS])
+                ) {
+                    $displayBreadcrumbs = $config[SearchEngineOptionsAdmin::FIELD_SEARCH_HEADER_HAS_BREADCRUMBS];
+                }
+            }
+
+            return $displayBreadcrumbs;
+        });
+    }
+
+    public static function getHeaderImage(): ?array
+    {
+        return Cache::remember('search_engine_header_image', 60 * 60, function () {
+            $headerImage = null;
+
+            if ($config = self::getSearchEngineConfig()) {
+                if (
+                    !empty($config[SearchEngineOptionsAdmin::FIELD_SEARCH_HEADER_IMAGE]) &&
+                    is_array($config[SearchEngineOptionsAdmin::FIELD_SEARCH_HEADER_IMAGE])
+                ) {
+                    $headerImage = $config[SearchEngineOptionsAdmin::FIELD_SEARCH_HEADER_IMAGE];
+                }
+            }
+
+            return $headerImage;
+        });
+    }
+
+    public static function getAddPageToMetaTitle(): bool
+    {
+        return Cache::remember('search_engine_add_page_to_meta_title', 60 * 60, function () {
+            $addPageToMetaTitle = false;
+
+            if ($config = self::getSearchEngineConfig()) {
+                if (
+                    !empty($config[SearchEngineOptionsAdmin::FIELD_META_TITLE_ADD_PAGE]) &&
+                    is_bool($config[SearchEngineOptionsAdmin::FIELD_META_TITLE_ADD_PAGE])
+                ) {
+                    $addPageToMetaTitle = $config[SearchEngineOptionsAdmin::FIELD_META_TITLE_ADD_PAGE];
+                }
+            }
+
+            return $addPageToMetaTitle;
+        });
     }
 
     public static function searchPostTypes(

@@ -94,27 +94,29 @@ class RankMathHooks extends AbstractHook
         $isCurrentPage = !is_admin() && $searchEnginePage instanceof \WP_Post ? get_the_ID() === $searchEnginePage->ID : false;
 
         if ($isCurrentPage) {
-            if ($searchEngineConfig = SearchEngineService::getSearchEngineConfig()) {
-                if (
-                    !empty($searchEngineConfig[SearchEngineOptionsAdmin::FIELD_META_TITLE]) &&
-                    !empty($searchEngineConfig[SearchEngineOptionsAdmin::FIELD_SEARCH_GET_PARAMETER])
-                ) {
-                    $metaTitle = $searchEngineConfig[SearchEngineOptionsAdmin::FIELD_META_TITLE];
+            $metaTitle = SearchEngineService::getMetaTitle();
+            $getParam = SearchEngineService::getSearchEngineGETParameter();
+            $searchPlaceholder = SearchEngineOptionsAdmin::SEARCH_PLACEHOLDER;
+            $displayPageInMeta = SearchEngineService::getAddPageToMetaTitle();
 
-                    if (str_contains($metaTitle, SearchEngineOptionsAdmin::SEARCH_PLACEHOLDER)) {
-                        $getParam = $searchEngineConfig[SearchEngineOptionsAdmin::FIELD_SEARCH_GET_PARAMETER];
+            if (!empty($metaTitle) && !empty($getParam)) {
+                if (str_contains($metaTitle, $searchPlaceholder)) {
+                    $searchQuery = '';
 
-                        $searchQuery = '';
-
-                        if (!empty($_GET[$getParam])) {
-                            $searchQuery = sanitize_text_field($_GET[$getParam]);
-                        }
-
-                        $metaTitle = str_replace(SearchEngineOptionsAdmin::SEARCH_PLACEHOLDER, $searchQuery, $metaTitle);
+                    if (!empty($_GET[$getParam])) {
+                        $searchQuery = sanitize_text_field($_GET[$getParam]);
                     }
 
-                    $title = sprintf('%s %s', $metaTitle, SeoService::getMetaTitleSuffix());
+                    $metaTitle = str_replace(SearchEngineOptionsAdmin::SEARCH_PLACEHOLDER, $searchQuery, $metaTitle);
                 }
+
+                if ($displayPageInMeta && ($pageGETParam = SearchEngineService::getSearchEnginePageGETParameter())) {
+                    if (!empty($_GET[$pageGETParam]) && is_numeric($_GET[$pageGETParam])) {
+                        $metaTitle = SeoService::appendPageToMetaTitle($metaTitle, (int) $_GET[$pageGETParam]);
+                    }
+                }
+
+                $title = sprintf('%s %s', $metaTitle, SeoService::getMetaTitleSuffix());
             }
         }
 

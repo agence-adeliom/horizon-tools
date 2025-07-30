@@ -31,11 +31,13 @@ class SearchEngineOptionsAdmin extends AbstractAdmin
     public const FIELD_ALLOW_FILTER_BY_TYPE = 'allowFilterByType';
     public const FIELD_PER_PAGE = 'perPage';
     public const FIELD_SEARCH_GET_PARAMETER = 'searchGetParameter';
+    public const FIELD_PAGE_GET_PARAMETER = 'pageGetParameter';
     public const FIELD_META_TITLE = 'metaTitle';
     public const FIELD_SEARCH_HEADER_HAS_BREADCRUMBS = 'searchHeaderHasBreadcrumbs';
     public const FIELD_SEARCH_HEADER_TITLE = 'searchHeaderTitle';
     public const FIELD_SEARCH_HEADER_IMAGE = 'searchHeaderImage';
     public const FIELD_EXCLUDED_POSTS = 'searchExcludedPosts';
+    public const FIELD_META_TITLE_ADD_PAGE = 'metaTitleAddPage';
 
     public const SEARCH_PLACEHOLDER = '%SEARCH%';
 
@@ -93,6 +95,10 @@ class SearchEngineOptionsAdmin extends AbstractAdmin
                 ->conditionalLogic([$this->getCondition()])
                 ->helperText(__('Permet de définir le nom du paramètre GET utilisé pour la recherche.'))
                 ->default('recherche'),
+            Text::make(__('Paramètre GET pour la page'), self::FIELD_PAGE_GET_PARAMETER)
+                ->conditionalLogic([$this->getCondition()])
+                ->helperText(__('Permet de définir le nom du paramètre GET utilisé pour la pagination (ne peut pas être "page").'))
+                ->default('pagination'),
             Tab::make(__('SEO'))->placement('left'),
             Message::make(__('SEO - Aucune page définie'))
                 ->body(__('Veuillez sélectionner une page de résultats pour configurer le SEO du moteur de recherche.'))
@@ -101,6 +107,11 @@ class SearchEngineOptionsAdmin extends AbstractAdmin
                 ->helperText($this->getHelperText())
                 ->conditionalLogic([$this->getCondition()])
                 ->default(sprintf('%s "%s"', __('Recherche pour'), self::SEARCH_PLACEHOLDER)),
+            TrueFalse::make(__('Afficher la page dans le titre'), self::FIELD_META_TITLE_ADD_PAGE)
+                ->stylized()
+                ->default(true)
+                ->helperText(__('Permet d’ajouter la page courante (sauf 1) au titre de la page de résultats.'))
+                ->conditionalLogic([$this->getCondition()]),
         ]);
     }
 

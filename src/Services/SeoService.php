@@ -78,4 +78,13 @@ class SeoService
 
         return null;
     }
+
+    public static function appendPageToMetaTitle(string $metaTitle, int $page): string
+    {
+        if ($page > 1) {
+            $metaTitle = sprintf('%s %s %s %d', $metaTitle, self::getTitleSeparator(), __('Page'), $page);
+        }
+
+        return $metaTitle;
+    }
 }
