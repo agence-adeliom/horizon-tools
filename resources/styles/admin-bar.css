@@ -22,6 +22,16 @@ body {
                             }
                         }
                     }
+
+                    & > .ab-item {
+                        &:focus {
+                            color: var(--horizon-admin-main-color-light)!important;
+
+                            &:before {
+                                color: var(--horizon-admin-main-color-light)!important;
+                            }
+                        }
+                    }
                 }
             }
 
