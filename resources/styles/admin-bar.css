@@ -4,7 +4,7 @@ body {
             .menupop.hover {
                 a {
                     &:focus {
-                        color: var(--horizon-admin-main-color-light);
+                        color: var(--horizon-admin-main-color-light)!important;
                     }
                 }
             }
