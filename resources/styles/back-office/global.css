@@ -112,6 +112,8 @@
     }
 
     a {
+        color: var(--horizon-admin-main-color);
+
         &:hover {
             color: var(--horizon-admin-main-color-dark);
         }
@@ -329,6 +331,16 @@
                             color: var(--horizon-admin-main-color);
                         }
                     }
+                }
+            }
+        }
+    }
+
+    input {
+        &[type="radio"] {
+            &:checked {
+                &:before {
+                    background-color: var(--horizon-admin-main-color);
                 }
             }
         }
