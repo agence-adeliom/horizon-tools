@@ -6,14 +6,26 @@
             }
         }
 
+        li.current {
+            a.menu-top {
+                background-color: var(--horizon-admin-main-color);
+            }
+        }
+
         .wp-submenu {
-            a:hover {
+            a:hover, a:focus {
+                color: var(--horizon-admin-main-color-light)!important;
+            }
+        }
+
+        #collapse-button {
+            &:hover {
                 color: var(--horizon-admin-main-color-light);
             }
         }
 
         a:hover {
-            color: var(--horizon-admin-main-color-light);
+            color: var(--horizon-admin-main-color-light)!important;
         }
 
         li.menu-top:hover, li.menu-top:focus {
@@ -24,6 +36,22 @@
             div.wp-menu-image.svg {
                 i {
                     background-color: rgba(240,246,252,.6);
+                }
+            }
+
+            & > a.menu-top {
+                &:focus {
+                    color: var(--horizon-admin-main-color-light);
+                }
+            }
+
+            a {
+                &:focus {
+                    div.wp-menu-image {
+                        &:before {
+                            color: var(--horizon-admin-main-color-light);
+                        }
+                    }
                 }
             }
         }
@@ -301,65 +329,6 @@
                             color: var(--horizon-admin-main-color);
                         }
                     }
-                }
-            }
-        }
-    }
-
-    #wpadminbar {
-        &:not(.mobile) {
-            .ab-top-menu {
-                & > li {
-                    &:hover, &.hover {
-                        & > .ab-item {
-                            color: var(--horizon-admin-main-color-light);
-
-                            &:before {
-                                color: var(--horizon-admin-main-color-light);
-                            }
-                        }
-                    }
-                }
-            }
-
-            & > #wp-toolbar {
-                li {
-                    & > .ab-item {
-                        i {
-                            background-color: #dedede;
-                        }
-                    }
-                    &:hover, &.hover {
-                        span {
-                            &.ab-label {
-                                color: var(--horizon-admin-main-color-light);
-                            }
-                        }
-
-                        .ab-icon {
-                            &:before {
-                                color: var(--horizon-admin-main-color-light);
-                            }
-                        }
-
-                        & > .ab-item {
-                            color: var(--horizon-admin-main-color-light);
-
-                            i {
-                                background-color: var(--horizon-admin-main-color-light);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    #wp-admin-bar-rank-math {
-        &:hover {
-            .rank-math-icon {
-                svg {
-                    fill: var(--horizon-admin-main-color-light);
                 }
             }
         }

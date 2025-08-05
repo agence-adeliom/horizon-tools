@@ -19,22 +19,20 @@ window.createIconElement = (source, size, justify = 'center', align = 'center') 
     source.appendChild(icon);
 };
 
-const handleAdminMenu = adminMenu => {
-    if (adminMenu) {
-        const elementsWithSvgIcon = Array.from(adminMenu.querySelectorAll('.wp-menu-image.svg'));
+const handleAdminBar = adminBar => {
+    if (adminBar) {
+        const elementsWithSvgIcon = Array.from(document.querySelectorAll('.ab-item.svg'));
 
-        elementsWithSvgIcon.forEach(eltWithSvgIcon => {
-            if (eltWithSvgIcon.style.backgroundImage) {
-                if (eltWithSvgIcon.style.backgroundImage.startsWith('url("')) {
-                    window.createIconElement(eltWithSvgIcon, 20);
-                }
-            }
-        });
+        if (elementsWithSvgIcon) {
+            elementsWithSvgIcon.forEach(eltWithSvgIcon => {
+                window.createIconElement(eltWithSvgIcon, 18, 'left');
+            });
+        }
     }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    const adminMenu = document.querySelector('#adminmenu');
+    const adminBar = document.querySelector('#wpadminbar');
 
-    handleAdminMenu(adminMenu);
+    handleAdminBar(adminBar);
 });
