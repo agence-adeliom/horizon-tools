@@ -47,10 +47,10 @@ trait CompilatorServiceTrait
                 }
 
                 return $manifest[$handle];
-            } else {
-                return false;
             }
         }
+
+        return false;
     }
 
     private static function getPublicDirectory(bool $full = true): string
