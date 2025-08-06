@@ -46,6 +46,10 @@ class BudService implements CompilatorServiceInterface
 
     public static function getAsset(string $handle): null|AssetViewModel
     {
+        if ($assetData = self::getManifestAssociation($handle)) {
+            return new AssetViewModel(file: str_replace(self::getBuildDirectory(full: false), '', $assetData));
+        }
+
         return null;
     }
 }
