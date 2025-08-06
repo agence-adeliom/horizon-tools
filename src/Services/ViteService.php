@@ -32,6 +32,15 @@ class ViteService implements CompilatorServiceInterface
 
     public static function getUrlByRegex(string $regex): false|string
     {
+        $publicDirectory = self::getPublicDirectory();
+        $cssDirectory = $publicDirectory . 'build/assets/';
+
+        foreach (scandir($cssDirectory) as $fileName) {
+            if (preg_match($regex, $fileName)) {
+                return get_template_directory_uri() . self::getPublicDirectory(full: false) . 'build/assets/' . $fileName;
+            }
+        }
+
         return '';
     }
 

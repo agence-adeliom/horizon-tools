@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Adeliom\HorizonTools\Hooks;
 
 use Adeliom\HorizonTools\Services\BudService;
+use Adeliom\HorizonTools\Services\Compilation\CompilationService;
 use Illuminate\Support\Facades\Config;
 
 class DefaultGutenbergHooks extends AbstractHook
@@ -30,7 +31,7 @@ class DefaultGutenbergHooks extends AbstractHook
                 $ext = pathinfo($file, PATHINFO_EXTENSION);
                 $fileName = pathinfo($file, PATHINFO_FILENAME);
 
-                $fileUrl = BudService::getUrlByRegex(sprintf('/%s.[0-9-a-z-A-Z]+.%s/', $fileName, $ext));
+                $fileUrl = CompilationService::getUrlByRegex(sprintf('/%s.[0-9-a-z-A-Z]+.%s/', $fileName, $ext));
             }
 
             if ($fileUrl) {
