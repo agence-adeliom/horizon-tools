@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Hooks;
 
-use Adeliom\HorizonTools\Services\Compilation\BudService;
+use Adeliom\HorizonTools\Services\BudService;
 use Illuminate\Support\Facades\Config;
 
 class DefaultGutenbergHooks extends AbstractHook

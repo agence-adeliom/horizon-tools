@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\HorizonTools\Services\Compilation;
+namespace Adeliom\HorizonTools\Services;
 
 use Adeliom\HorizonTools\Services\Interfaces\CompilatorServiceInterface;
 use Adeliom\HorizonTools\Services\Traits\CompilatorServiceTrait;
 use Adeliom\HorizonTools\ViewModels\Asset\AssetViewModel;
-use function Adeliom\HorizonTools\Services\get_template_directory_uri;
 
 class BudService implements CompilatorServiceInterface
 {

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Services\Compilation;
 
+use Adeliom\HorizonTools\Services\BudService;
 use Adeliom\HorizonTools\Services\Interfaces\CompilatorServiceInterface;
 use Adeliom\HorizonTools\Services\VersionService;
+use Adeliom\HorizonTools\Services\ViteService;
 use Adeliom\HorizonTools\ViewModels\Asset\AssetViewModel;
 
 class CompilationService implements CompilatorServiceInterface

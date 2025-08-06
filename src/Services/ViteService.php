@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Adeliom\HorizonTools\Services\Compilation;
+namespace Adeliom\HorizonTools\Services;
 
 use Adeliom\HorizonTools\Services\Interfaces\CompilatorServiceInterface;
 use Adeliom\HorizonTools\Services\Traits\CompilatorServiceTrait;
