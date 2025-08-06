@@ -6,6 +6,7 @@ namespace Adeliom\HorizonTools\Services\Compilation;
 
 use Adeliom\HorizonTools\Services\Interfaces\CompilatorServiceInterface;
 use Adeliom\HorizonTools\Services\VersionService;
+use Adeliom\HorizonTools\ViewModels\Asset\AssetViewModel;
 
 class CompilationService implements CompilatorServiceInterface
 {
@@ -40,6 +41,14 @@ class CompilationService implements CompilatorServiceInterface
         return match (true) {
             self::shouldUseVite() => ViteService::getUrlByRegex(regex: $regex),
             default => BudService::getUrlByRegex($regex),
+        };
+    }
+
+    public static function getAsset(string $handle): null|AssetViewModel
+    {
+        return match (true) {
+            self::shouldUseVite() => ViteService::getAsset(handle: $handle),
+            default => BudService::getAsset(handle: $handle),
         };
     }
 }

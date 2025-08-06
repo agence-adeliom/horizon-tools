@@ -6,6 +6,7 @@ namespace Adeliom\HorizonTools\Services\Compilation;
 
 use Adeliom\HorizonTools\Services\Interfaces\CompilatorServiceInterface;
 use Adeliom\HorizonTools\Services\Traits\CompilatorServiceTrait;
+use Adeliom\HorizonTools\ViewModels\Asset\AssetViewModel;
 use function Adeliom\HorizonTools\Services\get_template_directory_uri;
 
 class BudService implements CompilatorServiceInterface
@@ -42,5 +43,10 @@ class BudService implements CompilatorServiceInterface
         }
 
         return false;
+    }
+
+    public static function getAsset(string $handle): null|AssetViewModel
+    {
+        return null;
     }
 }

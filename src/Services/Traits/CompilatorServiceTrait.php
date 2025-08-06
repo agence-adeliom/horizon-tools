@@ -23,13 +23,17 @@ trait CompilatorServiceTrait
         }
     }
 
-    private static function getManifestAssociation(string $handle): false|string
+    private static function getManifestAssociation(string $handle, bool $returnViteArray = false): false|string|array
     {
         $manifest = self::getManifest();
 
         if (!empty($manifest)) {
             if (in_array($handle, array_keys($manifest))) {
                 $localPath = $manifest[$handle];
+
+                if (CompilationService::shouldUseVite() && $returnViteArray) {
+                    return $localPath;
+                }
 
                 $localPath = match (true) {
                     CompilationService::shouldUseVite() => $localPath['file'],
