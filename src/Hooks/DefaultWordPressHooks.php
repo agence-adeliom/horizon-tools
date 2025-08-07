@@ -31,6 +31,7 @@ class DefaultWordPressHooks extends AbstractHook
             ['login_enqueue_scripts', [$this, 'handleLoginHeaderImage'], 10, 1],
             ['admin_enqueue_scripts', [$this, 'handleAdminStyles'], 10, 1],
             ['admin_enqueue_scripts', [$this, 'handleAdminBarStyles'], 10, 1],
+            ['wp_enqueue_scripts', [$this, 'removeWordPressCoreStyle'], 100, 1],
             ['wp_enqueue_scripts', [$this, 'handleAdminBarStyles'], 10, 1],
             ['admin_init', [$this, 'disabledCustomThemes'], 10, 0],
         ];
@@ -290,6 +291,15 @@ EOF;
 
             echo sprintf('<style>%s%s</style>', $this->getStyleVars(), $styleContent);
         }
+    }
+
+    public function removeWordPressCoreStyle(): void
+    {
+        wp_dequeue_style( 'wp-block-library' ); // Remove WordPress core CSS
+        //   wp_dequeue_style( 'wp-block-library-theme' ); // Remove WordPress theme core CSS
+        // wp_dequeue_style( 'classic-theme-styles' ); // Remove global styles inline CSS
+        //wp_dequeue_style( 'wc-block-style' ); // Remove WooCommerce block CSS
+        wp_dequeue_style( 'global-styles' ); // Remove theme.json css
     }
 
     private function getStyleVars(): string
