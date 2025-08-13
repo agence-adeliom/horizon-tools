@@ -7,6 +7,7 @@ namespace Adeliom\HorizonTools\Services;
 use Adeliom\HorizonTools\Services\Interfaces\CompilatorServiceInterface;
 use Adeliom\HorizonTools\Services\Traits\CompilatorServiceTrait;
 use Adeliom\HorizonTools\ViewModels\Asset\AssetViewModel;
+use Illuminate\Support\Facades\Vite;
 
 class ViteService implements CompilatorServiceInterface
 {
@@ -46,7 +47,13 @@ class ViteService implements CompilatorServiceInterface
 
     public static function getAsset(string $handle): null|AssetViewModel
     {
-        if ($assetData = self::getManifestAssociation($handle, returnViteArray: true)) {
+        if (Vite::isRunningHot()) {
+            if ($url = Vite::asset($handle)) {
+                $file = parse_url($url)['path'] ?? null;
+
+                return new AssetViewModel(file: $file, forceUrl: $url);
+            }
+        } elseif ($assetData = self::getManifestAssociation($handle, returnViteArray: true)) {
             return new AssetViewModel(file: $assetData['file']);
         }
 

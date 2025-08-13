@@ -19,11 +19,12 @@ class AssetViewModel
     private ?string $type = null;
     private ?array $associatedAssets = null;
     private readonly bool $isFirstLevel;
+    private bool $isHot = false;
 
     private const ASSET_TYPE_SCRIPT = 'script';
     private const ASSET_TYPE_STYLE = 'style';
 
-    public function __construct(string $file, bool $firstLevel = true)
+    public function __construct(string $file, bool $firstLevel = true, private readonly ?string $forceUrl = null)
     {
         $this->file = $file;
         $this->isFirstLevel = $firstLevel;
@@ -70,8 +71,12 @@ class AssetViewModel
 
     public function setUrl(?string $url = null): self
     {
-        if (null === $url) {
-            $url = sprintf('%s%s%s', get_template_directory_uri(), self::getBuildDirectory(full: false), $this->file ?? '');
+        if ($this->forceUrl) {
+            $url = $this->forceUrl;
+        } else {
+            if (null === $url) {
+                $url = sprintf('%s%s%s', get_template_directory_uri(), self::getBuildDirectory(full: false), $this->file ?? '');
+            }
         }
 
         $this->url = $url;
@@ -87,7 +92,11 @@ class AssetViewModel
     public function setPath(?string $path = null): self
     {
         if (null === $path) {
-            $path = sprintf('%s%s', self::getBuildDirectory(), $this->file ?? '');
+            if ($this->forceUrl) {
+                $path = sprintf('%s%s', get_template_directory(), $this->file ?? '');
+            } else {
+                $path = sprintf('%s%s', self::getBuildDirectory(), $this->file ?? '');
+            }
         }
 
         $this->path = $path;
