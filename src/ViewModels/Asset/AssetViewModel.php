@@ -19,13 +19,19 @@ class AssetViewModel
     private ?string $type = null;
     private ?array $associatedAssets = null;
     private readonly bool $isFirstLevel;
-    private bool $isHot = false;
 
     private const ASSET_TYPE_SCRIPT = 'script';
     private const ASSET_TYPE_STYLE = 'style';
 
-    public function __construct(string $file, bool $firstLevel = true, private readonly ?string $forceUrl = null)
-    {
+    public const HANDLE_PREFIX_VITE = 'vite_';
+    public const HANDLE_PREFIX_BUD = 'bud_';
+
+    public function __construct(
+        string $file,
+        bool $firstLevel = true,
+        private readonly ?string $forceUrl = null,
+        private readonly bool $isHot = false
+    ) {
         $this->file = $file;
         $this->isFirstLevel = $firstLevel;
 
@@ -175,10 +181,27 @@ class AssetViewModel
             $instance = $this;
         }
 
+        $handle = $instance->file;
+
+        if ($this->isHot) {
+            $handlePrefix = '';
+
+            switch (true) {
+                case $this->isVite():
+                    $handlePrefix = self::HANDLE_PREFIX_VITE . $handlePrefix;
+                    break;
+                case $this->isBud():
+                    $handlePrefix = self::HANDLE_PREFIX_BUD . $handlePrefix;
+                    break;
+            }
+
+            $handle = $handlePrefix . $handle;
+        }
+
         if ($instance->isScript()) {
-            wp_enqueue_script($instance->file, $instance->getUrl(), $dependencies, $version, $args);
+            wp_enqueue_script($handle, $instance->getUrl(), $dependencies, $version, $args);
         } elseif ($instance->isStyle()) {
-            wp_enqueue_style($instance->file, $instance->getUrl());
+            wp_enqueue_style($handle, $instance->getUrl());
         }
 
         return $instance;

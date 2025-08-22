@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Adeliom\HorizonTools\Providers;
 
 use Adeliom\HorizonTools\Hooks\AbstractHook;
+use Adeliom\HorizonTools\Hooks\DefaultCompilationHooks;
 use Adeliom\HorizonTools\Hooks\DefaultGravityFormsHooks;
 use Adeliom\HorizonTools\Hooks\DefaultGutenbergHooks;
 use Adeliom\HorizonTools\Hooks\DefaultWordPressHooks;
@@ -36,6 +37,7 @@ class HooksServiceProvider extends SageServiceProvider
                 RankMathHooks::class,
                 DefaultGutenbergHooks::class,
                 DefaultWordPressHooks::class,
+                DefaultCompilationHooks::class,
                 DefaultGravityFormsHooks::class,
                 WysiwygHooks::class,
                 QueryBuilderHooks::class,

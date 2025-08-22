@@ -51,7 +51,7 @@ class ViteService implements CompilatorServiceInterface
             if ($url = Vite::asset($handle)) {
                 $file = parse_url($url)['path'] ?? null;
 
-                return new AssetViewModel(file: $file, forceUrl: $url);
+                return new AssetViewModel(file: $file, forceUrl: $url, isHot: true);
             }
         } elseif ($assetData = self::getManifestAssociation($handle, returnViteArray: true)) {
             return new AssetViewModel(file: $assetData['file']);
