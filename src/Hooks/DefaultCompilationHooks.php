@@ -15,8 +15,13 @@ class DefaultCompilationHooks extends AbstractHook
 
     public function handleTag(string $tag, string $handle)
     {
-        if (str_starts_with($handle, AssetViewModel::HANDLE_PREFIX_VITE)) {
-            $tag = str_replace('src=', 'type="module" src=', $tag);
+        $prefixThatAreModules = [AssetViewModel::HANDLE_PREFIX_VITE, AssetViewModel::HANDLE_PREFIX_MODULE];
+
+        foreach ($prefixThatAreModules as $prefixThatAreModule) {
+            if (str_starts_with($handle, $prefixThatAreModule)) {
+                $tag = str_replace('src=', 'type="module" src=', $tag);
+                break;
+            }
         }
 
         return $tag;

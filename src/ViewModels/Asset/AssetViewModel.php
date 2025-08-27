@@ -19,12 +19,15 @@ class AssetViewModel
     private ?string $type = null;
     private ?array $associatedAssets = null;
     private readonly bool $isFirstLevel;
+    private array $imports = [];
+    private bool $isImportedByJs = false;
 
     private const ASSET_TYPE_SCRIPT = 'script';
     private const ASSET_TYPE_STYLE = 'style';
 
     public const HANDLE_PREFIX_VITE = 'vite_';
     public const HANDLE_PREFIX_BUD = 'bud_';
+    public const HANDLE_PREFIX_MODULE = 'module_';
 
     public function __construct(
         string $file,
@@ -140,6 +143,35 @@ class AssetViewModel
         return $this->getType() === self::ASSET_TYPE_STYLE;
     }
 
+    public function getImports(): array
+    {
+        return $this->imports;
+    }
+
+    public function setImports(array $imports): self
+    {
+        $this->imports = $imports;
+
+        return $this;
+    }
+
+    public function addImport(AssetViewModel $import): self
+    {
+        $this->imports[] = $import;
+
+        return $this;
+    }
+
+    public function isImportedByJs(): bool
+    {
+        return $this->isImportedByJs;
+    }
+
+    public function setIsImportedByJs(bool $isImportedByJs): void
+    {
+        $this->isImportedByJs = $isImportedByJs;
+    }
+
     /**
      * @return AssetViewModel[]|null
      */
@@ -162,6 +194,17 @@ class AssetViewModel
                             }
                         }
                     }
+
+                    if (!empty($item['imports'])) {
+                        foreach ($item['imports'] as $import) {
+                            if ($importAsset = CompilationService::getAsset($import)) {
+                                $importAsset->setIsImportedByJs(true);
+                                $this->addImport($importAsset);
+
+                                $associatedAssets[] = $importAsset;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -175,12 +218,30 @@ class AssetViewModel
         array $dependencies = [],
         ?string $version = null,
         bool $args = true,
-        ?AssetViewModel $instance = null
+        ?AssetViewModel $instance = null,
+        ?string $handle = null
     ): AssetViewModel {
         if (null === $instance) {
             $instance = $this;
         }
 
+        if (null === $handle) {
+            $handle = $this->getHandleFromInstance(instance: $instance);
+        }
+
+        if ($instance->isScript()) {
+            if (!$instance->isImportedByJs) {
+                wp_enqueue_script($handle, $instance->getUrl(), $dependencies, $version, $args);
+            }
+        } elseif ($instance->isStyle()) {
+            wp_enqueue_style($handle, $instance->getUrl());
+        }
+
+        return $instance;
+    }
+
+    private function getHandleFromInstance(self $instance, bool $module = false): ?string
+    {
         $handle = $instance->file;
 
         if ($this->isHot) {
@@ -196,26 +257,24 @@ class AssetViewModel
             }
 
             $handle = $handlePrefix . $handle;
+        } elseif (!empty($this->getImports())) {
+            $handle = self::HANDLE_PREFIX_MODULE . $handle;
         }
 
-        if ($instance->isScript()) {
-            wp_enqueue_script($handle, $instance->getUrl(), $dependencies, $version, $args);
-        } elseif ($instance->isStyle()) {
-            wp_enqueue_style($handle, $instance->getUrl());
-        }
-
-        return $instance;
+        return $handle;
     }
 
     public function enqueueAll(array $dependencies = [], ?string $version = null, bool $args = true): void
     {
-        $this->enqueue(dependencies: $dependencies, version: $version, args: $args);
+        $mainDependencies = [];
 
         if ($this->getAssociatedAssets()) {
             foreach ($this->getAssociatedAssets() as $associatedAsset) {
-                $this->enqueue(dependencies: $dependencies, version: $version, args: $args, instance: $associatedAsset);
+                $associatedAsset->enqueueAll(dependencies: $dependencies, version: $version, args: $args);
             }
         }
+
+        $this->enqueue(dependencies: array_merge($dependencies, $mainDependencies), version: $version, args: $args);
     }
 
     private function endsWithOneOf(string $haystack, array $needles): bool
