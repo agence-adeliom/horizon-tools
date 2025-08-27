@@ -339,7 +339,10 @@ class PostTypeServiceProvider extends SageServiceProvider
     private function handleTaxonomyPostTypeCustomColumnStringContent(?array $columnData = null, ?int $postId = null): void
     {
         if (is_array($columnData) && !is_null($postId)) {
-            if ($terms = get_the_terms($postId, $columnData[AbstractPostType::CUSTOM_COLUMN_TAXONOMY])) {
+            if (
+                isset($columnData[AbstractPostType::CUSTOM_COLUMN_TAXONOMY]) &&
+                ($terms = get_the_terms($postId, $columnData[AbstractPostType::CUSTOM_COLUMN_TAXONOMY]))
+            ) {
                 $termsUrls = [];
 
                 foreach ($terms as $term) {
@@ -369,28 +372,19 @@ class PostTypeServiceProvider extends SageServiceProvider
     {
         if (!empty($customColumns)) {
             $columnData = null;
-            $isTaxonomy = false;
 
             foreach ($customColumns as $column) {
                 if (!empty($column[AbstractPostType::CUSTOM_COLUMN_TAXONOMY])) {
                     $this->handleTaxonomyPostTypeCustomColumnContent(columnData: $columnData, column: $column, columnName: $columnName);
+                    $this->handleTaxonomyPostTypeCustomColumnStringContent(columnData: $columnData, postId: $postId);
                 } elseif (!empty($column[AbstractPostType::CUSTOM_COLUMN_KEY])) {
                     $this->handleBasicPostTypeCustomColumnContent(columnData: $columnData, column: $column, columnName: $columnName);
+                    $this->handleBasicPostTypeCustomColumnStringContent(columnData: $columnData ?? null, postId: $postId);
                 }
 
                 if (null !== $columnData && !empty($column[AbstractPostType::CUSTOM_COLUMN_TAXONOMY])) {
-                    $isTaxonomy = true;
                     break;
                 }
-            }
-
-            switch (true) {
-                case $isTaxonomy:
-                    $this->handleTaxonomyPostTypeCustomColumnStringContent(columnData: $columnData, postId: $postId);
-                    break;
-                default:
-                    $this->handleBasicPostTypeCustomColumnStringContent(columnData: $columnData ?? null, postId: $postId);
-                    break;
             }
         }
     }
