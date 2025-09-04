@@ -7,6 +7,7 @@ namespace Adeliom\HorizonTools\Providers;
 use Adeliom\HorizonTools\Admin\AbstractAdmin;
 use Adeliom\HorizonTools\Services\ClassService;
 use Adeliom\HorizonTools\Services\FileService;
+use Illuminate\Support\Facades\Config;
 use Roots\Acorn\Sage\SageServiceProvider;
 
 class AdminServiceProvider extends SageServiceProvider
@@ -16,6 +17,7 @@ class AdminServiceProvider extends SageServiceProvider
         $this->initAdmins();
         $this->moveMenuFromAppearance();
         $this->moveCompositionsFromAppearance();
+        $this->initListing();
     }
 
     private function initAdmins(): void
@@ -100,5 +102,53 @@ class AdminServiceProvider extends SageServiceProvider
                 68
             );
         });
+    }
+
+    private function initListing(): void
+    {
+        global $pagenow;
+
+        if ($pagenow === 'users.php' && ($columns = Config::get('users.columns'))) {
+            add_filter('manage_users_columns', function ($column) use ($columns) {
+                foreach ($columns as $columnData) {
+                    if (!empty($columnData['key'])) {
+                        if (!empty($column[$columnData['key']]) && isset($columnData['display']) && false === $columnData['display']) {
+                            unset($column[$columnData['key']]);
+                        } else {
+                            if (empty($columnData['label'])) {
+                                $columnData['label'] = $columnData['key'];
+                            }
+
+                            if (!isset($columnData['display']) || true === $columnData['display']) {
+                                $column[$columnData['key']] = $columnData['label'];
+                            }
+                        }
+                    }
+                }
+
+                return $column;
+            });
+
+            add_filter(
+                'manage_users_custom_column',
+                function ($val, $columnName, $userId) use ($columns) {
+                    if ($value = get_field($columnName, 'user_' . $userId)) {
+                        $column = array_find($columns, function ($elt) use ($columnName) {
+                            return !empty($elt['key']) && $elt['key'] === $columnName;
+                        });
+
+                        if (!empty($column['callback']) && is_callable($column['callback'])) {
+                            $val = $column['callback']($value);
+                        } else {
+                            $val = $value;
+                        }
+                    }
+
+                    return $val;
+                },
+                priority: 10,
+                accepted_args: 3
+            );
+        }
     }
 }
