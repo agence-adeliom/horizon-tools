@@ -105,39 +105,44 @@ class PostTypeServiceProvider extends SageServiceProvider
             }
 
             foreach (ClassService::getAllCustomPostTypeClasses() as $postTypeClass) {
-                if ($className = ClassService::getClassNameFromFullName($postTypeClass)) {
-                    if (!str_starts_with($className, 'Abstract')) {
-                        $class = new $postTypeClass();
+                self::initPostTypeByClassName(postTypeClass: $postTypeClass);
+            }
+        } catch (\Exception $e) {
+            throw new SkipProviderException($e->getMessage());
+        }
+    }
 
-                        if ($config = $class->getConfig()) {
-                            if (isset($config['post_type'])) {
-                                register_post_type($config['post_type'], $config['args']);
-                            }
-                        }
+    public static function initPostTypeByClassName(string $postTypeClass): void
+    {
+        if ($className = ClassService::getClassNameFromFullName($postTypeClass)) {
+            if (!str_starts_with($className, 'Abstract')) {
+                $class = new $postTypeClass();
 
-                        if (ClassService::isAcfInstalledAndEnabled() && function_exists('register_extended_field_group')) {
-                            if ($fields = $class->getFields()) {
-                                if ($customFields = iterator_to_array($fields, false)) {
-                                    register_extended_field_group([
-                                        'key' => 'group_' . $class::$slug,
-                                        'title' => $class->getFieldsTitle(),
-                                        'fields' => $customFields,
-                                        'style' => $class->getStyle(),
-                                        'location' => [Location::where('post_type', $class::$slug)],
-                                        'position' => $class->getPosition(),
-                                        'label_placement' => $class->getLabelPlacement(),
-                                        'instruction_placement' => $class->getInstructionPlacement(),
-                                        'hide_on_screen' => $class->getHideOnScreen(),
-                                        'menu_order' => $class->getMenuOrder(),
-                                    ]);
-                                }
-                            }
+                if ($config = $class->getConfig()) {
+                    if (isset($config['post_type'])) {
+                        register_post_type($config['post_type'], $config['args']);
+                    }
+                }
+
+                if (ClassService::isAcfInstalledAndEnabled() && function_exists('register_extended_field_group')) {
+                    if ($fields = $class->getFields()) {
+                        if ($customFields = iterator_to_array($fields, false)) {
+                            register_extended_field_group([
+                                'key' => 'group_' . $class::$slug,
+                                'title' => $class->getFieldsTitle(),
+                                'fields' => $customFields,
+                                'style' => $class->getStyle(),
+                                'location' => [Location::where('post_type', $class::$slug)],
+                                'position' => $class->getPosition(),
+                                'label_placement' => $class->getLabelPlacement(),
+                                'instruction_placement' => $class->getInstructionPlacement(),
+                                'hide_on_screen' => $class->getHideOnScreen(),
+                                'menu_order' => $class->getMenuOrder(),
+                            ]);
                         }
                     }
                 }
             }
-        } catch (\Exception $e) {
-            throw new SkipProviderException($e->getMessage());
         }
     }
 
