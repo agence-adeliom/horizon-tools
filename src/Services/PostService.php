@@ -190,8 +190,18 @@ class PostService
         });
     }
 
+    /**
+     * Renders a post in a simulated single post context.
+     *
+     * This method sets up the WordPress global context as if viewing a single post,
+     * renders the 'single' view, and then restores the original context.
+     *
+     * @param \WP_Post|int $post The post object or post ID to render.
+     * @return string The rendered HTML output of the single post view.
+     *
+     * @throws \Exception If the post cannot be found or if WordPress context manipulation fails.
+     */
     public static function renderPost(\WP_Post|int $post)
-    {
         if (is_int($post)) {
             $post = get_post($post);
         }
