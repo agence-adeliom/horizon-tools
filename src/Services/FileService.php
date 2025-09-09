@@ -7,7 +7,6 @@ namespace Adeliom\HorizonTools\Services;
 use Adeliom\HorizonTools\PostTypes\GravityFormConfirmationPageType;
 use Composer\InstalledVersions;
 use FilesystemIterator;
-use function WP_CLI\Utils\get_vendor_paths;
 
 class FileService
 {
