@@ -225,7 +225,7 @@ class PostService
         $wp_query = $query;
         $wp_the_query = $query;
 
-        // Simule le contexte single
+        // Simulate single context
         $query->is_single = true;
         $query->is_singular = true;
         $query->is_home = false;
