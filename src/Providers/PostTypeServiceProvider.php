@@ -104,6 +104,10 @@ class PostTypeServiceProvider extends SageServiceProvider
                 require_once $classPath;
             }
 
+            foreach (FileService::getHorizonPostTypeFiles() as $horizonPostTypeFile) {
+                require_once $horizonPostTypeFile;
+            }
+
             foreach (ClassService::getAllCustomPostTypeClasses() as $postTypeClass) {
                 self::initPostTypeByClassName(postTypeClass: $postTypeClass);
             }
