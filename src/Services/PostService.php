@@ -6,6 +6,7 @@ namespace Adeliom\HorizonTools\Services;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use WP_Query;
 
 class PostService
 {
@@ -187,5 +188,70 @@ class PostService
 
             return $card;
         });
+    }
+
+    public static function renderPost(\WP_Post|int $post)
+    {
+        if (is_int($post)) {
+            $post = get_post($post);
+        }
+
+        // Sauvegarde l'état complet
+        global $wp_query, $wp_the_query, $wp, $wp_admin_bar;
+        $original_query = $wp_query;
+        $original_the_query = $wp_the_query;
+        $original_wp = $wp;
+        $original_post = $GLOBALS['post'] ?? null;
+        $original_admin_bar = $wp_admin_bar;
+
+        // Crée la query
+        $query = new WP_Query([
+            'p' => $post->ID,
+            'post_type' => 'any',
+            'posts_per_page' => 1,
+        ]);
+
+        // Met à jour les variables globales
+        $wp_query = $query;
+        $wp_the_query = $query;
+
+        // Simule le contexte single
+        $query->is_single = true;
+        $query->is_singular = true;
+        $query->is_home = false;
+        $query->is_front_page = false;
+        $query->is_404 = false;
+        $query->is_admin = false;
+
+        // Force les variables d'environnement
+        $GLOBALS['pagenow'] = 'index.php';
+
+        // Initialise WP si nécessaire
+        if (!$wp) {
+            $wp = new \WP();
+        }
+
+        // CRUCIAL : Initialise proprement l'admin bar
+        if (is_user_logged_in() && !is_admin()) {
+            add_filter('show_admin_bar', '__return_true');
+
+            // Initialise l'admin bar AVANT les hooks
+            if (!$wp_admin_bar) {
+                _wp_admin_bar_init();
+            }
+        }
+
+        // Render la vue
+        $view = view('single')->render();
+
+        // Restaure tout
+        $wp_query = $original_query;
+        $wp_the_query = $original_the_query;
+        $wp = $original_wp;
+        $wp_admin_bar = $original_admin_bar;
+        $GLOBALS['post'] = $original_post;
+        wp_reset_postdata();
+
+        return $view;
     }
 }

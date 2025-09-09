@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Adeliom\HorizonTools\PostTypes\GravityFormConfirmationPageType;
 use Adeliom\HorizonTools\Providers\FormsServiceProvider;
+use Adeliom\HorizonTools\Services\PostService;
 
 foreach (GFAPI::get_forms() as $form) {
     if (!empty($form['confirmations'])) {
@@ -35,26 +36,7 @@ foreach (GFAPI::get_forms() as $form) {
                                 $fullPath = sprintf('%s%s/', $parentPath, $post->post_name);
 
                                 Route::get($fullPath, function () use ($post) {
-                                    // Crée une WP_Query avec ton post spécifique
-                                    $query = new WP_Query([
-                                        'p' => $post->ID,
-                                        'post_type' => 'any',
-                                        'posts_per_page' => 1,
-                                    ]);
-
-                                    // Remplace la query globale temporairement
-                                    global $wp_query;
-                                    $original_query = $wp_query;
-                                    $wp_query = $query;
-
-                                    // Render la vue (le template va maintenant fonctionner)
-                                    $view = view('single')->render();
-
-                                    // Restaure la query originale
-                                    $wp_query = $original_query;
-                                    wp_reset_postdata();
-
-                                    return $view;
+                                    return PostService::renderPost(post: $post);
                                 });
                             }
                         }
