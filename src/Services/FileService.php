@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Services;
 
+use Adeliom\HorizonTools\PostTypes\GravityFormConfirmationPageType;
+use Composer\InstalledVersions;
 use FilesystemIterator;
 
 class FileService
@@ -56,6 +58,29 @@ class FileService
     {
         if (function_exists('get_template_directory')) {
             return self::getClassesPathsFromPath(get_template_directory() . '/app/PostTypes');
+        }
+
+        return [];
+    }
+
+    public static function getHorizonPostTypeFiles(bool $withExcluded = false): array
+    {
+        if ($folder = InstalledVersions::getInstallPath('agence-adeliom/horizon-tools')) {
+            $postTypesPath = sprintf('%s/src/PostTypes', $folder);
+
+            if (file_exists($postTypesPath)) {
+                $classPaths = self::getClassesPathsFromPath($postTypesPath);
+
+                if (!$withExcluded) {
+                    foreach ($classPaths as $classPathKey => $classPathValue) {
+                        if (in_array(ClassService::getClassNameFromFilePath($classPathValue), [GravityFormConfirmationPageType::class])) {
+                            unset($classPaths[$classPathKey]);
+                        }
+                    }
+                }
+
+                return $classPaths;
+            }
         }
 
         return [];
