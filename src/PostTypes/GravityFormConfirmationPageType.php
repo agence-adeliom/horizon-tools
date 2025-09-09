@@ -19,27 +19,28 @@ if (!class_exists('Adeliom\HorizonTools\PostTypes\GravityFormConfirmationPageTyp
         public function getConfig(array $config = []): array
         {
             $config['args'] = [
-                'label' => 'P. de confirmation',
+                'label' => __('P. de confirmation'),
                 'labels' => [
-                    'name' => 'Pages de confirmation',
-                    'singular_name' => 'Page de confirmation',
-                    'menu_name' => 'P. de confirmation',
-                    'add_new' => 'Ajouter une page de confirmation',
-                    'add_new_item' => 'Ajouter une nouvelle page de confirmation',
-                    'edit_item' => 'Modifier la page de confirmation',
-                    'new_item' => 'Nouvelle page de confirmation',
-                    'view_item' => 'Voir la page de confirmation',
-                    'view_items' => 'Voir les pages de confirmation',
-                    'search_items' => 'Rechercher une page de confirmation',
-                    'not_found' => 'Aucune page de confirmation trouvée',
-                    'not_found_in_trash' => 'Aucune page de confirmation trouvée dans la corbeille',
-                    'all_items' => 'Toutes les pages de confirmation',
-                    'archives' => 'Archives des pages de confirmation',
+                    'name' => __('Pages de confirmation'),
+                    'singular_name' => __('Page de confirmation'),
+                    'menu_name' => __('Confirmations'),
+                    'add_new' => __('Ajouter une page de confirmation'),
+                    'add_new_item' => __('Ajouter une nouvelle page de confirmation'),
+                    'edit_item' => __('Modifier la page de confirmation'),
+                    'new_item' => __('Nouvelle page de confirmation'),
+                    'view_item' => __('Voir la page de confirmation'),
+                    'view_items' => __('Voir les pages de confirmation'),
+                    'search_items' => __('Rechercher une page de confirmation'),
+                    'not_found' => __('Aucune page de confirmation trouvée'),
+                    'not_found_in_trash' => __('Aucune page de confirmation trouvée dans la corbeille'),
+                    'all_items' => __('Toutes les pages de confirmation'),
+                    'archives' => __('Archives des pages de confirmation'),
                 ],
                 'rewrite' => false,
                 'hierarchical' => false,
                 'public' => true,
                 'publicly_queryable' => false,
+                'menu_icon' => 'dashicons-yes-alt',
             ];
 
             return parent::getConfig($config);
