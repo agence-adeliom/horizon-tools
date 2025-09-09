@@ -214,7 +214,7 @@ class PostService
         $original_post = $GLOBALS['post'] ?? null;
         $original_admin_bar = $wp_admin_bar;
 
-        // Crée la query
+        // Create the query
         $query = new WP_Query([
             'p' => $post->ID,
             'post_type' => 'any',
