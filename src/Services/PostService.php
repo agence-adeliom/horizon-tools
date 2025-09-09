@@ -251,7 +251,7 @@ class PostService
             }
         }
 
-        // Render la vue
+        // Render the view
         $view = view('single')->render();
 
         // Restaure tout
