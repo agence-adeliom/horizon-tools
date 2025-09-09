@@ -206,7 +206,7 @@ class PostService
             $post = get_post($post);
         }
 
-        // Sauvegarde l'état complet
+        // Save the complete state
         global $wp_query, $wp_the_query, $wp, $wp_admin_bar;
         $original_query = $wp_query;
         $original_the_query = $wp_the_query;
