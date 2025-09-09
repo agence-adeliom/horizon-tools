@@ -202,6 +202,7 @@ class PostService
      * @throws \Exception If the post cannot be found or if WordPress context manipulation fails.
      */
     public static function renderPost(\WP_Post|int $post)
+    {
         if (is_int($post)) {
             $post = get_post($post);
         }
