@@ -236,7 +236,7 @@ class PostService
         // Force environment variables
         $GLOBALS['pagenow'] = 'index.php';
 
-        // Initialise WP si nécessaire
+        // Initialize WP if necessary
         if (!$wp) {
             $wp = new \WP();
         }
