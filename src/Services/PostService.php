@@ -221,7 +221,7 @@ class PostService
             'posts_per_page' => 1,
         ]);
 
-        // Met à jour les variables globales
+        // Update global variables
         $wp_query = $query;
         $wp_the_query = $query;
 
