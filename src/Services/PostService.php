@@ -233,7 +233,7 @@ class PostService
         $query->is_404 = false;
         $query->is_admin = false;
 
-        // Force les variables d'environnement
+        // Force environment variables
         $GLOBALS['pagenow'] = 'index.php';
 
         // Initialise WP si nécessaire
