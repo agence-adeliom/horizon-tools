@@ -254,7 +254,7 @@ class PostService
         // Render the view
         $view = view('single')->render();
 
-        // Restaure tout
+        // Restore everything
         $wp_query = $original_query;
         $wp_the_query = $original_the_query;
         $wp = $original_wp;
