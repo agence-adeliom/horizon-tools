@@ -153,6 +153,11 @@ class ClassService
         return InstalledVersions::isInstalled('agence-adeliom/horizon-blocks');
     }
 
+    public static function isHorizonPostTypesInstalled(): bool
+    {
+        return InstalledVersions::isInstalled('agence-adeliom/horizon-posttypes');
+    }
+
     public static function isLivewireInstalled(): bool
     {
         return InstalledVersions::isInstalled('livewire/livewire');
