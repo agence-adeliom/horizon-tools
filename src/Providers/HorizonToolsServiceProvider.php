@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Adeliom\HorizonTools\Providers;
 
 use Adeliom\HorizonBlocks\Providers\HorizonBlocksServiceProvider;
+use Adeliom\HorizonPostTypes\Providers\HorizonPostTypesServiceProvider;
 use Adeliom\HorizonTools\Services\ClassService;
 use Illuminate\Http\Request;
 use Roots\Acorn\Application;
@@ -38,12 +39,24 @@ class HorizonToolsServiceProvider extends SageServiceProvider
         (new LivewireServiceProvider($this->app))->boot();
         (new SeoServiceProvider($this->app))->boot();
         (new SearchEngineServiceProvider($this->app))->boot();
+        (new FormsServiceProvider($this->app))->boot();
 
         if (ClassService::isHorizonBlocksInstalled()) {
             try {
                 if (class_exists(HorizonBlocksServiceProvider::class)) {
                     $blocks = new HorizonBlocksServiceProvider($this->app);
                     $blocks->boot();
+                }
+            } catch (\Exception $e) {
+                throw new SkipProviderException($e->getMessage());
+            }
+        }
+
+        if (ClassService::isHorizonPostTypesInstalled()) {
+            try {
+                if (class_exists(HorizonPostTypesServiceProvider::class)) {
+                    $postTypes = new HorizonPostTypesServiceProvider($this->app);
+                    $postTypes->boot();
                 }
             } catch (\Exception $e) {
                 throw new SkipProviderException($e->getMessage());

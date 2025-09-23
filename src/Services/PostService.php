@@ -6,6 +6,7 @@ namespace Adeliom\HorizonTools\Services;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use WP_Query;
 
 class PostService
 {
@@ -187,5 +188,81 @@ class PostService
 
             return $card;
         });
+    }
+
+    /**
+     * Renders a post in a simulated single post context.
+     *
+     * This method sets up the WordPress global context as if viewing a single post,
+     * renders the 'single' view, and then restores the original context.
+     *
+     * @param \WP_Post|int $post The post object or post ID to render.
+     * @return string The rendered HTML output of the single post view.
+     *
+     * @throws \Exception If the post cannot be found or if WordPress context manipulation fails.
+     */
+    public static function renderPost(\WP_Post|int $post)
+    {
+        if (is_int($post)) {
+            $post = get_post($post);
+        }
+
+        // Save the complete state
+        global $wp_query, $wp_the_query, $wp, $wp_admin_bar;
+        $original_query = $wp_query;
+        $original_the_query = $wp_the_query;
+        $original_wp = $wp;
+        $original_post = $GLOBALS['post'] ?? null;
+        $original_admin_bar = $wp_admin_bar;
+
+        // Create the query
+        $query = new WP_Query([
+            'p' => $post->ID,
+            'post_type' => 'any',
+            'posts_per_page' => 1,
+        ]);
+
+        // Update global variables
+        $wp_query = $query;
+        $wp_the_query = $query;
+
+        // Simulate single context
+        $query->is_single = true;
+        $query->is_singular = true;
+        $query->is_home = false;
+        $query->is_front_page = false;
+        $query->is_404 = false;
+        $query->is_admin = false;
+
+        // Force environment variables
+        $GLOBALS['pagenow'] = 'index.php';
+
+        // Initialize WP if necessary
+        if (!$wp) {
+            $wp = new \WP();
+        }
+
+        // CRUCIAL : Initialise proprement l'admin bar
+        if (is_user_logged_in() && !is_admin()) {
+            add_filter('show_admin_bar', '__return_true');
+
+            // Initialise l'admin bar AVANT les hooks
+            if (!$wp_admin_bar) {
+                _wp_admin_bar_init();
+            }
+        }
+
+        // Render the view
+        $view = view('single')->render();
+
+        // Restore everything
+        $wp_query = $original_query;
+        $wp_the_query = $original_the_query;
+        $wp = $original_wp;
+        $wp_admin_bar = $original_admin_bar;
+        $GLOBALS['post'] = $original_post;
+        wp_reset_postdata();
+
+        return $view;
     }
 }
