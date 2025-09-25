@@ -18,7 +18,9 @@ class BlockServiceProvider extends SageServiceProvider
 
     public function boot(): void
     {
-        $this->initBlocks();
+        add_action('acf/init', function () {
+            $this->initBlocks();
+        });
 
         if (self::UNREGISTER_DEFAULT_BLOCKS) {
             add_filter('allowed_block_types_all', [$this, 'unregisterBlocks'], 10, 2);
