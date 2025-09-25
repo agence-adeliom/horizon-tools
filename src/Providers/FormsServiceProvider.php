@@ -87,6 +87,11 @@ class FormsServiceProvider extends SageServiceProvider
 
                                     $pageId = intval($pageId);
                                     $post = get_post($pageId);
+
+                                    if ($post->post_type !== $confirmationPostTypeSlug) {
+                                        return $confirmation;
+                                    }
+
                                     $parentPage = get_field(
                                         sprintf(
                                             '%s_%s',
@@ -95,15 +100,8 @@ class FormsServiceProvider extends SageServiceProvider
                                         ),
                                         $post
                                     );
+
                                     $parentUrl = get_permalink($parentPage);
-
-                                    if (!$parentPage) {
-                                        return $confirmation;
-                                    }
-
-                                    if ($post->post_type !== $confirmationPostTypeSlug) {
-                                        return $confirmation;
-                                    }
 
                                     // Get GET paramaters from confirmation redirect URL
                                     $parsedUrl = parse_url($confirmation['redirect']);
@@ -115,7 +113,11 @@ class FormsServiceProvider extends SageServiceProvider
                                         unset($query[$confirmationPostTypeSlug]);
                                     }
 
-                                    $redirectUrl = sprintf('%s%s/', $parentUrl, $post->post_name);
+                                    if ($parentPage) {
+                                        $redirectUrl = sprintf('%s%s/', $parentUrl, $post->post_name);
+                                    } else {
+                                        $redirectUrl = sprintf('%s/%s/', home_url(), $post->post_name);
+                                    }
 
                                     if (!empty($query)) {
                                         $redirectUrl = sprintf('%s?%s', $redirectUrl, http_build_query($query));
