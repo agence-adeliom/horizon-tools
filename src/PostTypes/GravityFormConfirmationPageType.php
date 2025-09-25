@@ -54,7 +54,9 @@ if (!class_exists('Adeliom\HorizonTools\PostTypes\GravityFormConfirmationPageTyp
         public function getFields(): ?iterable
         {
             yield Group::make(__('Configuration de la page'), self::FIELD_CONFIGURATION)->fields([
-                PostObject::make(__('Page parent'), self::FIELD_PARENT)->postTypes(PostService::getAllPostTypeSlugs()),
+                PostObject::make(__('Page parent'), self::FIELD_PARENT)
+                    ->postTypes(PostService::getAllPostTypeSlugs())
+                    ->nullable(),
             ]);
         }
     }

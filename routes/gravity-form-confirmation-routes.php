@@ -28,6 +28,7 @@ foreach (GFAPI::get_forms() as $form) {
                         }
 
                         if ($confirmationPageParentId) {
+                            // Case with a parent page
                             $parentPage = get_post($confirmationPageParentId);
 
                             if ($parentUrl = get_permalink($parentPage)) {
@@ -39,6 +40,13 @@ foreach (GFAPI::get_forms() as $form) {
                                     return PostService::renderPost(post: $post);
                                 });
                             }
+                        } else {
+                            // Case without a parent page
+                            $fullPath = $post->post_name;
+
+                            Route::get($fullPath, function () use ($post) {
+                                return PostService::renderPost(post: $post);
+                            });
                         }
                     }
                 }
