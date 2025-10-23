@@ -81,6 +81,12 @@ class BlockServiceProvider extends SageServiceProvider
                                         // Remove excluded post types from allowed post types
                                         $allowedPostTypes = array_values(array_diff($allowedPostTypes, $class->getExcludedPostTypes()));
                                     }
+
+                                    // Fix for allowed all block for compositions
+                                    $isSiteEditor = (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'site-editor.php') !== false)
+                                        || (isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], 'site-editor.php') !== false);
+
+                                    $allowedPostTypes = $isSiteEditor ? [] : $allowedPostTypes;
                                 }
 
                                 acf_register_block_type([
