@@ -10,6 +10,8 @@ use Roots\Acorn\Exceptions\SkipProviderException;
 abstract class AbstractTaxonomy
 {
     public static ?string $slug = null;
+    public static bool $readOnly = false;
+    public static bool $editOnly = false;
 
     public function __construct()
     {
