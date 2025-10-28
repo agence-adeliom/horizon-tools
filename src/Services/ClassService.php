@@ -246,6 +246,22 @@ class ClassService
         return $class;
     }
 
+    public static function getTaxonomyClassBySlug(string $slug): ?string
+    {
+        $class = null;
+
+        foreach (self::getAllCustomTaxonomyClasses() as $taxonomyClass) {
+            if (class_exists($taxonomyClass)) {
+                if ($taxonomyClass::$slug === $slug) {
+                    $class = $taxonomyClass;
+                    break;
+                }
+            }
+        }
+
+        return $class;
+    }
+
     public static function getFilePathFromClassName(string $className): ?string
     {
         try {

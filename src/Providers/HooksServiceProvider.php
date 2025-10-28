@@ -8,6 +8,7 @@ use Adeliom\HorizonTools\Hooks\AbstractHook;
 use Adeliom\HorizonTools\Hooks\DefaultCompilationHooks;
 use Adeliom\HorizonTools\Hooks\DefaultGravityFormsHooks;
 use Adeliom\HorizonTools\Hooks\DefaultGutenbergHooks;
+use Adeliom\HorizonTools\Hooks\DefaultTaxonomyHooks;
 use Adeliom\HorizonTools\Hooks\DefaultWordPressHooks;
 use Adeliom\HorizonTools\Hooks\PostHooks;
 use Adeliom\HorizonTools\Hooks\QueryBuilderHooks;
@@ -41,6 +42,7 @@ class HooksServiceProvider extends SageServiceProvider
                 DefaultGravityFormsHooks::class,
                 WysiwygHooks::class,
                 QueryBuilderHooks::class,
+                DefaultTaxonomyHooks::class,
             ];
 
             $hookClasses = array_filter(get_declared_classes(), function ($class) {
