@@ -9,6 +9,8 @@ use %%PARENT_NAMESPACE%%;
 class %%CLASS%% extends %%PARENT%%
 {
     public static ?string $slug = '%%SLUG%%';
+    public static bool $readonly = false;
+    public static bool $editOnly = false;
 
     public function getPostTypes(): array
     {
@@ -35,6 +37,13 @@ class %%CLASS%% extends %%PARENT%%
             'show_in_quick_edit' => %%SHOW_IN_QUICK_EDIT%%,
             'meta_box_cb' => %%SHOW_IN_POST%%, // Show meta-box in Classic Editor posts
             'show_in_rest' => %%SHOW_IN_POST%%, // Show meta-box in Gutenberg Editor posts
+            'capabilities' => [
+                'manage_terms' => 'edit_posts',
+                'edit_terms' => self::$readonly ? '' : 'edit_posts',
+                'delete_terms' => self::$readonly || self::$editOnly ? '' : 'edit_posts',
+                'assign_terms' => self::$readonly || self::$editOnly ? '' : 'edit_posts',
+                'create_terms' => self::$readonly || self::$editOnly ? 'do_not_allow' : 'edit_posts',
+            ],
         ];
 
         return parent::getConfig($config);
