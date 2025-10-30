@@ -34,5 +34,12 @@ class SeoServiceProvider extends SageServiceProvider
 </script>
 EOF;
         });
+
+        add_filter('wp_footer', [$this, 'addObfuscationScript']);
+    }
+
+    public function addObfuscationScript()
+    {
+        echo Blade::render('@obfuscateHrefScript');
     }
 }

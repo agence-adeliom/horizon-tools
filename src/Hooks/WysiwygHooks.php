@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Adeliom\HorizonTools\Hooks;
 
 use Adeliom\HorizonTools\Fields\Text\WysiwygField;
+use Adeliom\HorizonTools\Services\SeoService;
 
 class WysiwygHooks extends AbstractHook
 {
+    public const OBFUSCATE_CLASS = 'obfuscated-link';
+    public const OBFUSCATE_ATTRIBUTE = 'data-obfuscate';
 
     public function init(): void
     {
@@ -16,6 +19,173 @@ class WysiwygHooks extends AbstractHook
         add_filter('mce_buttons_2', [$this, 'removeButtonLine2']);
         add_filter('mce_buttons', [$this, 'addSelect']);
         add_filter('acf/fields/wysiwyg/toolbars', [$this, 'wysiwygToolbars']);
+
+        add_filter('tiny_mce_before_init', [$this, 'handleTinyMCEObfuscateAttributes']);
+        add_action('admin_enqueue_scripts', [$this, 'handleObfuscateLinksInWYSIWYGs']);
+        add_filter('acf/format_value/type=wysiwyg', [$this, 'formatWYSIWYGObfuscation'], accepted_args: 3);
+    }
+
+    public static function formatWYSIWYGObfuscation($value, $postId, $field)
+    {
+        if (empty($value)) {
+            return $value;
+        }
+
+        // Utilisation de DOMDocument pour parser le HTML
+        $dom = new \DOMDocument();
+        libxml_use_internal_errors(true);
+        $dom->loadHTML('<?xml encoding="utf-8" ?>' . $value, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        libxml_clear_errors();
+
+        $links = $dom->getElementsByTagName('a');
+        $obfuscatedLinks = [];
+
+        foreach ($links as $link) {
+            if ($link->hasAttribute(self::OBFUSCATE_ATTRIBUTE) && $link->getAttribute(self::OBFUSCATE_ATTRIBUTE) === '1') {
+                // Récupérer le lien dans une variable
+                $linkHtml = $dom->saveHTML($link);
+                $obfuscatedLinks[] = $linkHtml;
+
+                // Supprimer l'attribut data-obfuscate
+                $link->removeAttribute(self::OBFUSCATE_ATTRIBUTE);
+                // Supprimer la classe obfuscated-link
+                $class = $link->getAttribute('class');
+                if ($class) {
+                    $class = preg_replace('/\b' . preg_quote(self::OBFUSCATE_CLASS, '/') . '\b/', '', $class);
+                    $class = trim(preg_replace('/\s+/', ' ', $class));
+                    if ($class) {
+                        $link->setAttribute('class', $class);
+                    } else {
+                        $link->removeAttribute('class');
+                    }
+                }
+
+                // Récupérer le href et le remplacer par l'attribut obfusqué
+                $href = $link->getAttribute('href');
+
+                $attr = SeoService::getHrefAttribute(url: $href, obfuscate: true);
+                [$attrName, $attrValue] = explode('=', $attr, 2);
+                $attrValue = trim($attrValue, '"');
+
+                $link->removeAttribute('href');
+                $link->setAttribute($attrName, $attrValue);
+            }
+        }
+
+        // Réinjecter le HTML modifié
+        $newValue = $dom->saveHTML();
+        return $newValue;
+    }
+
+    public static function handleTinyMCEObfuscateAttributes($init)
+    {
+        // On récupère la config actuelle pour les <a>
+        $valid = isset($init['extended_valid_elements']) ? $init['extended_valid_elements'] : '';
+
+        // Ajouter data-obfuscate à ce qui existe déjà pour <a>
+        if (preg_match('/a\[([^\]]*)\]/', $valid, $matches)) {
+            // Si <a> existe déjà, ajouter data-obfuscate
+            $aAttrs = $matches[1];
+            if (strpos($aAttrs, self::OBFUSCATE_ATTRIBUTE) === false) {
+                $aAttrs .= '|' . self::OBFUSCATE_ATTRIBUTE;
+                $valid = preg_replace('/a\[([^\]]*)\]/', 'a[' . $aAttrs . ']', $valid);
+            }
+        } else {
+            // Si <a> n'existe pas encore, on l'ajoute avec href, target, class + data-obfuscate
+            $valid .= ',a[href|target|class|' . self::OBFUSCATE_ATTRIBUTE . ']';
+        }
+
+        $init['extended_valid_elements'] = $valid;
+
+        return $init;
+    }
+
+    public static function handleObfuscateLinksInWYSIWYGs()
+    {
+        $attribute = self::OBFUSCATE_ATTRIBUTE;
+        $class = self::OBFUSCATE_CLASS;
+
+        wp_add_inline_script(
+            'jquery-core',
+            "
+(function($){
+    function initObfuscateCheckbox(){
+        if (typeof wpLink === 'undefined') {
+            // Si wpLink pas encore défini, on réessaie dans 50ms
+            setTimeout(initObfuscateCheckbox, 50);
+            return;
+        }
+
+        // On sauvegarde la fonction originale
+        var originalUpdate = wpLink.update;
+        wpLink.update = function() {
+            originalUpdate.apply(this, arguments);
+
+            setTimeout(function(){
+                var editor = window.tinymce.activeEditor;
+                if (!editor) return;
+
+                var node = editor.selection.getNode();
+if (!node || node.nodeName !== 'A') {
+    node = editor.dom.getParent(editor.selection.getNode(), 'a');
+}
+
+// Si toujours null, essayer de retrouver par href via WP Link
+if ((!node || node.nodeName !== 'A') && typeof wpLink.getAttrs === 'function') {
+    var attrs = wpLink.getAttrs();
+    if (attrs && attrs.href) {
+        var anchors = editor.dom.select('a[href=\"' + attrs.href + '\"]');
+        if (anchors.length) {
+            node = anchors[0]; // le lien correspondant à l'URL éditée
+        }
+    }
+}
+
+                if (node && node.nodeName === 'A') {
+                    var checked = $('#wp-link-obfuscate').is(':checked');
+
+                    if (checked) {
+                        node.setAttribute('$attribute', '1');
+                        node.classList.add('$class');
+                    } else {
+                        node.removeAttribute('$attribute');
+                        node.classList.remove('$class');
+                    }
+                }
+            }, 10);
+        };
+
+        // Ajouter la checkbox à l'ouverture de la modal
+        $(document).on('wplink-open', function() {
+    		setTimeout(function() {
+        		$('#wp-link-obfuscate').closest('label').remove(); // supprimer si elle existe
+
+				$('#wp-link .link-target').after(
+					'<div style=\"display:block;\"><label><span></span>&nbsp;<input type=\"checkbox\" id=\"wp-link-obfuscate\"> Obfusquer le lien</label></div>'
+        		);
+
+        		// Pré-remplir checkbox si le lien sélectionné a déjà l'attribut
+        		var editor = window.tinymce.activeEditor;
+
+        		if (editor) {
+            		var node = editor.selection.getNode();
+
+            		if (!node || node.nodeName !== 'A') {
+                		node = editor.dom.getParent(editor.selection.getNode(), 'a');
+            		}
+
+            		if (node && node.nodeName === 'A' && node.getAttribute('$attribute') === '1') {
+                		$('#wp-link-obfuscate').prop('checked', true);
+            		}
+        		}
+    		}, 50);
+		});
+    }
+
+    initObfuscateCheckbox();
+})(jQuery);
+"
+        );
     }
 
     public static function removeHeadings($headings): array
@@ -23,7 +193,6 @@ class WysiwygHooks extends AbstractHook
         $headings['block_formats'] = 'Paragraph=p;Heading 2=h2;Heading 3=h3;Heading 4=h4;Heading 5=h5;';
         return $headings;
     }
-
 
     public static function wysiwygToolbars(array $toolbars): array
     {
@@ -57,11 +226,7 @@ class WysiwygHooks extends AbstractHook
         ];
 
         $toolbars[WysiwygField::TOOLBAR_MINIMAL] = [];
-        $toolbars[WysiwygField::TOOLBAR_MINIMAL][1] = [
-            'bold',
-            'link',
-            'removeformat',
-        ];
+        $toolbars[WysiwygField::TOOLBAR_MINIMAL][1] = ['bold', 'link', 'removeformat'];
 
         return $toolbars;
     }
@@ -93,19 +258,9 @@ class WysiwygHooks extends AbstractHook
         return $buttons;
     }
 
-
     public static function removeButtonLine2($buttons): array
     {
-        $remove_buttons = [
-            'formatselect',
-            'underline',
-            'strikethrough',
-            'alignjustify',
-            'forecolor',
-            'outdent',
-            'indent',
-            'hr'
-        ];
+        $remove_buttons = ['formatselect', 'underline', 'strikethrough', 'alignjustify', 'forecolor', 'outdent', 'indent', 'hr'];
         foreach ($buttons as $button_key => $button_value) {
             if (in_array($button_value, $remove_buttons)) {
                 unset($buttons[$button_key]);
@@ -115,9 +270,9 @@ class WysiwygHooks extends AbstractHook
         return $buttons;
     }
 
-    public static function addSelect($buttons) :array {
+    public static function addSelect($buttons): array
+    {
         array_unshift($buttons, 'styleselect');
         return $buttons;
     }
-
 }
