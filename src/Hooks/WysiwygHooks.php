@@ -25,13 +25,7 @@ class WysiwygHooks extends AbstractHook
             add_action('admin_enqueue_scripts', [$this, 'handleObfuscateLinksInWYSIWYGs']);
             add_filter('acf/format_value/type=wysiwyg', [$this, 'formatWYSIWYGObfuscation'], accepted_args: 3);
             add_action('admin_enqueue_scripts', [$this, 'handleAcfLinkField']);
-            add_filter('acf/update_value/type=link', [$this, 'handleLinkUpdate'], accepted_args: 4);
         }
-    }
-
-    public static function handleLinkUpdate($value, $postId, $field, $original)
-    {
-        return $value;
     }
 
     public static function handleAcfLinkField()
@@ -221,38 +215,45 @@ class WysiwygHooks extends AbstractHook
         wpLink.update = function() {
             originalUpdate.apply(this, arguments);
 
-            setTimeout(function(){
-                var editor = window.tinymce.activeEditor;
-                if (!editor) return;
+			var editor = window.tinymce.activeEditor;
+			
+			if (!editor) return;
+			
+			var node = editor.selection.getNode();
+                
+			if (!node || node.nodeName !== 'A') {
+				node = editor.dom.getParent(editor.selection.getNode(), 'a');
+			}
 
-                var node = editor.selection.getNode();
-if (!node || node.nodeName !== 'A') {
-    node = editor.dom.getParent(editor.selection.getNode(), 'a');
-}
+			// Si toujours null, essayer de retrouver par href via WP Link
+			if ((!node || node.nodeName !== 'A') && typeof wpLink.getAttrs === 'function') {
+				var attrs = wpLink.getAttrs();
+				if (attrs && attrs.href) {
+					var anchors = editor.dom.select('a[href=\"' + attrs.href + '\"]');
+					if (anchors.length) {
+						node = anchors[0]; // le lien correspondant à l'URL éditée
+					}
+				}
+			}
 
-// Si toujours null, essayer de retrouver par href via WP Link
-if ((!node || node.nodeName !== 'A') && typeof wpLink.getAttrs === 'function') {
-    var attrs = wpLink.getAttrs();
-    if (attrs && attrs.href) {
-        var anchors = editor.dom.select('a[href=\"' + attrs.href + '\"]');
-        if (anchors.length) {
-            node = anchors[0]; // le lien correspondant à l'URL éditée
-        }
-    }
-}
+			if (node && node.nodeName === 'A') {
+				var checked = $('#wp-link-obfuscate').is(':checked');
 
-                if (node && node.nodeName === 'A') {
-                    var checked = $('#wp-link-obfuscate').is(':checked');
-
-                    if (checked) {
-                        node.setAttribute('$attribute', '1');
-                        node.classList.add('$class');
-                    } else {
-                        node.removeAttribute('$attribute');
-                        node.classList.remove('$class');
-                    }
-                }
-            }, 10);
+				if (checked) {
+					node.setAttribute('$attribute', '1');
+					node.classList.add('$class');
+				} else {
+					node.removeAttribute('$attribute');
+					node.classList.remove('$class');
+				}
+                    
+				editor.undoManager.transact(function() {
+					editor.nodeChanged();
+				});
+				editor.setDirty(true);
+				editor.save();
+				$(editor.getElement()).trigger('change');
+			}
         };
 
         // Ajouter la checkbox à l'ouverture de la modal
