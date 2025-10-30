@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Adeliom\HorizonTools\Services;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Request;
 
 class SeoService
@@ -219,5 +220,10 @@ class SeoService
         }
 
         return $metaTitle;
+    }
+
+    public static function isObfuscationEnabled(): bool
+    {
+        return Config::get('seo.links.allowObfuscation', false);
     }
 }

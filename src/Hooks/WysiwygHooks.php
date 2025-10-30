@@ -20,9 +20,82 @@ class WysiwygHooks extends AbstractHook
         add_filter('mce_buttons', [$this, 'addSelect']);
         add_filter('acf/fields/wysiwyg/toolbars', [$this, 'wysiwygToolbars']);
 
-        add_filter('tiny_mce_before_init', [$this, 'handleTinyMCEObfuscateAttributes']);
-        add_action('admin_enqueue_scripts', [$this, 'handleObfuscateLinksInWYSIWYGs']);
-        add_filter('acf/format_value/type=wysiwyg', [$this, 'formatWYSIWYGObfuscation'], accepted_args: 3);
+        if (SeoService::isObfuscationEnabled()) {
+            add_filter('tiny_mce_before_init', [$this, 'handleTinyMCEObfuscateAttributes']);
+            add_action('admin_enqueue_scripts', [$this, 'handleObfuscateLinksInWYSIWYGs']);
+            add_filter('acf/format_value/type=wysiwyg', [$this, 'formatWYSIWYGObfuscation'], accepted_args: 3);
+            add_action('admin_enqueue_scripts', [$this, 'handleAcfLinkField']);
+            add_filter('acf/update_value/type=link', [$this, 'handleLinkUpdate'], accepted_args: 4);
+        }
+    }
+
+    public static function handleLinkUpdate($value, $postId, $field, $original)
+    {
+        return $value;
+    }
+
+    public static function handleAcfLinkField()
+    {
+        wp_add_inline_script(
+            'acf-input',
+            "
+(function($){
+    function addObfuscateField(){
+        // On attend que ACF ait initialisé les champs Lien
+        if (typeof acf === 'undefined') {
+            setTimeout(addObfuscateField, 100);
+            return;
+        }
+        
+        if (typeof window.acf === 'undefined') {
+        	return setTimeout(waitForACF, 100);
+    	}
+
+        acf.addAction('append_field/type=link', function(field) {
+        	var jField = $(field);
+            // Si déjà présent, on ne le recrée pas
+            if (jField.find('.acf-link-obfuscate').length) return;
+
+            // Récupère l'input 'target' pour insérer après
+            var target = $(field.\$el[0].querySelector('input[name$=\"[target]\"]'));
+
+            // Crée le champ hidden
+            var fieldName = target[0].name;
+            // Remove last [target] part
+            fieldName = fieldName.substring(0, fieldName.length - 8);
+            fieldName = fieldName + '[obfuscate]';
+            
+            var hidden = $('<input type=\"hidden\" class=\"input-obfuscate\" data-name=\"obfuscate\" name=\"'+ fieldName +'\" value=\"0\">');
+            var defaultChecked = false;
+            
+            // If target parent doesn't contains element with class input-obfuscate
+            if(!target.closest('.acf-hidden').find('.input-obfuscate').length){
+            	target.after(hidden);
+			}else {
+				hidden = target.closest('.acf-hidden').find('.input-obfuscate');
+				
+				defaultChecked = hidden.val() === '1';
+			}
+            
+
+            // Ajoute une checkbox visible pour l’utilisateur
+            var checkbox = $('<label style=\"display:block;margin-top:4px;\"><input type=\"checkbox\" class=\"acf-link-obfuscate-toggle\"> Obfusquer le lien</label>');
+            if (defaultChecked) {
+				checkbox.find('input').prop('checked', true);
+			}
+            target.closest('.acf-input').append(checkbox);
+
+            // Synchronisation checkbox → hidden
+            checkbox.on('change', function(e){
+                hidden.val(e.target.checked ? '1' : '0');
+            });
+        });
+    }
+
+    addObfuscateField();
+})(jQuery);
+"
+        );
     }
 
     public static function formatWYSIWYGObfuscation($value, $postId, $field)
@@ -158,26 +231,30 @@ if ((!node || node.nodeName !== 'A') && typeof wpLink.getAttrs === 'function') {
         // Ajouter la checkbox à l'ouverture de la modal
         $(document).on('wplink-open', function() {
     		setTimeout(function() {
+    			var isOpenedFromAcfLinkField = wpLink.textarea?.id === 'acf-link-textarea';
+    			
         		$('#wp-link-obfuscate').closest('label').remove(); // supprimer si elle existe
 
-				$('#wp-link .link-target').after(
-					'<div style=\"display:block;\"><label><span></span>&nbsp;<input type=\"checkbox\" id=\"wp-link-obfuscate\"> Obfusquer le lien</label></div>'
-        		);
-
-        		// Pré-remplir checkbox si le lien sélectionné a déjà l'attribut
-        		var editor = window.tinymce.activeEditor;
-
-        		if (editor) {
-            		var node = editor.selection.getNode();
-
-            		if (!node || node.nodeName !== 'A') {
-                		node = editor.dom.getParent(editor.selection.getNode(), 'a');
-            		}
-
-            		if (node && node.nodeName === 'A' && node.getAttribute('$attribute') === '1') {
-                		$('#wp-link-obfuscate').prop('checked', true);
-            		}
-        		}
+				if(!isOpenedFromAcfLinkField) {
+                    $('#wp-link .link-target').after(
+                        '<div style=\"display:block;\"><label><span></span>&nbsp;<input type=\"checkbox\" id=\"wp-link-obfuscate\"> Obfusquer le lien</label></div>'
+                    );
+    
+                    // Pré-remplir checkbox si le lien sélectionné a déjà l'attribut
+                    var editor = window.tinymce.activeEditor;
+    
+                    if (editor) {
+                        var node = editor.selection.getNode();
+    
+                        if (!node || node.nodeName !== 'A') {
+                            node = editor.dom.getParent(editor.selection.getNode(), 'a');
+                        }
+    
+                        if (node && node.nodeName === 'A' && node.getAttribute('$attribute') === '1') {
+                            $('#wp-link-obfuscate').prop('checked', true);
+                        }
+                    }
+				}
     		}, 50);
 		});
     }
