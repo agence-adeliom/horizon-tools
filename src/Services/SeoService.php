@@ -224,6 +224,11 @@ class SeoService
 
     public static function isObfuscationEnabled(): bool
     {
-        return Config::get('seo.links.allowObfuscation', false);
+        return Config::get('seo.links.obfuscation.allow', false);
+    }
+
+    public static function getObfuscationTag(): string
+    {
+        return Config::get('seo.links.obfuscation.tag', 'span');
     }
 }

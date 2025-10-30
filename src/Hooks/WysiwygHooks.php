@@ -142,6 +142,26 @@ class WysiwygHooks extends AbstractHook
 
                 $link->removeAttribute('href');
                 $link->setAttribute($attrName, $attrValue);
+
+                $obfuscationTag = SeoService::getObfuscationTag();
+
+                if ($link->nodeName !== $obfuscationTag) {
+                    // Remplacer la balise du lien par celle d'obfuscation
+                    $clonedLink = $link->cloneNode(true);
+                    $obfuscationElement = $dom->createElement($obfuscationTag);
+
+                    // Copier les attributs
+                    foreach ($clonedLink->attributes as $attr) {
+                        $obfuscationElement->setAttribute($attr->nodeName, $attr->nodeValue);
+                    }
+
+                    // Copier les enfants
+                    while ($clonedLink->firstChild) {
+                        $obfuscationElement->appendChild($clonedLink->firstChild);
+                    }
+
+                    $link->parentNode->replaceChild($obfuscationElement, $link);
+                }
             }
         }
 
