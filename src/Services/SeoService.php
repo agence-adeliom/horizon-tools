@@ -231,4 +231,9 @@ class SeoService
     {
         return Config::get('seo.links.obfuscation.tag', 'span');
     }
+
+    public static function getObfuscationClass(): string
+    {
+        return Config::get('seo.links.obfuscation.class', '');
+    }
 }

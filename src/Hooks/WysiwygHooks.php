@@ -160,6 +160,13 @@ class WysiwygHooks extends AbstractHook
                         $obfuscationElement->appendChild($clonedLink->firstChild);
                     }
 
+                    if ($class = SeoService::getObfuscationClass()) {
+                        $existingClass = $obfuscationElement->getAttribute('class');
+                        $classes = array_filter(explode(' ', $existingClass));
+                        $classes[] = $class;
+                        $obfuscationElement->setAttribute('class', implode(' ', array_unique($classes)));
+                    }
+
                     $link->parentNode->replaceChild($obfuscationElement, $link);
                 }
             }
