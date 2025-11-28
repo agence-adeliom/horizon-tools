@@ -383,16 +383,18 @@ class PostTypeServiceProvider extends SageServiceProvider
             $columnData = null;
 
             foreach ($customColumns as $column) {
-                if (!empty($column[AbstractPostType::CUSTOM_COLUMN_TAXONOMY])) {
-                    $this->handleTaxonomyPostTypeCustomColumnContent(columnData: $columnData, column: $column, columnName: $columnName);
-                    $this->handleTaxonomyPostTypeCustomColumnStringContent(columnData: $columnData, postId: $postId);
-                } elseif (!empty($column[AbstractPostType::CUSTOM_COLUMN_KEY])) {
-                    $this->handleBasicPostTypeCustomColumnContent(columnData: $columnData, column: $column, columnName: $columnName);
-                    $this->handleBasicPostTypeCustomColumnStringContent(columnData: $columnData ?? null, postId: $postId);
-                }
+                if (!empty($column[AbstractPostType::CUSTOM_COLUMN_KEY]) && $columnName === $column[AbstractPostType::CUSTOM_COLUMN_KEY]) {
+                    if (!empty($column[AbstractPostType::CUSTOM_COLUMN_TAXONOMY])) {
+                        $this->handleTaxonomyPostTypeCustomColumnContent(columnData: $columnData, column: $column, columnName: $columnName);
+                        $this->handleTaxonomyPostTypeCustomColumnStringContent(columnData: $columnData, postId: $postId);
+                    } elseif (!empty($column[AbstractPostType::CUSTOM_COLUMN_KEY])) {
+                        $this->handleBasicPostTypeCustomColumnContent(columnData: $columnData, column: $column, columnName: $columnName);
+                        $this->handleBasicPostTypeCustomColumnStringContent(columnData: $columnData ?? null, postId: $postId);
+                    }
 
-                if (null !== $columnData && !empty($column[AbstractPostType::CUSTOM_COLUMN_TAXONOMY])) {
-                    break;
+                    if (null !== $columnData && !empty($column[AbstractPostType::CUSTOM_COLUMN_TAXONOMY])) {
+                        break;
+                    }
                 }
             }
         }
