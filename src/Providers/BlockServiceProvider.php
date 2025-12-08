@@ -82,9 +82,9 @@ class BlockServiceProvider extends SageServiceProvider
                                         $allowedPostTypes = array_values(array_diff($allowedPostTypes, $class->getExcludedPostTypes()));
                                     }
 
-                                    $isSiteEditor = (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'site-editor.php') !== false)
-                                        || (isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], 'site-editor.php') !== false);
-
+                                    $isSiteEditor =
+                                        (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'site-editor.php') !== false) ||
+                                        (isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], 'site-editor.php') !== false);
 
                                     $allowedPostTypes = $isSiteEditor ? [] : $allowedPostTypes;
                                 }
@@ -97,6 +97,8 @@ class BlockServiceProvider extends SageServiceProvider
                                     'description' => $class::$description,
                                     'icon' => $class::$icon,
                                     'post_types' => $allowedPostTypes,
+                                    'acf_block_version' => 3,
+                                    'api_version' => 3,
                                     'render_callback' => function ($block) use ($class, $category) {
                                         $template =
                                             'blocks/' . ($category ? $category . '/' : '') . str_replace('acf/', '', $block['name']);
