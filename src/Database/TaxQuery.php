@@ -13,6 +13,9 @@ class TaxQuery
     {
     }
 
+    /**
+     * @param string|int|array<int, string|int|\WP_Term>|null $terms
+     */
     public function add(
         string|self $taxonomyOrTaxQuery,
         null|string|int|array $terms = null,
@@ -29,6 +32,21 @@ class TaxQuery
 
         if (in_array($field, ['slug', 'term_id', 'name', 'term_taxonomy_id'])) {
             $finalField = $field;
+        }
+
+        if (is_array($terms)) {
+            $terms = array_map(function ($term) use ($field) {
+                if (!$term instanceof \WP_Term) {
+                    return $term;
+                }
+
+                return match ($field) {
+                    'slug' => $term->slug,
+                    'term_id' => $term->term_id,
+                    'name' => $term->name,
+                    'term_taxonomy_id' => $term->term_taxonomy_id,
+                };
+            }, $terms);
         }
 
         if (is_string($taxonomyOrTaxQuery)) {
