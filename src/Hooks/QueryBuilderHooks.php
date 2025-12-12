@@ -119,7 +119,9 @@ class QueryBuilderHooks extends AbstractHook
             return $clauses;
         }
 
-        foreach ($query->query_vars['lat_lng_query'] as $key1 => $geoParams) {
+        $latLngParams = $query->query_vars['lat_lng_query'];
+
+        foreach ($latLngParams as $key1 => $geoParams) {
             $relation = $geoParams['relation'] ?? 'AND';
 
             unset($geoParams['relation']);
@@ -171,10 +173,15 @@ class QueryBuilderHooks extends AbstractHook
                 );
 
                 // 5. AJOUTER LA CLAUSE ORDERBY (Tri par distance la plus courte)
-                $clauses['orderby'] = " {$distance_sql} ASC, " . $clauses['orderby'];
+                $orderByDistance = $geoParam['order_by_distance'] ?? false;
+
+                if ($orderByDistance) {
+                    $clauses['orderby'] = " {$distance_sql} ASC, " . $clauses['orderby'];
+                }
 
                 // 6. DÉ-DOUBLONNAGE
                 // Pour s'assurer qu'un post n'apparaît qu'une seule fois à cause des multiples JOINs
+                $clauses['fields'] .= ", ($distance_sql) AS distance_km";
                 $clauses['groupby'] = "{$wpdb->posts}.ID";
             }
         }

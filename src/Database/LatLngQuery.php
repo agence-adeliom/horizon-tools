@@ -14,8 +14,14 @@ class LatLngQuery
     {
     }
 
-    public function add(string $latitudeKey, string $longitudeKey, float $latitude, float $longitude, float $radiusInKm): self
-    {
+    public function add(
+        string $latitudeKey,
+        string $longitudeKey,
+        float $latitude,
+        float $longitude,
+        float $radiusInKm,
+        bool $orderByDistance = true
+    ): self {
         if (!empty($this->query)) {
             throw new \Exception('At the moment only one LatLngQuery is supported.');
         }
@@ -30,6 +36,7 @@ class LatLngQuery
                 'value' => $longitude,
             ],
             'radius_in_km' => $radiusInKm,
+            'order_by_distance' => $orderByDistance,
         ];
 
         $this->query[] = $data;
