@@ -20,10 +20,17 @@ class LatLngQuery
         float $latitude,
         float $longitude,
         float $radiusInKm,
-        bool $orderByDistance = true
+        bool $orderByDistance = true,
+        string $order = 'ASC'
     ): self {
         if (!empty($this->query)) {
             throw new \Exception('At the moment only one LatLngQuery is supported.');
+        }
+
+        $order = strtoupper($order);
+
+        if (!in_array($order, ['ASC', 'DESC'])) {
+            throw new \Exception('Order must be either ASC or DESC.');
         }
 
         $data = [
@@ -37,6 +44,7 @@ class LatLngQuery
             ],
             'radius_in_km' => $radiusInKm,
             'order_by_distance' => $orderByDistance,
+            'order' => $order,
         ];
 
         $this->query[] = $data;

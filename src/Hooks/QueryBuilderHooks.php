@@ -174,9 +174,10 @@ class QueryBuilderHooks extends AbstractHook
 
                 // 5. AJOUTER LA CLAUSE ORDERBY (Tri par distance la plus courte)
                 $orderByDistance = $geoParam['order_by_distance'] ?? false;
+                $order = $geoParam['order'] ?? 'ASC';
 
                 if ($orderByDistance) {
-                    $clauses['orderby'] = " {$distance_sql} ASC, " . $clauses['orderby'];
+                    $clauses['orderby'] = " {$distance_sql} {$order}, " . $clauses['orderby'];
                 }
 
                 // 6. DÉ-DOUBLONNAGE
