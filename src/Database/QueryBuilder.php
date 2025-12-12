@@ -30,6 +30,7 @@ class QueryBuilder
     private array $idNotIn = [];
     private array $metaQueries = [];
     private array $taxQueries = [];
+    private array $latLngQueries = [];
     private ?string $asClass = null;
     private ?int $perPage = null;
     private int $page = 1;
@@ -260,6 +261,21 @@ class QueryBuilder
 
         if ([] !== $taxQuery->getQuery()) {
             $this->taxQueries[] = $taxQuery;
+        }
+
+        return $this;
+    }
+
+    public function addLatLngQuery(LatLngQuery $latLngQuery): self
+    {
+        $this->triggerChange();
+
+        if ([] !== $latLngQuery->getQuery()) {
+            if (!empty($this->latLngQueries)) {
+                throw new \Exception('At the moment only one LatLngQuery is supported.');
+            }
+
+            $this->latLngQueries[] = $latLngQuery;
         }
 
         return $this;
@@ -529,6 +545,14 @@ class QueryBuilder
             foreach ($this->taxQueries as $taxQuery) {
                 if ($taxQuery instanceof TaxQuery) {
                     $args['tax_query'][] = $taxQuery->generateTaxQueryArray();
+                }
+            }
+        }
+
+        if ([] !== $this->latLngQueries) {
+            foreach ($this->latLngQueries as $latLngQuery) {
+                if ($latLngQuery instanceof LatLngQuery) {
+                    $args['lat_lng_query'][] = $latLngQuery->generateLatLngQueryArray();
                 }
             }
         }
