@@ -16,6 +16,8 @@ class QueryBuilder
     public const SEARCH_COLUMN_EXCERPT = 'post_excerpt';
     public const SEARCH_COLUMN_NAME = 'post_name';
 
+    public const DISTANCE_KEY = 'distance_km';
+
     public const TAX_PREFIX = 'tax_';
 
     public const CACHE_DEFAULT_DURATION = 3600;

@@ -182,7 +182,7 @@ class QueryBuilderHooks extends AbstractHook
 
                 // 6. DÉ-DOUBLONNAGE
                 // Pour s'assurer qu'un post n'apparaît qu'une seule fois à cause des multiples JOINs
-                $clauses['fields'] .= ", ($distance_sql) AS distance_km";
+                $clauses['fields'] .= ", ($distance_sql) AS " . QueryBuilder::DISTANCE_KEY;
                 $clauses['groupby'] = "{$wpdb->posts}.ID";
             }
         }
