@@ -40,6 +40,7 @@ class QueryBuilder
     private ?int $forcedOffset = null;
     private ?int $forcedPageNumber = null;
     private ?string $slug = null;
+    private ?array $slugs = null;
     private ?string $fields = null;
     private ?array $parentIdsIn = [];
     private string $orderBy = 'date';
@@ -140,11 +141,19 @@ class QueryBuilder
         return $this;
     }
 
-    public function whereSlug(?string $slug = null): self
+    public function whereSlug(null|string|array $slug = null): self
     {
         $this->triggerChange();
 
-        $this->slug = $slug;
+        if (is_array($slug) && count($slug) > 0) {
+            if (count($slug) === 1) {
+                $this->slug = array_first($slug);
+            } else {
+                $this->slugs = $slug;
+            }
+        } else {
+            $this->slug = $slug;
+        }
 
         return $this;
     }
@@ -475,6 +484,10 @@ class QueryBuilder
             $args['name'] = $this->slug;
         }
 
+        if (!empty($this->slugs)) {
+            $args['post_name__in'] = $this->slugs;
+        }
+
         if (null !== $this->fields) {
             $args['fields'] = $this->fields;
         }
@@ -610,6 +623,10 @@ class QueryBuilder
 
         if ($this->slug) {
             $args['slug'] = $this->slug;
+        }
+
+        if (!empty($this->slugs)) {
+            $args['slug'] = $this->slugs;
         }
 
         if (null !== $this->fields) {
