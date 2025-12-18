@@ -151,7 +151,7 @@ class QueryBuilder
             } else {
                 $this->slugs = $slug;
             }
-        } else {
+        } elseif (is_string($slug)) {
             $this->slug = $slug;
         }
 
