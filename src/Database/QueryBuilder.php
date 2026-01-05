@@ -51,6 +51,7 @@ class QueryBuilder
     private array $searchColumns = [];
     private ?string $searchRelationWithOtherWheres = 'AND';
     private bool $hideEmpty = false;
+    private bool $onlyIDs = false;
     private ?\WP_Query $WP_Query = null;
     private ?\WP_Term_Query $WP_Term_Query = null;
 
@@ -99,6 +100,14 @@ class QueryBuilder
                 $this->taxonomies[] = $item;
             }
         }
+
+        return $this;
+    }
+
+    public function onlyIDs(bool $onlyIDs = true): self
+    {
+        $this->triggerChange();
+        $this->onlyIDs = $onlyIDs;
 
         return $this;
     }
@@ -727,6 +736,14 @@ class QueryBuilder
             $results = $this->getQuery()->posts;
         } elseif ($this->isTaxonomy) {
             $results = $this->getQuery()->terms;
+        }
+
+        if ($this->onlyIDs) {
+            if ($this->isPostType) {
+                $results = array_column($results, 'ID');
+            } elseif ($this->isTaxonomy) {
+                $results = array_column($results, 'term_id');
+            }
         }
 
         if (!empty($this->asClass) && class_exists($this->asClass)) {
