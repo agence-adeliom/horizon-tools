@@ -20,8 +20,8 @@ class BlockServiceProvider extends SageServiceProvider
     public function boot(): void
     {
         add_action('acf/init', function () {
-            $blocksVersion = Config::get('acf.blocks.version', 3);
-            $blocksApiVersion = Config::get('acf.blocks.api.version', 3);
+            $blocksVersion = Config::get('acf.blocks.version', 1);
+            $blocksApiVersion = Config::get('acf.blocks.api.version', 2);
 
             $this->initBlocks(blocksVersion: $blocksVersion, blocksApiVersion: $blocksApiVersion);
         });
