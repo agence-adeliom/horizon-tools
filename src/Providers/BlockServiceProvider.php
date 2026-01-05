@@ -8,6 +8,7 @@ use Extended\ACF\Location;
 use Adeliom\HorizonTools\Enum\BlockCategoriesEnum;
 use Adeliom\HorizonTools\Services\ClassService;
 use Adeliom\HorizonTools\Services\FileService;
+use Illuminate\Support\Facades\Config;
 use Roots\Acorn\Exceptions\SkipProviderException;
 use Roots\Acorn\Sage\SageServiceProvider;
 
@@ -19,7 +20,10 @@ class BlockServiceProvider extends SageServiceProvider
     public function boot(): void
     {
         add_action('acf/init', function () {
-            $this->initBlocks();
+            $blocksVersion = Config::get('acf.blocks.version', 3);
+            $blocksApiVersion = Config::get('acf.blocks.api.version', 3);
+
+            $this->initBlocks(blocksVersion: $blocksVersion, blocksApiVersion: $blocksApiVersion);
         });
 
         if (self::UNREGISTER_DEFAULT_BLOCKS) {
@@ -28,7 +32,7 @@ class BlockServiceProvider extends SageServiceProvider
         }
     }
 
-    private function initBlocks(): void
+    private function initBlocks(int $blocksVersion = 3, int $blocksApiVersion = 3): void
     {
         $allPostTypes = null;
 
@@ -97,8 +101,8 @@ class BlockServiceProvider extends SageServiceProvider
                                     'description' => $class::$description,
                                     'icon' => $class::$icon,
                                     'post_types' => $allowedPostTypes,
-                                    'acf_block_version' => 3,
-                                    'api_version' => 3,
+                                    'acf_block_version' => $blocksVersion,
+                                    'api_version' => $blocksApiVersion,
                                     'render_callback' => function ($block) use ($class, $category) {
                                         $template =
                                             'blocks/' . ($category ? $category . '/' : '') . str_replace('acf/', '', $block['name']);
