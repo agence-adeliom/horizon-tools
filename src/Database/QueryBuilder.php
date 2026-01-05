@@ -485,6 +485,10 @@ class QueryBuilder
     {
         $args = [];
 
+        if ($this->onlyIDs) {
+            $args['fields'] = 'ids';
+        }
+
         if ($this->status) {
             $args['post_status'] = $this->status;
         }
@@ -605,6 +609,10 @@ class QueryBuilder
     private function getWpTaxQueryArgs(): array
     {
         $args = [];
+
+        if ($this->onlyIDs) {
+            $args['fields'] = 'ids';
+        }
 
         if ($this->taxonomies) {
             $args['taxonomy'] = $this->taxonomies;
@@ -736,14 +744,6 @@ class QueryBuilder
             $results = $this->getQuery()->posts;
         } elseif ($this->isTaxonomy) {
             $results = $this->getQuery()->terms;
-        }
-
-        if ($this->onlyIDs) {
-            if ($this->isPostType) {
-                $results = array_column($results, 'ID');
-            } elseif ($this->isTaxonomy) {
-                $results = array_column($results, 'term_id');
-            }
         }
 
         if (!empty($this->asClass) && class_exists($this->asClass)) {
