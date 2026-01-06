@@ -46,6 +46,16 @@ abstract class AbstractTaxonomyRepository
         return $qb->getOneOrNull();
     }
 
+    /**
+     * @return \WP_Term[]
+     */
+    public static function getByIDs(array $ids, bool $hideEmpty = true): array
+    {
+        $qb = static::getBaseQueryBuilder(hideEmpty: $hideEmpty)->whereIdIn(ids: $ids);
+
+        return $qb->get();
+    }
+
     public static function getPaginated(?int $perPage = null, int $page = 1, bool $hideEmpty = true)
     {
         if (null === $perPage) {
