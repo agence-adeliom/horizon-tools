@@ -11,11 +11,8 @@ class FormField
 {
     public const FORM_SELECT = 'form_id';
 
-    public static function selectGravityForm(): Select
+    public static function selectGravityForm(string $label = 'Formulaire', string $name = self::FORM_SELECT): Select
     {
-        return Select::make('Formulaire', self::FORM_SELECT)
-            ->stylized()
-            ->nullable()
-            ->choices(FormService::getAllFormChoices());
+        return Select::make($label, $name)->stylized()->nullable()->choices(FormService::getAllFormChoices());
     }
 }
