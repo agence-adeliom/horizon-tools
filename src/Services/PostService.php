@@ -13,18 +13,18 @@ class PostService
     private const WORDS_PER_MINUTE = 200;
     private const DEFAULT_POST_TYPES = ['post', 'page'];
 
-    private static function handleBlock(array $block, int &$wordCount): void
+    private static function handleBlockWordCount(array $block, int &$wordCount): void
     {
         if (!empty($block['blockName'])) {
             if (!empty($block['attrs']['data'])) {
                 foreach ($block['attrs']['data'] as $key => $data) {
-                    self::handleField(key: $key, field: $data, wordCount: $wordCount);
+                    self::handleFieldWordCount(key: $key, field: $data, wordCount: $wordCount);
                 }
             }
         }
     }
 
-    private static function handleField(string $key, mixed $field, int &$wordCount): void
+    private static function handleFieldWordCount(string $key, mixed $field, int &$wordCount): void
     {
         if (str_starts_with($key, '_') || is_numeric($field) || empty($field)) {
             return;
@@ -37,6 +37,61 @@ class PostService
             default:
                 break;
         }
+    }
+
+    public static function getRawTextFromPage(
+        null|int|\WP_Post $post = null,
+        ?int $maxLength = null,
+        string $trimMarker = '...',
+        bool $decodeHtmlEntities = true
+    ): ?string {
+        $rawText = '';
+
+        if (null === $post) {
+            $post = get_the_ID();
+        }
+
+        if (!$post) {
+            return null;
+        }
+
+        if (is_int($post)) {
+            $post = get_post($post);
+        }
+
+        if (!$post instanceof \WP_Post) {
+            return null;
+        }
+
+        $content = $post->post_content;
+        $blocks = parse_blocks($content);
+
+        foreach ($blocks as $block) {
+            $blockHtml = render_block($block);
+
+            $rawText .= ' ' . strip_tags($blockHtml);
+        }
+
+        // Remove json strings
+        $rawText = preg_replace('/\{(?:[^{}]|(?R))*\}/', ' ', $rawText);
+        $rawText = preg_replace('/\[(?:[^\[\]]|(?R))*\]/', ' ', $rawText);
+
+        // Remove all extra spaces and trim the text
+        $rawText = preg_replace('/\s+/', ' ', $rawText);
+
+        $result = empty($rawText) ? null : trim($rawText);
+
+        if (is_string($result)) {
+            if ($decodeHtmlEntities) {
+                $result = html_entity_decode($result);
+            }
+
+            if ($maxLength) {
+                $result = mb_strimwidth($result ?? '', 0, $maxLength, $trimMarker);
+            }
+        }
+
+        return $result;
     }
 
     public static function getReadingTimeInMinutes(null|int|\WP_Post $post = null): null|int|float
@@ -62,7 +117,7 @@ class PostService
             $wordCount = 0;
 
             foreach ($blocks as $block) {
-                self::handleBlock(block: $block, wordCount: $wordCount);
+                self::handleBlockWordCount(block: $block, wordCount: $wordCount);
             }
 
             $readingTime = $wordCount / self::WORDS_PER_MINUTE;
