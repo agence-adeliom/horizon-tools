@@ -45,6 +45,8 @@ class PostService
         string $trimMarker = '...',
         bool $decodeHtmlEntities = true
     ): ?string {
+        global $currentlyRetrievingRawTextFromPage;
+
         $rawText = '';
 
         if (null === $post) {
@@ -66,11 +68,15 @@ class PostService
         $content = $post->post_content;
         $blocks = parse_blocks($content);
 
+        $currentlyRetrievingRawTextFromPage = true;
+
         foreach ($blocks as $block) {
             $blockHtml = render_block($block);
 
             $rawText .= ' ' . strip_tags($blockHtml);
         }
+
+        $currentlyRetrievingRawTextFromPage = false;
 
         // Remove json strings
         $rawText = preg_replace('/\{(?:[^{}]|(?R))*\}/', ' ', $rawText);
