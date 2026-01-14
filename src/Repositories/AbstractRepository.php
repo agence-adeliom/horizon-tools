@@ -62,6 +62,17 @@ abstract class AbstractRepository
         return $qb->getOneOrNull();
     }
 
+    /**
+     * @param int[] $ids
+     * @return \WP_Post[]
+     */
+    public static function getByIDs(array $ids): array
+    {
+        $qb = static::getBaseQueryBuilder()->whereIdIn(ids: $ids);
+
+        return $qb->get();
+    }
+
     public static function getPaginated(?int $perPage = null, int $page = 1)
     {
         if (null === $perPage) {
