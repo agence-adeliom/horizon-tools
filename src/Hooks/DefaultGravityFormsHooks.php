@@ -75,6 +75,14 @@ class DefaultGravityFormsHooks extends AbstractHook
                             '',
                             $content
                         );
+
+                        if ($field instanceof \GF_Field_Consent) {
+                            $content = preg_replace(
+                                '/<span class=[\'"]gfield_required gfield_required_text[\'"]>\(.*?\)<\/span>/',
+                                '',
+                                $content
+                            );
+                        }
                     } else {
                         $content = preg_replace_callback(
                             '/<label[^>]*>(.*?)<\/label>/s',
