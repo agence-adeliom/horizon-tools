@@ -6,6 +6,7 @@ namespace Adeliom\HorizonTools\Services;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\View;
 use WP_Query;
 
 class PostService
@@ -43,61 +44,124 @@ class PostService
         null|int|\WP_Post $post = null,
         ?int $maxLength = null,
         string $trimMarker = '...',
-        bool $decodeHtmlEntities = true
+        bool $decodeHtmlEntities = true,
+        bool $useGutenbergBlocks = false
     ): ?string {
-        global $currentlyRetrievingRawTextFromPage;
+        $pageId = match (true) {
+            $post instanceof \WP_Post => $post->ID,
+            is_int($post) => $post,
+            default => get_the_ID(),
+        };
 
-        $rawText = '';
+        $key = sprintf('raw_text_from_page_%d_%s', $pageId, $useGutenbergBlocks ? 'with_gut_blocks' : 'without_gut_blocks');
 
-        if (null === $post) {
-            $post = get_the_ID();
-        }
+        return Cache::remember($key, 3600, function () use ($post, $maxLength, $trimMarker, $decodeHtmlEntities, $useGutenbergBlocks) {
+            global $currentlyRetrievingRawTextFromPage;
 
-        if (!$post) {
-            return null;
-        }
+            $rawText = '';
 
-        if (is_int($post)) {
-            $post = get_post($post);
-        }
-
-        if (!$post instanceof \WP_Post) {
-            return null;
-        }
-
-        $content = $post->post_content;
-        $blocks = parse_blocks($content);
-
-        $currentlyRetrievingRawTextFromPage = true;
-
-        foreach ($blocks as $block) {
-            $blockHtml = render_block($block);
-
-            $rawText .= ' ' . strip_tags($blockHtml);
-        }
-
-        $currentlyRetrievingRawTextFromPage = false;
-
-        // Remove json strings
-        $rawText = preg_replace('/\{(?:[^{}]|(?R))*\}/', ' ', $rawText);
-        $rawText = preg_replace('/\[(?:[^\[\]]|(?R))*\]/', ' ', $rawText);
-
-        // Remove all extra spaces and trim the text
-        $rawText = preg_replace('/\s+/', ' ', $rawText);
-
-        $result = empty($rawText) ? null : trim($rawText);
-
-        if (is_string($result)) {
-            if ($decodeHtmlEntities) {
-                $result = html_entity_decode($result);
+            if (null === $post) {
+                $post = get_the_ID();
             }
 
-            if ($maxLength) {
-                $result = mb_strimwidth($result ?? '', 0, $maxLength, $trimMarker);
+            if (!$post) {
+                return null;
             }
-        }
 
-        return $result;
+            if (is_int($post)) {
+                $post = get_post($post);
+            }
+
+            if (!$post instanceof \WP_Post) {
+                return null;
+            }
+
+            $currentlyRetrievingRawTextFromPage = true;
+
+            if ($useGutenbergBlocks) {
+                $content = $post->post_content;
+                $blocks = parse_blocks($content);
+
+                foreach ($blocks as $block) {
+                    $blockHtml = render_block($block);
+
+                    $rawText .= ' ' . strip_tags($blockHtml);
+                }
+
+                // Remove json strings
+                $rawText = preg_replace('/\{(?:[^{}]|(?R))*\}/', ' ', $rawText);
+                $rawText = preg_replace('/\[(?:[^\[\]]|(?R))*\]/', ' ', $rawText);
+            } else {
+                $postType = get_post_type($post);
+
+                $viewName = match (true) {
+                    $postType === 'page' => 'page',
+                    $postType === 'post' => 'single',
+                    default => View::exists(sprintf('single-%s', $postType)) ? sprintf('single-%s', $postType) : 'single',
+                };
+
+                $context = array_merge(
+                    [
+                        'post' => $post,
+                        'post_type' => $postType,
+                    ],
+                    [
+                        'currentlyRetrievingRawTextFromPage' => true,
+                    ]
+                );
+
+                $rawText = view($viewName, $context)->toHtml();
+
+                // Extract <body> content if exists
+                if (preg_match('/<body[^>]*>(.*?)<\/body>/is', $rawText, $matches)) {
+                    $rawText = $matches[1];
+                }
+
+                // Remove all that is before and after div with app ID
+                $rawText = preg_replace('/.*<div id="app">/is', ' <div id="app">', $rawText);
+                $rawText = preg_replace('/<\/div><!-- #app -->.*/is', ' </div><!-- #app -->', $rawText);
+
+                // Only keep content inside the <main> tag if exists
+                if (preg_match('/<main[^>]*>(.*?)<\/main>/is', $rawText, $matches)) {
+                    $rawText = $matches[1];
+                }
+
+                // Remove admin bar and its content, menus, ...
+                $rawText = preg_replace('/<div id="wpadminbar"[^<]*(?:(?!<\/div>)<[^<]*)*<\/div>/is', ' ', $rawText);
+
+                // Remove dump (and Symfony VarDumper) blocks
+                $rawText = preg_replace('/<div class="sf-dump[^<]*(?:(?!<\/div>)<[^<]*)*<\/div>/is', ' ', $rawText);
+                $rawText = preg_replace('/<pre class="sf-dump[^<]*(?:(?!<\/pre>)<[^<]*)*<\/pre>/is', ' ', $rawText);
+                $rawText = preg_replace('/<pre\b[^<]*(?:(?!<\/pre>)<[^<]*)*<\/pre>/is', ' ', $rawText);
+
+                // Remove scripts, json, styles, ... -> keep only real usable content
+                $rawText = preg_replace('/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/is', ' ', $rawText);
+                $rawText = preg_replace('/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/is', ' ', $rawText);
+                $rawText = preg_replace('/<noscript\b[^<]*(?:(?!<\/noscript>)<[^<]*)*<\/noscript>/is', ' ', $rawText);
+                $rawText = preg_replace('/<template\b[^<]*(?:(?!<\/template>)<[^<]*)*<\/template>/is', ' ', $rawText);
+                $rawText = preg_replace('/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/is', ' ', $rawText);
+                $rawText = strip_tags($rawText);
+            }
+
+            $currentlyRetrievingRawTextFromPage = false;
+
+            // Remove all extra spaces and trim the text
+            $rawText = preg_replace('/\s+/', ' ', $rawText);
+
+            $result = empty($rawText) ? null : trim($rawText);
+
+            if (is_string($result)) {
+                if ($decodeHtmlEntities) {
+                    $result = html_entity_decode($result);
+                }
+
+                if ($maxLength) {
+                    $result = mb_strimwidth($result ?? '', 0, $maxLength, $trimMarker);
+                }
+            }
+
+            return $result;
+        });
     }
 
     public static function getReadingTimeInMinutes(null|int|\WP_Post $post = null): null|int|float
