@@ -46,6 +46,10 @@ class PostService
         string $trimMarker = '...',
         bool $decodeHtmlEntities = true
     ): ?string {
+        global $currentlyRetrievingRawTextFromPage;
+
+        $currentlyRetrievingRawTextFromPage = true;
+
         $pageId = match (true) {
             $post instanceof \WP_Post => $post->ID,
             is_int($post) => $post,
@@ -54,9 +58,7 @@ class PostService
 
         $key = sprintf('raw_text_from_page_%d', $pageId);
 
-        return Cache::remember($key, 3600, function () use ($post, $maxLength, $trimMarker, $decodeHtmlEntities) {
-            global $currentlyRetrievingRawTextFromPage;
-
+        $rawText = Cache::remember($key, 3600, function () use ($post, $maxLength, $trimMarker, $decodeHtmlEntities) {
             $rawText = '';
 
             if (null === $post) {
@@ -157,6 +159,10 @@ class PostService
 
             return $result;
         });
+
+        $currentlyRetrievingRawTextFromPage = false;
+
+        return $rawText;
     }
 
     public static function getReadingTimeInMinutes(null|int|\WP_Post $post = null): null|int|float
