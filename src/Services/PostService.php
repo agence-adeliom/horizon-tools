@@ -44,8 +44,7 @@ class PostService
         null|int|\WP_Post $post = null,
         ?int $maxLength = null,
         string $trimMarker = '...',
-        bool $decodeHtmlEntities = true,
-        bool $useGutenbergBlocks = false
+        bool $decodeHtmlEntities = true
     ): ?string {
         $pageId = match (true) {
             $post instanceof \WP_Post => $post->ID,
@@ -53,9 +52,9 @@ class PostService
             default => get_the_ID(),
         };
 
-        $key = sprintf('raw_text_from_page_%d_%s', $pageId, $useGutenbergBlocks ? 'with_gut_blocks' : 'without_gut_blocks');
+        $key = sprintf('raw_text_from_page_%d', $pageId);
 
-        return Cache::remember($key, 3600, function () use ($post, $maxLength, $trimMarker, $decodeHtmlEntities, $useGutenbergBlocks) {
+        return Cache::remember($key, 3600, function () use ($post, $maxLength, $trimMarker, $decodeHtmlEntities) {
             global $currentlyRetrievingRawTextFromPage;
 
             $rawText = '';
@@ -78,6 +77,9 @@ class PostService
 
             $currentlyRetrievingRawTextFromPage = true;
 
+            $postType = get_post_type($post);
+            $useGutenbergBlocks = use_block_editor_for_post_type($postType);
+
             if ($useGutenbergBlocks) {
                 $content = $post->post_content;
                 $blocks = parse_blocks($content);
@@ -87,13 +89,7 @@ class PostService
 
                     $rawText .= ' ' . strip_tags($blockHtml);
                 }
-
-                // Remove json strings
-                $rawText = preg_replace('/\{(?:[^{}]|(?R))*\}/', ' ', $rawText);
-                $rawText = preg_replace('/\[(?:[^\[\]]|(?R))*\]/', ' ', $rawText);
             } else {
-                $postType = get_post_type($post);
-
                 $viewName = match (true) {
                     $postType === 'page' => 'page',
                     $postType === 'post' => 'single',
@@ -111,43 +107,42 @@ class PostService
                 );
 
                 $rawText = view($viewName, $context)->toHtml();
-
-                // Extract <body> content if exists
-                if (preg_match('/<body[^>]*>(.*?)<\/body>/is', $rawText, $matches)) {
-                    $rawText = $matches[1];
-                }
-
-                // Remove all that is before and after div with app ID
-                $rawText = preg_replace('/.*<div id="app">/is', ' <div id="app">', $rawText);
-                $rawText = preg_replace('/<\/div><!-- #app -->.*/is', ' </div><!-- #app -->', $rawText);
-
-                // Only keep content inside the <main> tag if exists
-                if (preg_match('/<main[^>]*>(.*?)<\/main>/is', $rawText, $matches)) {
-                    $rawText = $matches[1];
-                }
-
-                // Remove admin bar and its content, menus, ...
-                $rawText = preg_replace('/<div id="wpadminbar"[^<]*(?:(?!<\/div>)<[^<]*)*<\/div>/is', ' ', $rawText);
-
-                // Remove dump (and Symfony VarDumper) blocks
-                $rawText = preg_replace('/<div class="sf-dump[^<]*(?:(?!<\/div>)<[^<]*)*<\/div>/is', ' ', $rawText);
-                $rawText = preg_replace('/<pre class="sf-dump[^<]*(?:(?!<\/pre>)<[^<]*)*<\/pre>/is', ' ', $rawText);
-                $rawText = preg_replace('/<pre\b[^<]*(?:(?!<\/pre>)<[^<]*)*<\/pre>/is', ' ', $rawText);
-
-                // Remove scripts, json, styles, ... -> keep only real usable content
-                $rawText = preg_replace('/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/is', ' ', $rawText);
-                $rawText = preg_replace('/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/is', ' ', $rawText);
-                $rawText = preg_replace('/<noscript\b[^<]*(?:(?!<\/noscript>)<[^<]*)*<\/noscript>/is', ' ', $rawText);
-                $rawText = preg_replace('/<template\b[^<]*(?:(?!<\/template>)<[^<]*)*<\/template>/is', ' ', $rawText);
-                $rawText = preg_replace('/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/is', ' ', $rawText);
-                $rawText = strip_tags($rawText);
             }
+
+            // Extract <body> content if exists
+            if (preg_match('/<body[^>]*>(.*?)<\/body>/is', $rawText, $matches)) {
+                $rawText = $matches[1];
+            }
+
+            // Remove all that is before and after div with app ID
+            $rawText = preg_replace('/.*<div id="app">/is', ' <div id="app">', $rawText);
+            $rawText = preg_replace('/<\/div><!-- #app -->.*/is', ' </div><!-- #app -->', $rawText);
+
+            // Only keep content inside the <main> tag if exists
+            if (preg_match('/<main[^>]*>(.*?)<\/main>/is', $rawText, $matches)) {
+                $rawText = $matches[1];
+            }
+
+            // Remove admin bar and its content, menus, ...
+            $rawText = preg_replace('/<div id="wpadminbar"[^<]*(?:(?!<\/div>)<[^<]*)*<\/div>/is', ' ', $rawText);
+
+            // Remove dump (and Symfony VarDumper) blocks
+            $rawText = preg_replace('/<div class="sf-dump[^<]*(?:(?!<\/div>)<[^<]*)*<\/div>/is', ' ', $rawText);
+            $rawText = preg_replace('/<pre class="sf-dump[^<]*(?:(?!<\/pre>)<[^<]*)*<\/pre>/is', ' ', $rawText);
+            $rawText = preg_replace('/<pre\b[^<]*(?:(?!<\/pre>)<[^<]*)*<\/pre>/is', ' ', $rawText);
+
+            // Remove scripts, json, styles, ... -> keep only real usable content
+            $rawText = preg_replace('/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/is', ' ', $rawText);
+            $rawText = preg_replace('/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/is', ' ', $rawText);
+            $rawText = preg_replace('/<noscript\b[^<]*(?:(?!<\/noscript>)<[^<]*)*<\/noscript>/is', ' ', $rawText);
+            $rawText = preg_replace('/<template\b[^<]*(?:(?!<\/template>)<[^<]*)*<\/template>/is', ' ', $rawText);
+            $rawText = preg_replace('/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/is', ' ', $rawText);
+            $rawText = strip_tags($rawText);
+            $rawText = preg_replace('/\s+/', ' ', $rawText);
 
             $currentlyRetrievingRawTextFromPage = false;
 
             // Remove all extra spaces and trim the text
-            $rawText = preg_replace('/\s+/', ' ', $rawText);
-
             $result = empty($rawText) ? null : trim($rawText);
 
             if (is_string($result)) {
