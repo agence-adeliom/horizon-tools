@@ -24,10 +24,23 @@ abstract class AbstractRepository
         return $qb;
     }
 
+    private static function handleAs(QueryBuilder $qb, ?string $as = null): QueryBuilder
+    {
+        if (!empty($as)) {
+            if (!class_exists($as)) {
+                throw new \Exception(sprintf('Class %s does not exist', $as));
+            }
+
+            $qb->as($as);
+        }
+
+        return $qb;
+    }
+
     /**
-     * @return \WP_Post[]
+     * @return \WP_Post[]|object[]
      */
-    public static function getAll(?int $perPage = null, int $page = 1): array
+    public static function getAll(?int $perPage = null, int $page = 1, ?string $as = null): array
     {
         $qb = static::getBaseQueryBuilder()->setPage($page);
 
@@ -36,6 +49,8 @@ abstract class AbstractRepository
         } else {
             $qb->perPage($perPage);
         }
+
+        self::handleAs(qb: $qb, as: $as);
 
         return $qb->get();
     }
@@ -64,30 +79,41 @@ abstract class AbstractRepository
 
     /**
      * @param int[] $ids
-     * @return \WP_Post[]
+     * @return \WP_Post[]|object[]
      */
-    public static function getByIDs(array $ids): array
+    public static function getByIDs(array $ids, ?string $as = null): array
     {
         $qb = static::getBaseQueryBuilder()->whereIdIn(ids: $ids);
+
+        self::handleAs(qb: $qb, as: $as);
 
         return $qb->get();
     }
 
-    public static function getPaginated(?int $perPage = null, int $page = 1)
+    public static function getPaginated(?int $perPage = null, int $page = 1, ?string $as = null): array
     {
         if (null === $perPage) {
             $perPage = static::$perPage;
         }
 
-        return static::getBaseQueryBuilder(perPage: $perPage, page: $page)->getPaginatedData();
+        $qb = static::getBaseQueryBuilder(perPage: $perPage, page: $page);
+
+        self::handleAs(qb: $qb, as: $as);
+
+        return $qb->getPaginatedData();
     }
 
     /**
      * @param \WP_Term|\WP_Term[] $term
-     * @return array
+     * @return \WP_Post[]|object[]
      */
-    public static function getByTerms(\WP_Term|array $terms, string $relation = 'AND', ?int $perPage = null, ?int $page = 1): array
-    {
+    public static function getByTerms(
+        \WP_Term|array $terms,
+        string $relation = 'AND',
+        ?int $perPage = null,
+        ?int $page = 1,
+        ?string $as = null
+    ): array {
         $qb = static::getBaseQueryBuilder(perPage: $perPage, page: $page);
 
         if (!is_array($terms)) {
@@ -110,12 +136,19 @@ abstract class AbstractRepository
             return $qb->getPaginatedData();
         }
 
+        self::handleAs(qb: $qb, as: $as);
+
         return $qb->get();
     }
 
-    public static function getByParent(int|\WP_Post $parent, ?int $perPage = null, int $page = 1): array
+    /**
+     * @return \WP_Post[]|object[]
+     */
+    public static function getByParent(int|\WP_Post $parent, ?int $perPage = null, int $page = 1, ?string $as = null): array
     {
         $qb = static::getBaseQueryBuilder(perPage: $perPage, page: $page)->whereParentIn($parent);
+
+        self::handleAs(qb: $qb, as: $as);
 
         return $qb->get();
     }

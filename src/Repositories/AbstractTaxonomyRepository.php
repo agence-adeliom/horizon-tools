@@ -24,12 +24,29 @@ abstract class AbstractTaxonomyRepository
         return $qb;
     }
 
-    /**
-     * @return \WP_Term[]
-     */
-    public static function getAll(bool $hideEmpty = true): array
+    private static function handleAs(QueryBuilder $qb, ?string $as = null): QueryBuilder
     {
-        return static::getBaseQueryBuilder(hideEmpty: $hideEmpty)->get();
+        if (!empty($as)) {
+            if (!class_exists($as)) {
+                throw new \Exception(sprintf('Class %s does not exist', $as));
+            }
+
+            $qb->as($as);
+        }
+
+        return $qb;
+    }
+
+    /**
+     * @return \WP_Term[]|object[]
+     */
+    public static function getAll(bool $hideEmpty = true, ?string $as = null): array
+    {
+        $qb = static::getBaseQueryBuilder(hideEmpty: $hideEmpty);
+
+        self::handleAs(qb: $qb, as: $as);
+
+        return $qb->get();
     }
 
     public static function getOneBySlug(string $slug, bool $hideEmpty = true): ?\WP_Term
@@ -47,21 +64,27 @@ abstract class AbstractTaxonomyRepository
     }
 
     /**
-     * @return \WP_Term[]
+     * @return \WP_Term[]|object[]
      */
-    public static function getByIDs(array $ids, bool $hideEmpty = true): array
+    public static function getByIDs(array $ids, bool $hideEmpty = true, ?string $as = null): array
     {
         $qb = static::getBaseQueryBuilder(hideEmpty: $hideEmpty)->whereIdIn(ids: $ids);
+
+        self::handleAs(qb: $qb, as: $as);
 
         return $qb->get();
     }
 
-    public static function getPaginated(?int $perPage = null, int $page = 1, bool $hideEmpty = true)
+    public static function getPaginated(?int $perPage = null, int $page = 1, bool $hideEmpty = true, ?string $as = null): array
     {
         if (null === $perPage) {
             $perPage = static::$perPage;
         }
 
-        return static::getBaseQueryBuilder(perPage: $perPage, page: $page, hideEmpty: $hideEmpty)->getPaginatedData();
+        $qb = static::getBaseQueryBuilder(perPage: $perPage, page: $page, hideEmpty: $hideEmpty);
+
+        self::handleAs(qb: $qb, as: $as);
+
+        return $qb->getPaginatedData();
     }
 }
