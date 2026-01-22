@@ -46,7 +46,7 @@ class QueryBuilder
     private string $orderBy = 'date';
     private string $order = 'DESC';
     private ?string $orderMetaKey = null;
-    private ?string $status = 'publish';
+    private null|string|array $status = 'publish';
     private ?string $search = null;
     private array $searchColumns = [];
     private ?string $searchRelationWithOtherWheres = 'AND';
@@ -377,12 +377,24 @@ class QueryBuilder
         return $this->perPage(perPage: $perPage);
     }
 
-    public function status(string $status): self
+    public function status(string|array $status): self
     {
         $this->triggerChange();
+        $this->status = 'publish';
 
-        if (in_array($status, ['any', 'publish', 'pending', 'draft', 'future', 'auto-draft', 'private', 'inherit', 'trash'])) {
+        $allowedStatuses = ['any', 'publish', 'pending', 'draft', 'future', 'auto-draft', 'private', 'inherit', 'trash'];
+
+        if (is_string($status) && in_array($status, $allowedStatuses)) {
             $this->status = $status;
+        } elseif (is_array($status)) {
+            // Filter only allowed statuses
+            $filteredStatuses = array_filter($status, function ($s) use ($allowedStatuses) {
+                return in_array($s, $allowedStatuses);
+            });
+
+            if (!empty($filteredStatuses)) {
+                $this->status = $filteredStatuses;
+            }
         }
 
         return $this;
@@ -489,7 +501,7 @@ class QueryBuilder
             $args['fields'] = 'ids';
         }
 
-        if ($this->status) {
+        if (!empty($this->status)) {
             $args['post_status'] = $this->status;
         }
 
