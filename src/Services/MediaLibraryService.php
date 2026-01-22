@@ -47,7 +47,14 @@ class MediaLibraryService
             return null;
         }
 
-        $attachmentMeta = wp_generate_attachment_metadata($attachmentId, $filePath);
+        try {
+            $attachmentMeta = @wp_generate_attachment_metadata($attachmentId, $filePath);
+            if (empty($attachmentMeta)) {
+                $attachmentMeta = ['file' => $fileName];
+            }
+        } catch (\Exception $e) {
+            $attachmentMeta = ['file' => $fileName];
+        }
 
         foreach ($meta as $metaKey => $metaValue) {
             update_post_meta($attachmentId, $metaKey, $metaValue);
