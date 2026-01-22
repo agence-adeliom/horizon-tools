@@ -14,7 +14,7 @@ class BlogPostService
     private const SUMMARY_BLOCK_NAME = 'acf/post-summary';
     private const EXCLUDED_BLOCKS = [self::SUMMARY_BLOCK_NAME];
 
-    private static function getBlocks(bool $onlyInSummary = false): array
+    public static function getBlocks(bool $onlyInSummary = false): array
     {
         $pageId = !is_admin() ? get_the_ID() : $_GET['post'] ?? ($_POST['post_id'] ?? null);
 
@@ -102,64 +102,85 @@ class BlogPostService
         return $hasClosingTag;
     }
 
-    public static function getPostTitles(array $blocks = [], array $retrieveOnly = ['h2'], bool $fallbackToHtml = false): ?array
-    {
+    public static function getPostTitles(
+        array $blocks = [],
+        array $retrieveOnly = ['h2'],
+        bool $useHtml = false,
+        bool $fallbackToHtml = false
+    ): ?array {
         if (!empty($blocks)) {
-            return self::getPostTitlesLogic(blocks: $blocks, retrieveOnly: $retrieveOnly, fallbackToHtml: $fallbackToHtml);
+            return self::getPostTitlesLogic(
+                blocks: $blocks,
+                retrieveOnly: $retrieveOnly,
+                useHtml: $useHtml,
+                fallbackToHtml: $fallbackToHtml
+            );
         } else {
             $currentId = is_admin() ? $_GET['post'] ?? ($_POST['post_id'] ?? null) : get_the_ID();
 
             if (null !== $currentId) {
                 return Cache::remember(
-                    sprintf('post-titles-%d-%s-%s', $currentId, implode('-', $retrieveOnly), $fallbackToHtml ? 'fallback-html' : ''),
+                    sprintf(
+                        'post-titles-%d-%s-%s-%s',
+                        $currentId,
+                        implode('-', $retrieveOnly),
+                        $useHtml ? 'use-html' : '',
+                        $fallbackToHtml ? 'fallback-html' : ''
+                    ),
                     60,
-                    function () use ($retrieveOnly, $fallbackToHtml) {
-                        return self::getPostTitlesLogic(retrieveOnly: $retrieveOnly, fallbackToHtml: $fallbackToHtml);
+                    function () use ($retrieveOnly, $useHtml, $fallbackToHtml) {
+                        return self::getPostTitlesLogic(retrieveOnly: $retrieveOnly, useHtml: $useHtml, fallbackToHtml: $fallbackToHtml);
                     }
                 );
             } else {
-                return self::getPostTitlesLogic(retrieveOnly: $retrieveOnly, fallbackToHtml: $fallbackToHtml);
+                return self::getPostTitlesLogic(retrieveOnly: $retrieveOnly, useHtml: $useHtml, fallbackToHtml: $fallbackToHtml);
             }
         }
     }
 
-    private static function getPostTitlesLogic(array $blocks = [], array $retrieveOnly = ['h2'], bool $fallbackToHtml = false): array
-    {
+    private static function getPostTitlesLogic(
+        array $blocks = [],
+        array $retrieveOnly = ['h2'],
+        bool $useHtml = false,
+        bool $fallbackToHtml = false
+    ): array {
         $titles = [];
 
-        if (empty($blocks)) {
-            $blocks = self::getBlocks(onlyInSummary: true);
-        }
+        if (!$useHtml) {
+            if (empty($blocks)) {
+                $blocks = self::getBlocks(onlyInSummary: true);
+            }
 
-        $titleKey = sprintf('%s_%s', HeadingField::NAME, HeadingField::CONTENT_NAME);
-        $titleTag = sprintf('%s_%s', HeadingField::NAME, HeadingField::TAGS_NAME);
+            $titleKey = sprintf('%s_%s', HeadingField::NAME, HeadingField::CONTENT_NAME);
+            $titleTag = sprintf('%s_%s', HeadingField::NAME, HeadingField::TAGS_NAME);
 
-        $excluded = array_values(
-            array_merge(
-                self::EXCLUDED_BLOCKS,
-                array_map(function ($class) {
-                    return sprintf('acf/%s', $class::$slug);
-                }, ClassService::getAllCustomBlockClassesNotAllowedInSummary())
-            )
-        );
+            $excluded = array_values(
+                array_merge(
+                    self::EXCLUDED_BLOCKS,
+                    array_map(function ($class) {
+                        return sprintf('acf/%s', $class::$slug);
+                    }, ClassService::getAllCustomBlockClassesNotAllowedInSummary())
+                )
+            );
 
-        foreach ($blocks as $block) {
-            if (isset($block['blockName']) && !in_array($block['blockName'], $excluded)) {
-                if (isset($block['attrs'], $block['attrs']['data'], $block['attrs']['data'][$titleKey])) {
-                    if ($title = $block['attrs']['data'][$titleKey]) {
-                        if ($retrieveOnly) {
-                            if (in_array($block['attrs']['data'][$titleTag], $retrieveOnly)) {
+            foreach ($blocks as $block) {
+                if (isset($block['blockName']) && !in_array($block['blockName'], $excluded)) {
+                    if (isset($block['attrs'], $block['attrs']['data'], $block['attrs']['data'][$titleKey])) {
+                        if ($title = $block['attrs']['data'][$titleKey]) {
+                            if ($retrieveOnly) {
+                                if (in_array($block['attrs']['data'][$titleTag], $retrieveOnly)) {
+                                    $titles[] = $title;
+                                }
+                            } else {
                                 $titles[] = $title;
                             }
-                        } else {
-                            $titles[] = $title;
                         }
                     }
                 }
             }
         }
 
-        if (empty($titles) && $fallbackToHtml) {
+        if ($useHtml || (empty($titles) && $fallbackToHtml)) {
             $htmlTitles = self::getPostTitlesFromHtmlLogic(retrieveOnly: $retrieveOnly);
 
             if (!empty($htmlTitles)) {
@@ -179,7 +200,7 @@ class BlogPostService
         $headings = [];
 
         if (!$currentlyRetrievingRawTextFromPage) {
-            $html = PostService::getRawTextFromPage(excludedBlocks: ['acf/post-summary'], keepTags: true);
+            $html = PostService::getRawTextFromPage(excludedBlocks: ['acf/post-summary'], keepTags: true, onlyInPostContent: true);
 
             // Pattern pour matcher h1 à h6 avec leur contenu
             preg_match_all('/<h([1-6])[^>]*>(.*?)<\/h\1>/is', $html, $matches, PREG_SET_ORDER);

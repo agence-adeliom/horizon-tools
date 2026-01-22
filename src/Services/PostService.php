@@ -46,7 +46,8 @@ class PostService
         string $trimMarker = '...',
         bool $decodeHtmlEntities = true,
         array $excludedBlocks = [],
-        bool $keepTags = false
+        bool $keepTags = false,
+        bool $onlyInPostContent = false
     ): ?string {
         global $currentlyRetrievingRawTextFromPage;
 
@@ -66,7 +67,8 @@ class PostService
             $trimMarker,
             $decodeHtmlEntities,
             $excludedBlocks,
-            $keepTags
+            $keepTags,
+            $onlyInPostContent
         ) {
             $rawText = '';
 
@@ -92,8 +94,12 @@ class PostService
             $useGutenbergBlocks = use_block_editor_for_post_type($postType);
 
             if ($useGutenbergBlocks) {
-                $content = $post->post_content;
-                $blocks = parse_blocks($content);
+                if ($onlyInPostContent) {
+                    $blocks = BlogPostService::getBlocks(onlyInSummary: true);
+                } else {
+                    $content = $post->post_content;
+                    $blocks = parse_blocks($content);
+                }
 
                 foreach ($blocks as $block) {
                     if (!isset($excludedBlocks) || !in_array($block['blockName'], $excludedBlocks)) {
