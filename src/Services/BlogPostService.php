@@ -6,6 +6,7 @@ namespace Adeliom\HorizonTools\Services;
 
 use Adeliom\HorizonTools\Fields\Text\HeadingField;
 use App\Blocks\Content\PostSummaryBlock;
+use Extended\ACF\Key;
 use Illuminate\Support\Facades\Cache;
 
 class BlogPostService
@@ -68,13 +69,33 @@ class BlogPostService
             )
         );
 
-        if (
-            isset($blocks[1], $blocks[1]['attrs'], $blocks[1]['attrs']['data'], $blocks[1]['attrs']['data'][PostSummaryBlock::FIELD_IS_TOP])
-        ) {
-            $state = $blocks[1]['attrs']['data'][PostSummaryBlock::FIELD_IS_TOP];
+        $topBlock = $blocks[0];
+        $bottomBlock = $blocks[1] ?? null;
 
-            if ($state == false) {
-                $hasClosingTag = true;
+        if (empty($bottomBlock)) {
+            return false;
+        }
+
+        if (!empty($bottomBlock['attrs']['data'])) {
+            $bottomFields = $bottomBlock['attrs']['data'];
+
+            if (isset($bottomFields[PostSummaryBlock::FIELD_IS_TOP])) {
+                $state = $bottomFields[PostSummaryBlock::FIELD_IS_TOP];
+
+                if ($state == false) {
+                    $hasClosingTag = true;
+                }
+            } else {
+                $fieldName = str_replace(['acf/', '-'], ['', '_'], $bottomBlock['blockName']);
+                $fieldKey = sprintf('field_%s', Key::hash(sprintf('%s_%s', $fieldName, PostSummaryBlock::FIELD_IS_TOP)));
+
+                if (isset($bottomFields[$fieldKey])) {
+                    $state = $bottomFields[$fieldKey];
+
+                    if ($state == false) {
+                        $hasClosingTag = true;
+                    }
+                }
             }
         }
 
