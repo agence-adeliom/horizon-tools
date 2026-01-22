@@ -110,9 +110,13 @@ class BlogPostService
             $currentId = is_admin() ? $_GET['post'] ?? ($_POST['post_id'] ?? null) : get_the_ID();
 
             if (null !== $currentId) {
-                return Cache::remember('post-titles-' . $currentId, 60, function () use ($retrieveOnly, $fallbackToHtml) {
-                    return self::getPostTitlesLogic(retrieveOnly: $retrieveOnly, fallbackToHtml: $fallbackToHtml);
-                });
+                return Cache::remember(
+                    sprintf('post-titles-%d-%s-%s', $currentId, implode('-', $retrieveOnly), $fallbackToHtml ? 'fallback-html' : ''),
+                    60,
+                    function () use ($retrieveOnly, $fallbackToHtml) {
+                        return self::getPostTitlesLogic(retrieveOnly: $retrieveOnly, fallbackToHtml: $fallbackToHtml);
+                    }
+                );
             } else {
                 return self::getPostTitlesLogic(retrieveOnly: $retrieveOnly, fallbackToHtml: $fallbackToHtml);
             }
