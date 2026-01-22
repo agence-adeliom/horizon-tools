@@ -6,7 +6,7 @@ namespace Adeliom\HorizonTools\Services;
 
 class MediaLibraryService
 {
-    public static function importMediaFromUrl(string $url, string $alt = '', array $meta = [], int $postId = 0): null|int|\WP_Post
+    public static function importMediaFromUrl(string $url, string $alt = '', array $meta = [], int $postId = 0): null|int|\WP_Post|\WP_Error
     {
         // Nécessite les fichiers de l'API de média de WordPress
         if (!function_exists('media_handle_upload')) {
@@ -22,6 +22,37 @@ class MediaLibraryService
         }
 
         $fileName = basename($url);
+
+        // Vérifier si le fichier a une extension
+        $pathInfo = pathinfo($fileName);
+        if (empty($pathInfo['extension'])) {
+            // Essayer de deviner l'extension à partir du Content-Type
+            $response = wp_remote_head($url);
+
+            if (!is_wp_error($response)) {
+                $contentType = wp_remote_retrieve_header($response, 'content-type');
+
+                if ($contentType) {
+                    $mimeTypes = [
+                        'image/jpeg' => 'jpg',
+                        'image/png' => 'png',
+                        'image/gif' => 'gif',
+                        'image/webp' => 'webp',
+                        'image/svg+xml' => 'svg',
+                        'application/pdf' => 'pdf',
+                        'video/mp4' => 'mp4',
+                        'video/webm' => 'webm',
+                    ];
+
+                    foreach ($mimeTypes as $mime => $extension) {
+                        if (str_contains($contentType, $mime)) {
+                            $fileName .= '.' . $extension;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
         $upload = wp_upload_bits($fileName, null, $fileContent);
 
