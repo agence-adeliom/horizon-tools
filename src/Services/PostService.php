@@ -59,7 +59,13 @@ class PostService
             default => get_the_ID(),
         };
 
-        $key = sprintf('raw_text_from_page_%d', $pageId);
+        $key = sprintf(
+            'raw_text_from_page_%d_%s_%s_%s',
+            $pageId,
+            $keepTags ? 'keep-tags' : '',
+            $onlyInPostContent ? 'only-in-post-content' : '',
+            !empty($excludedBlocks) ? 'excluded-' . md5(serialize($excludedBlocks)) : 'no-excluded-blocks'
+        );
 
         $rawText = Cache::remember($key, 3600, function () use (
             $post,
