@@ -102,24 +102,24 @@ class BlogPostService
         return $hasClosingTag;
     }
 
-    public static function getPostTitles(array $blocks = []): ?array
+    public static function getPostTitles(array $blocks = [], array $retrieveOnly = ['h2'], bool $fallbackToHtml = false): ?array
     {
         if (!empty($blocks)) {
-            return self::getPostTitlesLogic(blocks: $blocks);
+            return self::getPostTitlesLogic(blocks: $blocks, retrieveOnly: $retrieveOnly, fallbackToHtml: $fallbackToHtml);
         } else {
             $currentId = is_admin() ? $_GET['post'] ?? ($_POST['post_id'] ?? null) : get_the_ID();
 
             if (null !== $currentId) {
-                return Cache::remember('post-titles-' . $currentId, 60, function () {
-                    return self::getPostTitlesLogic();
+                return Cache::remember('post-titles-' . $currentId, 60, function () use ($retrieveOnly, $fallbackToHtml) {
+                    return self::getPostTitlesLogic(retrieveOnly: $retrieveOnly, fallbackToHtml: $fallbackToHtml);
                 });
             } else {
-                return self::getPostTitlesLogic();
+                return self::getPostTitlesLogic(retrieveOnly: $retrieveOnly, fallbackToHtml: $fallbackToHtml);
             }
         }
     }
 
-    private static function getPostTitlesLogic(array $blocks = []): array
+    private static function getPostTitlesLogic(array $blocks = [], array $retrieveOnly = ['h2'], bool $fallbackToHtml = false): array
     {
         $titles = [];
 
@@ -129,8 +129,6 @@ class BlogPostService
 
         $titleKey = sprintf('%s_%s', HeadingField::NAME, HeadingField::CONTENT_NAME);
         $titleTag = sprintf('%s_%s', HeadingField::NAME, HeadingField::TAGS_NAME);
-
-        $retrieveOnly = ['h2'];
 
         $excluded = array_values(
             array_merge(
@@ -157,6 +155,44 @@ class BlogPostService
             }
         }
 
+        if (empty($titles) && $fallbackToHtml) {
+            $htmlTitles = self::getPostTitlesFromHtmlLogic(retrieveOnly: $retrieveOnly);
+
+            if (!empty($htmlTitles)) {
+                $titles = array_map(function ($title) {
+                    return $title['content'];
+                }, $htmlTitles);
+            }
+        }
+
         return $titles;
+    }
+
+    private static function getPostTitlesFromHtmlLogic(array $retrieveOnly = ['h2']): array
+    {
+        global $currentlyRetrievingRawTextFromPage;
+
+        $headings = [];
+
+        if (!$currentlyRetrievingRawTextFromPage) {
+            $html = PostService::getRawTextFromPage(excludedBlocks: ['acf/post-summary'], keepTags: true);
+
+            // Pattern pour matcher h1 à h6 avec leur contenu
+            preg_match_all('/<h([1-6])[^>]*>(.*?)<\/h\1>/is', $html, $matches, PREG_SET_ORDER);
+
+            foreach ($matches as $match) {
+                $headings[] = [
+                    'tag' => 'h' . $match[1],
+                    'content' => trim(strip_tags($match[2])),
+                ];
+            }
+
+            $headings = array_filter($headings, fn($heading) => !empty($heading['content']));
+            $headings = array_filter($headings, fn($heading) => in_array($heading['tag'], $retrieveOnly));
+
+            $headings = array_values($headings);
+        }
+
+        return $headings;
     }
 }

@@ -44,7 +44,9 @@ class PostService
         null|int|\WP_Post $post = null,
         ?int $maxLength = null,
         string $trimMarker = '...',
-        bool $decodeHtmlEntities = true
+        bool $decodeHtmlEntities = true,
+        array $excludedBlocks = [],
+        bool $keepTags = false
     ): ?string {
         global $currentlyRetrievingRawTextFromPage;
 
@@ -58,7 +60,14 @@ class PostService
 
         $key = sprintf('raw_text_from_page_%d', $pageId);
 
-        $rawText = Cache::remember($key, 3600, function () use ($post, $maxLength, $trimMarker, $decodeHtmlEntities) {
+        $rawText = Cache::remember($key, 3600, function () use (
+            $post,
+            $maxLength,
+            $trimMarker,
+            $decodeHtmlEntities,
+            $excludedBlocks,
+            $keepTags
+        ) {
             $rawText = '';
 
             if (null === $post) {
@@ -87,9 +96,15 @@ class PostService
                 $blocks = parse_blocks($content);
 
                 foreach ($blocks as $block) {
-                    $blockHtml = render_block($block);
+                    if (!isset($excludedBlocks) || !in_array($block['blockName'], $excludedBlocks)) {
+                        $blockHtml = render_block($block);
 
-                    $rawText .= ' ' . strip_tags($blockHtml);
+                        if ($keepTags) {
+                            $rawText .= $blockHtml;
+                        } else {
+                            $rawText .= ' ' . strip_tags($blockHtml);
+                        }
+                    }
                 }
             } else {
                 $viewName = match (true) {
@@ -139,7 +154,9 @@ class PostService
             $rawText = preg_replace('/<noscript\b[^<]*(?:(?!<\/noscript>)<[^<]*)*<\/noscript>/is', ' ', $rawText);
             $rawText = preg_replace('/<template\b[^<]*(?:(?!<\/template>)<[^<]*)*<\/template>/is', ' ', $rawText);
             $rawText = preg_replace('/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/is', ' ', $rawText);
-            $rawText = strip_tags($rawText);
+            if (!$keepTags) {
+                $rawText = strip_tags($rawText);
+            }
             $rawText = preg_replace('/\s+/', ' ', $rawText);
 
             $currentlyRetrievingRawTextFromPage = false;
