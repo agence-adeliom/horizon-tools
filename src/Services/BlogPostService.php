@@ -33,8 +33,19 @@ class BlogPostService
 
         foreach ($blocks as $block) {
             if (isset($block['blockName']) && $block['blockName'] === self::SUMMARY_BLOCK_NAME) {
-                if (isset($block['attrs']['data']['top'])) {
-                    if ($block['attrs']['data']['top'] == true) {
+                $blockData = $block['attrs']['data'] ?? null;
+
+                $fieldName = str_replace(['acf/', '-'], ['', '_'], $block['blockName']);
+                $fieldKey = sprintf('field_%s', Key::hash(sprintf('%s_%s', $fieldName, PostSummaryBlock::FIELD_IS_TOP)));
+
+                if (isset($blockData['top'])) {
+                    if ($blockData['top'] == true) {
+                        $entryReached = true;
+                    } else {
+                        $exitReached = true;
+                    }
+                } elseif (isset($blockData[$fieldKey])) {
+                    if ($blockData[$fieldKey] == true) {
                         $entryReached = true;
                     } else {
                         $exitReached = true;
@@ -202,8 +213,12 @@ class BlogPostService
         if (!$currentlyRetrievingRawTextFromPage) {
             $html = PostService::getRawTextFromPage(excludedBlocks: ['acf/post-summary'], keepTags: true, onlyInPostContent: true);
 
+            if (empty($html)) {
+                return $headings;
+            }
+
             // Pattern pour matcher h1 à h6 avec leur contenu
-            preg_match_all('/<h([1-6])[^>]*>(.*?)<\/h\1>/is', $html, $matches, PREG_SET_ORDER);
+            preg_match_all(pattern: '/<h([1-6])[^>]*>(.*?)<\/h\1>/is', subject: $html, matches: $matches, flags: PREG_SET_ORDER);
 
             foreach ($matches as $match) {
                 $headings[] = [
