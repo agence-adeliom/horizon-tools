@@ -185,10 +185,12 @@ class SeoService
         });
     }
 
-    public static function getBreadcrumbs(): ?string
+    public static function getBreadcrumbs(bool $echo = true): ?string
     {
         if (self::isRankMathActive()) {
             return rank_math_the_breadcrumbs();
+        } elseif (self::isSEOPressActive()) {
+            return seopress_display_breadcrumbs(echo: $echo);
         }
 
         return null;
