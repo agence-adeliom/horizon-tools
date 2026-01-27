@@ -188,9 +188,13 @@ class SeoService
     public static function getBreadcrumbs(bool $echo = true): ?string
     {
         if (self::isRankMathActive()) {
-            return rank_math_the_breadcrumbs();
+            if (function_exists('rank_math_the_breadcrumbs')) {
+                return rank_math_the_breadcrumbs();
+            }
         } elseif (self::isSEOPressActive()) {
-            return seopress_display_breadcrumbs(echo: $echo);
+            if (function_exists('seopress_display_breadcrumbs')) {
+                return seopress_display_breadcrumbs(echo: $echo);
+            }
         }
 
         return null;
