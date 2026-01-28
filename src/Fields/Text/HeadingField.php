@@ -10,53 +10,65 @@ use Extended\ACF\Fields\Text;
 
 class HeadingField
 {
-	final public const LABEL = 'Titre';
-	final public const TAGS_LABEL = 'Tag HTML';
-	final public const NAME = 'title';
-	final public const TAGS_NAME = 'tag';
-	final public const CONTENT_NAME = 'content';
-	final public const DEFAULT_TAGS = [
-		'div' => 'div',
-		'h1' => 'h1',
-		'h2' => 'h2',
-		'h3' => 'h3',
-		'h4' => 'h4',
-		'h5' => 'h5',
-	];
+    final public const LABEL = 'Titre';
+    final public const TAGS_LABEL = 'Tag HTML';
+    final public const NAME = 'title';
+    final public const TAGS_NAME = 'tag';
+    final public const CONTENT_NAME = 'content';
+    final public const DEFAULT_TAGS = [
+        'div' => 'div',
+        'h1' => 'h1',
+        'h2' => 'h2',
+        'h3' => 'h3',
+        'h4' => 'h4',
+        'h5' => 'h5',
+    ];
 
-	public static function make(string $label = self::LABEL, ?string $name = self::NAME, ?array $tags = null, ?string $defaultTag = null, ?string $tagInstructions = null): Group
-	{
-		return Group::make(__($label), $name)
-			->fields([
-				self::getTagsField($tags, $defaultTag, $tagInstructions),
-				self::getTitleField($label)
-			]);
-	}
+    public static function make(
+        string $label = self::LABEL,
+        ?string $name = self::NAME,
+        ?array $tags = null,
+        ?string $defaultTag = null,
+        ?string $tagInstructions = null,
+        string $textFieldClass = Text::class
+    ): Group {
+        return Group::make(__($label), $name)->fields([
+            self::getTagsField(tags: $tags, default: $defaultTag, instructions: $tagInstructions),
+            self::getTitleField(label: $label, textFieldClass: $textFieldClass),
+        ]);
+    }
 
-	private static function getTitleField(string $label = self::LABEL, ?string $name = self::CONTENT_NAME): Text
-	{
-		return Text::make($label, $name);
-	}
+    private static function getTitleField(
+        string $label = self::LABEL,
+        ?string $name = self::CONTENT_NAME,
+        string $textFieldClass = Text::class
+    ): Text {
+        if ($textFieldClass === Text::class || !class_exists($textFieldClass) || !method_exists($textFieldClass, 'make')) {
+            return Text::make($label, $name);
+        }
 
-	private static function getTagsField(?array $tags = null, ?string $default = null, ?string $instructions = null): Select
-	{
-		if (null === $tags) {
-			$tags = self::DEFAULT_TAGS;
-		}
+        return $textFieldClass::make($label, $name);
+    }
 
-		if (null === $default) {
-			$default = 'div';
-		}
+    private static function getTagsField(?array $tags = null, ?string $default = null, ?string $instructions = null): Select
+    {
+        if (null === $tags) {
+            $tags = self::DEFAULT_TAGS;
+        }
 
-		$select = Select::make(__(self::TAGS_LABEL), self::TAGS_NAME)
-			->choices($tags)
-			->default($default)
-			->stylized();
+        if (null === $default) {
+            $default = 'div';
+        }
 
-		if (null !== $instructions) {
-			$select->helperText($instructions);
-		}
+        $select = Select::make(__(self::TAGS_LABEL), self::TAGS_NAME)
+            ->choices($tags)
+            ->default($default)
+            ->stylized();
 
-		return $select;
-	}
+        if (null !== $instructions) {
+            $select->helperText($instructions);
+        }
+
+        return $select;
+    }
 }
