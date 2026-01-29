@@ -117,34 +117,47 @@ class BlogPostService
         array $blocks = [],
         array $retrieveOnly = ['h2'],
         bool $useHtml = false,
-        bool $fallbackToHtml = false
+        bool $fallbackToHtml = false,
+        bool $hierarchical = false,
+        bool $useCache = true
     ): ?array {
         if (!empty($blocks)) {
             return self::getPostTitlesLogic(
                 blocks: $blocks,
                 retrieveOnly: $retrieveOnly,
                 useHtml: $useHtml,
-                fallbackToHtml: $fallbackToHtml
+                fallbackToHtml: $fallbackToHtml,
+                hierarchical: $hierarchical
             );
         } else {
             $currentId = is_admin() ? $_GET['post'] ?? ($_POST['post_id'] ?? null) : get_the_ID();
 
-            if (null !== $currentId) {
-                return Cache::remember(
-                    sprintf(
-                        'post-titles-%d-%s-%s-%s',
-                        $currentId,
-                        implode('-', $retrieveOnly),
-                        $useHtml ? 'use-html' : '',
-                        $fallbackToHtml ? 'fallback-html' : ''
-                    ),
-                    60,
-                    function () use ($retrieveOnly, $useHtml, $fallbackToHtml) {
-                        return self::getPostTitlesLogic(retrieveOnly: $retrieveOnly, useHtml: $useHtml, fallbackToHtml: $fallbackToHtml);
-                    }
+            if (null !== $currentId && $useCache) {
+                $cacheKey = sprintf(
+                    'post-titles-%d-%s-%s-%s-%s',
+                    $currentId,
+                    implode('-', $retrieveOnly),
+                    $useHtml ? 'use-html' : '',
+                    $fallbackToHtml ? 'fallback-html' : '',
+                    $hierarchical ? 'hierarchical' : ''
                 );
+
+                return Cache::remember($cacheKey, 60, function () use ($retrieveOnly, $useHtml, $fallbackToHtml, $hierarchical) {
+                    return self::getPostTitlesLogic(
+                        retrieveOnly: $retrieveOnly,
+                        useHtml: $useHtml,
+                        fallbackToHtml: $fallbackToHtml,
+                        hierarchical: $hierarchical
+                    );
+                });
             } else {
-                return self::getPostTitlesLogic(retrieveOnly: $retrieveOnly, useHtml: $useHtml, fallbackToHtml: $fallbackToHtml);
+                return self::getPostTitlesLogic(
+                    retrieveOnly: $retrieveOnly,
+                    useHtml: $useHtml,
+                    fallbackToHtml: $fallbackToHtml,
+                    hierarchical: $hierarchical,
+                    pageId: is_numeric($currentId) ? (int) $currentId : null
+                );
             }
         }
     }
@@ -153,7 +166,9 @@ class BlogPostService
         array $blocks = [],
         array $retrieveOnly = ['h2'],
         bool $useHtml = false,
-        bool $fallbackToHtml = false
+        bool $fallbackToHtml = false,
+        bool $hierarchical = false,
+        ?int $pageId = null
     ): array {
         $titles = [];
 
@@ -192,9 +207,11 @@ class BlogPostService
         }
 
         if ($useHtml || (empty($titles) && $fallbackToHtml)) {
-            $htmlTitles = self::getPostTitlesFromHtmlLogic(retrieveOnly: $retrieveOnly);
+            $htmlTitles = self::getPostTitlesFromHtmlLogic(retrieveOnly: $retrieveOnly, hierarchical: $hierarchical, pageId: $pageId);
 
-            if (!empty($htmlTitles)) {
+            if (!empty($htmlTitles) && $hierarchical) {
+                $titles = $htmlTitles;
+            } elseif (!empty($htmlTitles)) {
                 $titles = array_map(function ($title) {
                     return $title['content'];
                 }, $htmlTitles);
@@ -204,14 +221,19 @@ class BlogPostService
         return $titles;
     }
 
-    private static function getPostTitlesFromHtmlLogic(array $retrieveOnly = ['h2']): array
+    private static function getPostTitlesFromHtmlLogic(array $retrieveOnly = ['h2'], bool $hierarchical = false, ?int $pageId = null): array
     {
         global $currentlyRetrievingRawTextFromPage;
 
         $headings = [];
 
         if (!$currentlyRetrievingRawTextFromPage) {
-            $html = PostService::getRawTextFromPage(excludedBlocks: ['acf/post-summary'], keepTags: true, onlyInPostContent: true);
+            $html = PostService::getRawTextFromPage(
+                post: $pageId,
+                excludedBlocks: ['acf/post-summary'],
+                keepTags: true,
+                onlyInPostContent: true
+            );
 
             if (empty($html)) {
                 return $headings;
@@ -224,6 +246,7 @@ class BlogPostService
                 $headings[] = [
                     'tag' => 'h' . $match[1],
                     'content' => trim(strip_tags($match[2])),
+                    'order' => is_numeric($match[1]) ? (int) $match[1] : $match[1],
                 ];
             }
 
@@ -233,6 +256,33 @@ class BlogPostService
             $headings = array_values($headings);
         }
 
+        if ($hierarchical && count($retrieveOnly) > 1) {
+            $hierarchicalHeadings = self::getHierarchicalHeadings(headings: $headings);
+
+            return $hierarchicalHeadings;
+        }
+
         return $headings;
+    }
+
+    private static function getHierarchicalHeadings(array &$headings, int $parentOrder = 0): array
+    {
+        $hierarchicalHeadings = [];
+
+        while (!empty($headings)) {
+            $heading = reset($headings);
+
+            if ($heading['order'] > $parentOrder) {
+                array_shift($headings); // Retirer l'élément du tableau
+
+                $heading['children'] = self::getHierarchicalHeadings($headings, $heading['order']);
+
+                $hierarchicalHeadings[] = $heading;
+            } else {
+                break;
+            }
+        }
+
+        return $hierarchicalHeadings;
     }
 }
