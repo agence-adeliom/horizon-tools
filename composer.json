@@ -14,12 +14,19 @@
             "email": "dev@adeliom.com"
         }
     ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:agence-adeliom/horizon-querybuilder.git"
+        }
+    ],
     "require": {
         "php": ">=8.2",
         "vinkla/extended-acf": "^14.0",
         "roots/acorn": "^4.0",
         "enshrined/svg-sanitize": "^0.22.0",
         "livewire/livewire": "^3.5",
-        "league/color-extractor": "^0.4.0"
+        "league/color-extractor": "^0.4.0",
+        "agence-adeliom/horizon-querybuilder": "dev-main"
     }
 }
