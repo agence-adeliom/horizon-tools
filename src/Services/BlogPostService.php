@@ -80,10 +80,10 @@ class BlogPostService
             )
         );
 
-        $topBlock = $blocks[0];
+        $topBlock = $blocks[0] ?? null;
         $bottomBlock = $blocks[1] ?? null;
 
-        if (empty($bottomBlock)) {
+        if (empty($topBlock) || empty($bottomBlock)) {
             return false;
         }
 
