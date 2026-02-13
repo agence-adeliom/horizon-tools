@@ -310,8 +310,12 @@ class PostService
         return $prettyName;
     }
 
-    public static function getCardByPostType(string $postType): ?string
+    public static function getCardByPostType(?string $postType): ?string
     {
+        if (empty($postType)) {
+            return null;
+        }
+
         return Cache::remember('card_for_' . $postType, 60 * 60, function () use ($postType) {
             $card = null;
 
