@@ -13,7 +13,7 @@ class ShareOptionsAdmin extends AbstractAdmin
     public static ?string $title = 'Partage';
     public static ?string $slug = 'share-options';
     public static bool $isOptionPage = true;
-    public static ?string $optionPageIcon = null;
+    public static ?string $optionPageIcon = 'dashicons-share';
 
     public const FIELD_SHARE = 'share';
     public const FIELD_SHARE_ENABLE_COPY_LINK = 'enableCopyLink';
