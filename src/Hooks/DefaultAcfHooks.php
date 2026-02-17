@@ -15,7 +15,11 @@ class DefaultAcfHooks extends AbstractHook
     public function init(): void
     {
         if (TextService::areTextReplacementsEnabled()) {
-            add_action('acf/include_field_types', [$this, 'addTextWithTagsField']);
+            if (did_action('acf/include_field_types')) {
+                $this->addTextWithTagsField();
+            } else {
+                add_action('acf/include_field_types', [$this, 'addTextWithTagsField']);
+            }
         }
     }
 
