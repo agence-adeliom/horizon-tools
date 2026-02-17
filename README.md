@@ -268,15 +268,27 @@ Configurable sharing options with admin page:
 
 - **Admin Page**: Toggle sharing platforms (Copy Link, Email, SMS, WhatsApp, Messenger, ChatGPT, Claude, Perplexity) via `ShareOptionsAdmin`.
 - **ShareService**: Retrieve cached share options.
-- **Config-gated**: Activate via `config/share.php`:
+- **Config-gated**: Activate via `config/share.php`. Optionally restrict which services are available with the `services` key:
 
 ```php
 <?php
 
 return [
     'enable' => true,
+    'services' => [
+        'copyLink',
+        'email',
+        'sms',
+        'whatsapp',
+        'messenger',
+        'chatGPT',
+        'claude',
+        'perplexity',
+    ],
 ];
 ```
+
+If `services` is omitted or empty, all platforms are available.
 
 ### Text Replacement Tags
 
