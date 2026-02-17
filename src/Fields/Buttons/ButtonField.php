@@ -51,7 +51,7 @@ class ButtonField
     /**
      * Groupe de deux boutons
      */
-    public static function group(bool $withType = false, bool $withInternalExternal = false): Group
+    public static function group(bool $withType = false, bool $withInternalExternal = false, string $name = self::BUTTONS): Group
     {
         $fields = [
             self::make(label: __('Bouton principal'), name: self::BUTTON_ONE, withInternalExternal: $withInternalExternal),
@@ -65,6 +65,6 @@ class ButtonField
             ];
         }
 
-        return Group::make(__('Boutons'), self::BUTTONS)->fields($fields);
+        return Group::make(__('Boutons'), $name)->fields($fields);
     }
 }
