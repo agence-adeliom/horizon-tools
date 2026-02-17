@@ -62,11 +62,16 @@ class TextService
 
                 $prettyName = !empty($config['name']) ? $config['name'] : $name;
 
-                $instructions[] = sprintf('%s%s%s', $config['open'], $prettyName, $config['close']);
+                $instructions[] = sprintf(
+                    '<button type="button" class="acf-text-tag button button-small" data-open="%s" data-close="%s">%s</button>',
+                    esc_attr($config['open']),
+                    esc_attr($config['close']),
+                    esc_html($prettyName),
+                );
             }
         }
 
-        return implode('<br>', $instructions);
+        return implode(' ', $instructions);
     }
 
     /**

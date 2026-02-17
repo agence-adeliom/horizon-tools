@@ -48,11 +48,48 @@ if (!class_exists('AcfFieldTextWithTags')):
 			<?php // Afficher les instructions si elles existent
 
 
-   echo sprintf('<p class="description">%s</p>', TextService::getTextReplacementInstructionsHtml(exclude: $field['exclude'] ?? []));
+   echo sprintf('<div class="acf-text-tags-toolbar" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">%s</div>', TextService::getTextReplacementInstructionsHtml(exclude: $field['exclude'] ?? []));
 
-   if (!empty($field['instructions'])) {
-       echo '<p class="description">' . $field['instructions'] . '</p>';
+   ?>
+   <script>
+   if (!window._acfTextTagsInit) {
+       window._acfTextTagsInit = true;
+       document.addEventListener('click', function(e) {
+           var tag = e.target.closest('.acf-text-tag');
+           if (!tag) return;
+
+           var wrapper = tag.closest('.acf-input');
+           if (!wrapper) return;
+
+           var input = wrapper.querySelector('input[type="text"]');
+           if (!input) return;
+
+           var open = tag.dataset.open;
+           var close = tag.dataset.close;
+           var start = input.selectionStart;
+           var end = input.selectionEnd;
+           var val = input.value;
+
+           if (start !== end) {
+               var selected = val.substring(start, end);
+               input.value = val.substring(0, start) + open + selected + close + val.substring(end);
+               input.selectionStart = start;
+               input.selectionEnd = start + open.length + selected.length + close.length;
+           } else {
+               input.value = val.substring(0, start) + open + close + val.substring(start);
+               input.selectionStart = input.selectionEnd = start + open.length;
+           }
+
+           input.focus();
+           input.dispatchEvent(new Event('input', { bubbles: true }));
+           input.dispatchEvent(new Event('change', { bubbles: true }));
+           if (window.jQuery) {
+               jQuery(input).trigger('input').trigger('change');
+           }
+       });
    }
+   </script>
+   <?php
         }
 
         /**
