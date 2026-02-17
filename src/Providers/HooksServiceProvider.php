@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Adeliom\HorizonTools\Providers;
 
 use Adeliom\HorizonTools\Hooks\AbstractHook;
+use Adeliom\HorizonTools\Hooks\DefaultAcfHooks;
 use Adeliom\HorizonTools\Hooks\DefaultCompilationHooks;
 use Adeliom\HorizonTools\Hooks\DefaultGravityFormsHooks;
 use Adeliom\HorizonTools\Hooks\DefaultGutenbergHooks;
@@ -39,6 +40,7 @@ class HooksServiceProvider extends SageServiceProvider
                 DefaultGutenbergHooks::class,
                 DefaultWordPressHooks::class,
                 DefaultCompilationHooks::class,
+                DefaultAcfHooks::class,
                 DefaultGravityFormsHooks::class,
                 WysiwygHooks::class,
                 QueryBuilderHooks::class,
@@ -49,7 +51,7 @@ class HooksServiceProvider extends SageServiceProvider
                 return is_subclass_of($class, AbstractHook::class);
             });
 
-            foreach (array_merge($hookClasses, $defaultClasses) as $hookClass) {
+            foreach (array_unique(array_merge($hookClasses, $defaultClasses)) as $hookClass) {
                 if ($className = ClassService::getClassNameFromFullName($hookClass)) {
                     if (!str_starts_with($className, 'Abstract')) {
                         $class = new $hookClass();
