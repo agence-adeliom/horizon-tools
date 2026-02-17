@@ -4,67 +4,67 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Fields\Buttons;
 
+use Adeliom\HorizonTools\Fields\Links\LinkField;
 use Extended\ACF\Fields\Group;
 use Extended\ACF\Fields\Link;
 use Extended\ACF\Fields\Select;
-use Extended\ACF\Fields\Text;
 
 class ButtonField
 {
+    public const BUTTON = 'button';
+    public const BUTTON_TYPE = 'type';
+    public const BUTTON_LINK = 'link';
 
-	public const BUTTON = "button";
-	public const BUTTON_TYPE = "type";
-	public const BUTTON_LINK = "link";
+    public const BUTTONS = 'buttons';
+    public const BUTTON_ONE = 'one';
+    public const BUTTON_TWO = 'two';
 
-	public const BUTTONS = "buttons";
-	public const BUTTON_ONE = "one";
-	public const BUTTON_TWO = "two";
+    public static function make(string $label = 'Bouton', string|null $name = self::BUTTON, bool $withInternalExternal = false): Group
+    {
+        if ($withInternalExternal) {
+            return LinkField::make(label: $label, name: $name);
+        }
 
-	final public const NAME = 'uptitle';
-	final public const LABEL = 'Sur-titre';
+        return Group::make(__('Bouton'), $name)->fields([Link::make($label, self::BUTTON_LINK)]);
+    }
 
-	public static function make(string $label = "Bouton", string|null $name = self::BUTTON): Group
-	{
-		return Group::make(__('Bouton'), $name)
-			->fields([
-				Link::make($label, self::BUTTON_LINK)
-			]);
-	}
+    public static function types(
+        string $title = 'Bouton',
+        string|null $typeInstructions = '',
+        string|null $name = self::BUTTON,
+        bool $withInternalExternal = false
+    ): Group {
+        return Group::make($title, $name)->fields([
+            Select::make('Type', self::BUTTON_TYPE)
+                ->choices([
+                    'primary' => __('Primaire'),
+                    'secondary' => __('Secondaire'),
+                    'tertiary' => __('Tertiaire'),
+                ])
+                ->default('primary')
+                ->stylized()
+                ->helperText($typeInstructions),
+            $withInternalExternal ? LinkField::make(name: self::BUTTON_LINK) : Link::make('Lien', self::BUTTON_LINK),
+        ]);
+    }
 
-	public static function types(string $title = "Bouton", string|null $typeInstructions = "", string|null $name = self::BUTTON): Group
-	{
-		return Group::make($title, $name)
-			->fields([
-				Select::make("Type", self::BUTTON_TYPE)
-					->choices([
-						"primary" => __("Primaire"),
-						"secondary" => __("Secondaire"),
-						"tertiary" => __("Tertiaire"),
-					])
-					->default("primary")
-					->stylized()
-					->helperText($typeInstructions),
-				Link::make("Lien", self::BUTTON_LINK)
-			]);
-	}
+    /**
+     * Groupe de deux boutons
+     */
+    public static function group(bool $withType = false, bool $withInternalExternal = false): Group
+    {
+        $fields = [
+            self::make(label: __('Bouton principal'), name: self::BUTTON_ONE, withInternalExternal: $withInternalExternal),
+            self::make(label: __('Bouton secondaire'), name: self::BUTTON_TWO, withInternalExternal: $withInternalExternal),
+        ];
 
-	/**
-	 * Groupe de deux boutons
-	 */
-	public static function group(bool $withType = false): Group
-	{
-		$fields = [
-			self::make(__("Bouton principal"), self::BUTTON_ONE),
-			self::make(__("Bouton secondaire"), self::BUTTON_TWO),
-		];
+        if ($withType) {
+            $fields = [
+                self::types(title: __('Bouton principal'), name: self::BUTTON_ONE, withInternalExternal: $withInternalExternal),
+                self::types(title: __('Bouton secondaire'), name: self::BUTTON_TWO, withInternalExternal: $withInternalExternal),
+            ];
+        }
 
-		if ($withType) {
-			$fields = [
-				self::types(__("Bouton principal"), "", self::BUTTON_ONE),
-				self::types(__("Bouton secondaire"), "", self::BUTTON_TWO),
-			];
-		}
-
-		return Group::make(__("Boutons"), self::BUTTONS)->fields($fields);
-	}
+        return Group::make(__('Boutons'), self::BUTTONS)->fields($fields);
+    }
 }
