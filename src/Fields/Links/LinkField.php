@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Adeliom\HorizonTools\Fields\Links;
 
 use Adeliom\HorizonTools\Fields\Text\IconField;
+use Adeliom\HorizonTools\Services\SeoService;
 use Extended\ACF\ConditionalLogic;
 use Extended\ACF\Fields\ButtonGroup;
 use Extended\ACF\Fields\Group;
@@ -29,32 +30,38 @@ class LinkField
 
     public static function make(string $label = 'Lien', ?string $name = self::FIELD_LINK): Group
     {
-        return Group::make(__($label), $name)->fields([
-            ButtonGroup::make(__('Type de lien'), self::FIELD_TYPE)->choices([
-                self::VALUE_TYPE_INTERNAL => __('Interne'),
-                self::VALUE_TYPE_EXTERNAL => __('Externe'),
-            ]),
-            PostObject::make(__('Page'), self::FIELD_POST)
-                ->helperText(__('Sélectionner une page'))
-                ->required()
-                ->conditionalLogic([ConditionalLogic::where(self::FIELD_TYPE, '==', self::VALUE_TYPE_INTERNAL)])
-                ->wrapper(['width' => 50]),
-            Text::make(__('Texte'), self::FIELD_POST_LABEL)
-                ->helperText(__('Si renseigné, permet de remplacer le titre de la page'))
-                ->placeholder(__('Titre du lien'))
-                ->conditionalLogic([ConditionalLogic::where(self::FIELD_TYPE, '==', self::VALUE_TYPE_INTERNAL)])
-                ->wrapper(['width' => 50]),
-            TrueFalse::make(__('Ouvrir dans un nouvel onglet'), self::FIELD_IS_TARGET_BLANK)
-                ->stylized()
-                ->conditionalLogic([ConditionalLogic::where(self::FIELD_TYPE, '==', self::VALUE_TYPE_INTERNAL)])
-                ->wrapper(['width' => 50]),
-            TrueFalse::make(__('Obfusquer le lien'), self::FIELD_OBFUSCATE)
-                ->stylized()
-                ->wrapper(['width' => 50]),
-            Link::make(__('Lien'), self::FIELD_EXTERNAL_LINK)
-                ->required()
-                ->conditionalLogic([ConditionalLogic::where(self::FIELD_TYPE, '==', self::VALUE_TYPE_EXTERNAL)]),
-            IconField::make(__('Icône'), self::FIELD_ICON)->format('object'),
-        ]);
+        $withObfuscation = SeoService::isObfuscationEnabled();
+
+        return Group::make(__($label), $name)->fields(
+            array_filter([
+                ButtonGroup::make(__('Type de lien'), self::FIELD_TYPE)->choices([
+                    self::VALUE_TYPE_INTERNAL => __('Interne'),
+                    self::VALUE_TYPE_EXTERNAL => __('Externe'),
+                ]),
+                PostObject::make(__('Page'), self::FIELD_POST)
+                    ->helperText(__('Sélectionner une page'))
+                    ->required()
+                    ->conditionalLogic([ConditionalLogic::where(self::FIELD_TYPE, '==', self::VALUE_TYPE_INTERNAL)])
+                    ->wrapper(['width' => 50]),
+                Text::make(__('Texte'), self::FIELD_POST_LABEL)
+                    ->helperText(__('Si renseigné, permet de remplacer le titre de la page'))
+                    ->placeholder(__('Titre du lien'))
+                    ->conditionalLogic([ConditionalLogic::where(self::FIELD_TYPE, '==', self::VALUE_TYPE_INTERNAL)])
+                    ->wrapper(['width' => 50]),
+                TrueFalse::make(__('Ouvrir dans un nouvel onglet'), self::FIELD_IS_TARGET_BLANK)
+                    ->stylized()
+                    ->conditionalLogic([ConditionalLogic::where(self::FIELD_TYPE, '==', self::VALUE_TYPE_INTERNAL)])
+                    ->wrapper(['width' => $withObfuscation ? 50 : 100]),
+                $withObfuscation
+                    ? TrueFalse::make(__('Obfusquer le lien'), self::FIELD_OBFUSCATE)
+                        ->stylized()
+                        ->wrapper(['width' => 50])
+                    : null,
+                Link::make(__('Lien'), self::FIELD_EXTERNAL_LINK)
+                    ->required()
+                    ->conditionalLogic([ConditionalLogic::where(self::FIELD_TYPE, '==', self::VALUE_TYPE_EXTERNAL)]),
+                IconField::make(__('Icône'), self::FIELD_ICON)->format('object'),
+            ])
+        );
     }
 }
