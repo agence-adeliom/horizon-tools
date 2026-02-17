@@ -55,6 +55,13 @@ While unlocking the full potential of WordPress Horizon Tools is fantastic, some
 - **BlockServiceProvider:** Unleashes the power of Gutenberg blocks within your Sage theme, allowing you to create rich and dynamic content layouts effortlessly.
 - **CommentsServiceProvider:** Provides the functionality to disable the WordPress commenting system entirely, allowing you to manage comments externally or implement alternative commenting solutions.
 - **PostTypeServiceProvider:** Facilitates the management and customization of custom post types, enabling you to create and manage various content types seamlessly.
+- **HooksServiceProvider:** Auto-discovers and registers hook classes from the `app/Hooks` directory.
+- **SearchEngineServiceProvider:** Registers the search engine admin page and configuration.
+- **ShareServiceProvider:** Registers the share options admin page (config-gated via `share.enable`).
+- **SeoServiceProvider:** Registers SEO-related hooks (RankMath breadcrumbs, link obfuscation).
+- **FormsServiceProvider:** Adds Gravity Forms confirmation pages support.
+- **MiddlewareServiceProvider:** Registers the trailing slash middleware.
+- **LivewireServiceProvider:** Optional Livewire integration.
 
 To activate specific features, simply include the corresponding provider within your `composer.json` file in the `extra` section, like so:
 
@@ -145,6 +152,30 @@ Experience the versatility of WordPress Horizon Tools as you tailor your develop
   - `operator`: Operator for the query (`IN`, `NOT IN`, etc.).
 - **Relation Refinement**: Fine-tune query relations with the `setRelation` method, defining the `AND` or `OR` aspect of the TaxQuery for enhanced query precision.
 
+### LatLngQuery
+
+- **Geolocation Queries**: Filter posts by geographic proximity using the `LatLngQuery` class with the `addLatLngQuery` method on QueryBuilder.
+
+### Templates
+
+- **Gutenberg Templates**: Define block templates for post types via classes in `{{theme}}/app/Templates/`, extending `AbstractTemplate`.
+- **PostType Mapping**: Associate templates to post types with `getPostTypes()`.
+- **Block Composition**: Define the block layout with `getBlocks()`.
+- **Automatic Registration**: Automatically registered via `PostTypeServiceProvider`.
+
+### Repositories
+
+- **AbstractRepository**: Base repository class with built-in QueryBuilder integration providing `getAll()`, `getOneBySlug()`, and `getOneById()` methods.
+- **AbstractTaxonomyRepository**: Specialized repository for taxonomy queries.
+- **Easy Scaffolding**: Generate a new repository with the `make:repository` command.
+
+### ViewModels
+
+- **BasePostViewModel**: Post data with custom fields, featured image, excerpt, reading time, and terms.
+- **BaseTermViewModel**: Term data with custom fields.
+- **MenuViewModel / MenuItemViewModel**: Menu structure with nested items and custom fields.
+- **AssetViewModel**: Compiled asset with URL, path, and integrity hash (Bud/Vite support).
+
 ### Menus
 
 - **Dynamic Retrieval**: Retrieve dynamic `MenuViewModel` instances effortlessly.
@@ -168,6 +199,7 @@ Experience the versatility of WordPress Horizon Tools as you tailor your develop
 - **Create an Admin**: Develop a new Admin class with the `make:admin` command.
 - **Create a Template**: Design a new Template class with the `make:template` command.
 - **Create a Hook**: Construct a new Hook class with the `make:hook` command.
+- **Create a Repository**: Build a new Repository class with the `make:repository` command.
 
 #### List elements with commands
 
@@ -206,12 +238,95 @@ return [
 
 ```
 
+### Custom ACF Fields
+
+Horizon Tools ships with ready-to-use Extended ACF field classes:
+
+- **TextWithTags**: Text input with configurable replacement tags (e.g. `{bold}text{/bold}`). Includes a clickable button toolbar to insert tags. Configured via `config/text.php`.
+- **HeadingField**: Heading with tag selection (h2–h6).
+- **IconField / FontAwesomeIcon**: Icon pickers.
+- **WysiwygField**: WYSIWYG editor with preset toolbars (`default`, `simple`, `minimal`).
+- **ImageField / VideoField / MediaField**: Media fields with sensible defaults.
+- **ButtonField**: Link/button field.
+- **CompositionSelectField**: Select reusable block compositions.
+- **FormField**: Select Gravity Forms.
+- **PostTypeSelectField / TaxonomySelectField**: Select registered post types or taxonomies.
+- **ContentTab / GlobalTab / LayoutTab / MediaTab / SettingsTab**: Pre-configured ACF tab fields.
+
+### Search Engine
+
+A built-in search engine with admin configuration page:
+
+- **Admin Page**: Configure the results page, searchable post types, pagination, header (title, image, breadcrumbs), and SEO meta title via `SearchEngineOptionsAdmin`.
+- **Searchable Fields**: PostTypes can expose searchable ACF fields via `getSearchableFields()`.
+- **SearchEngineService**: Full-featured search with pagination, filtering by type, excluded posts, and caching.
+- **Config**: Registered automatically via `SearchEngineServiceProvider`.
+
+### Share Options
+
+Configurable sharing options with admin page:
+
+- **Admin Page**: Toggle sharing platforms (Copy Link, Email, SMS, WhatsApp, Messenger, ChatGPT, Claude, Perplexity) via `ShareOptionsAdmin`.
+- **ShareService**: Retrieve cached share options.
+- **Config-gated**: Activate via `config/share.php`:
+
+```php
+<?php
+
+return [
+    'enable' => true,
+];
+```
+
+### Text Replacement Tags
+
+Configurable tag replacement system for ACF text fields:
+
+- **Custom ACF Field**: `text_with_tags` field type with a clickable tag toolbar.
+- **Automatic Replacement**: Tags like `{bold}text{/bold}` are replaced with HTML on output.
+- **Config-gated**: Activate via `config/text.php`:
+
+```php
+<?php
+
+return [
+    'replacements' => [
+        'enable' => true,
+        'values' => [
+            'bold' => [
+                'name' => 'Gras',
+                'open' => '{bold}',
+                'close' => '{/bold}',
+                'openReplacement' => '<strong>',
+                'closeReplacement' => '</strong>',
+            ],
+        ],
+    ],
+];
+```
+
 ### SEO Automations
 
-- **Auto-add archives in RankMath breadcrumbs**: Automatically add (if able to) archives in RankMath breacrumbs
-  -  To work, you need to add a `pages` Group in your global ACF option fields containing PostObjects where field keys has to be the classname of the PostType
-  - It will then use the retrieved WP_Post instance to compare the rewrite url set in PostType and the WP_Post slug
-  - If they match, it will add the WP_Post to the breadcrumbs
+- **Multi-plugin Support**: Works with RankMath, Yoast, and SEOPress for title, breadcrumbs, and indexation detection.
+- **Auto-add archives in RankMath breadcrumbs**: Automatically add (if able to) archives in RankMath breadcrumbs.
+  - To work, you need to add a `pages` Group in your global ACF option fields containing PostObjects where field keys has to be the classname of the PostType.
+  - It will then use the retrieved WP_Post instance to compare the rewrite url set in PostType and the WP_Post slug.
+  - If they match, it will add the WP_Post to the breadcrumbs.
+- **Link Obfuscation**: Obfuscate links in WYSIWYG content with configurable tag, class, and attribute. Includes a TinyMCE toolbar button. Configure via `config/seo.php`:
+
+```php
+<?php
+
+return [
+    'links' => [
+        'obfuscation' => [
+            'allow' => true,
+            'tag' => 'span',
+            'class' => 'obfuscated-link',
+        ],
+    ],
+];
+```
 
 ### Access restrictions
 
@@ -225,3 +340,55 @@ Config::define('ENABLED_HTTP_LOGIN', true);
 
 - To change default ID, set the `HTTP_USER` constant
 - To change the default password, set the `HTTP_PASSWD` constant
+
+### Back-Office Customization
+
+Customize the WordPress admin appearance via `config/back-office.php`:
+
+- **Login Page Branding**: Custom logo (URL, width, height, border radius, background color), custom URL and title.
+- **Main Color**: Automatically extracted from the site icon with brightness adjustment.
+- **Footer Text**: Custom admin footer text.
+- **User Columns**: Add custom columns to the users list via `config/users.columns`.
+
+### Date Formatting
+
+- **DateService**: French date formatting with Carbon (e.g. "1er janvier 2024").
+- **ACF Constants**: Pre-configured display and return format constants for ACF date fields.
+
+### Gravity Forms
+
+- **Confirmation Pages**: Optional post type for Gravity Forms confirmation pages (config-gated).
+- **Optional Labels**: Automatically replaces "nécessaire" with "facultatif" on optional fields.
+- **FormField**: ACF field to select Gravity Forms in your custom fields.
+
+### WYSIWYG Customization
+
+- **Custom Toolbars**: Three preset toolbar configurations (`default`, `simple`, `minimal`) available via `WysiwygField`.
+- **Heading Restriction**: H1 tag removed from TinyMCE heading options.
+- **Link Obfuscation Button**: Adds an obfuscation toggle button to the TinyMCE toolbar.
+
+### Asset Compilation
+
+- **BudService**: Bud.js manifest association, URL and path generation.
+- **ViteService**: Vite support with hot reload detection and manifest handling.
+- **AssetViewModel**: Unified asset representation with URL, path, and integrity hash.
+
+### Services
+
+Horizon Tools includes ~29 service classes in `src/Services/` for common WordPress tasks:
+
+| Service | Purpose |
+|---|---|
+| `PostService` | Raw text extraction, reading time, post rendering |
+| `BlogPostService` | Summary blocks extraction, hierarchical heading extraction |
+| `PaginationService` | Pagination data generation with URLs |
+| `ImageService` | Image color extraction via League\ColorExtractor |
+| `ColorService` | Brightness adjustment, main color from site icon |
+| `MediaLibraryService` | Import media from URL with mime type detection |
+| `SocialNetworksService` | Social sharing URLs (Facebook, Twitter, LinkedIn, Email) |
+| `CompositionService` | Reusable block compositions rendering and choices |
+| `EnvironmentService` | Environment detection (production/staging/development) |
+| `NumberService` | Price formatting (French format) |
+| `StringService` | String truncation, singular/plural, camelCase |
+| `ValidationService` | Regex patterns for phone, email |
+| `VersionService` | Package version detection with caching |
