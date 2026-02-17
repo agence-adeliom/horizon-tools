@@ -25,6 +25,7 @@ class LinkField
     public const FIELD_EXTERNAL_LINK = 'link';
     public const FIELD_IS_TARGET_BLANK = 'is-target-blank';
     public const FIELD_ICON = 'icon';
+    public const FIELD_OBFUSCATE = 'obfuscate';
 
     public static function make(string $label = 'Lien', ?string $name = self::FIELD_LINK): Group
     {
@@ -45,7 +46,11 @@ class LinkField
                 ->wrapper(['width' => 50]),
             TrueFalse::make(__('Ouvrir dans un nouvel onglet'), self::FIELD_IS_TARGET_BLANK)
                 ->stylized()
-                ->conditionalLogic([ConditionalLogic::where(self::FIELD_TYPE, '==', self::VALUE_TYPE_INTERNAL)]),
+                ->conditionalLogic([ConditionalLogic::where(self::FIELD_TYPE, '==', self::VALUE_TYPE_INTERNAL)])
+                ->wrapper(['width' => 50]),
+            TrueFalse::make(__('Obfusquer le lien'), self::FIELD_OBFUSCATE)
+                ->stylized()
+                ->wrapper(['width' => 50]),
             Link::make(__('Lien'), self::FIELD_EXTERNAL_LINK)
                 ->required()
                 ->conditionalLogic([ConditionalLogic::where(self::FIELD_TYPE, '==', self::VALUE_TYPE_EXTERNAL)]),
