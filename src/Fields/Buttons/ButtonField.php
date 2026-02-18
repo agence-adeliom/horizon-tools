@@ -19,13 +19,19 @@ class ButtonField
     public const BUTTON_ONE = 'one';
     public const BUTTON_TWO = 'two';
 
-    public static function make(string $label = 'Bouton', string|null $name = self::BUTTON, bool $withInternalExternal = false): Group
-    {
+    public static function make(
+        string $label = 'Bouton',
+        string|null $name = self::BUTTON,
+        bool $withType = false,
+        bool $withInternalExternal = false
+    ): Group {
         if ($withInternalExternal) {
             return LinkField::make(label: $label, name: $name);
         }
 
-        return Group::make(__('Bouton'), $name)->fields([Link::make($label, self::BUTTON_LINK)]);
+        return Group::make(__('Bouton'), $name)->fields(
+            array_filter([$withType ? self::typeField() : null, Link::make($label, self::BUTTON_LINK)])
+        );
     }
 
     public static function types(
@@ -35,17 +41,27 @@ class ButtonField
         bool $withInternalExternal = false
     ): Group {
         return Group::make($title, $name)->fields([
-            Select::make('Type', self::BUTTON_TYPE)
-                ->choices([
-                    'primary' => __('Primaire'),
-                    'secondary' => __('Secondaire'),
-                    'tertiary' => __('Tertiaire'),
-                ])
-                ->default('primary')
-                ->stylized()
-                ->helperText($typeInstructions),
+            self::typeField($typeInstructions),
             $withInternalExternal ? LinkField::make(name: self::BUTTON_LINK) : Link::make('Lien', self::BUTTON_LINK),
         ]);
+    }
+
+    private static function typeField(?string $typeInstructions = null): Select
+    {
+        $field = Select::make('Type', self::BUTTON_TYPE)
+            ->choices([
+                'primary' => __('Primaire'),
+                'secondary' => __('Secondaire'),
+                'tertiary' => __('Tertiaire'),
+            ])
+            ->default('primary')
+            ->stylized();
+
+        if (!empty($typeInstructions)) {
+            $field->helperText($typeInstructions);
+        }
+
+        return $field;
     }
 
     /**
