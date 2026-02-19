@@ -21,8 +21,11 @@ class MediaField
     final public const MEDIA = 'media';
     final public const TYPE = 'type';
 
-    public static function make(string $instructions = '', array $includes = [self::HAS_IMAGE, self::HAS_VIDEO]): Group
-    {
+    public static function make(
+        string $instructions = '',
+        array $includes = [self::HAS_IMAGE, self::HAS_VIDEO],
+        string $name = self::MEDIA
+    ): Group {
         $choices = [];
 
         $hasImage = in_array(self::HAS_IMAGE, $includes, true);
@@ -56,14 +59,12 @@ class MediaField
             $fields[] = $videoField;
         }
 
-        return Group::make('Média', self::MEDIA)
-            ->helperText($instructions)
-            ->fields($fields);
+        return Group::make('Média', $name)->helperText($instructions)->fields($fields);
     }
 
-    public static function image(string $instructions = '', bool $isImagePosition = false): Group
+    public static function image(string $instructions = '', bool $isImagePosition = false, string $name = self::MEDIA): Group
     {
-        return Group::make('Média', self::MEDIA)
+        return Group::make('Média', $name)
             ->helperText($instructions)
             ->fields(
                 array_filter([
@@ -73,9 +74,9 @@ class MediaField
             );
     }
 
-    public static function video(string $instructions = ''): Group
+    public static function video(string $instructions = '', string $name = self::MEDIA): Group
     {
-        return Group::make('Média', self::MEDIA)
+        return Group::make('Média', $name)
             ->helperText($instructions)
             ->fields([VideoField::make()->conditionalLogic([ConditionalLogic::where(self::TYPE, '==', self::HAS_VIDEO)])]);
     }
