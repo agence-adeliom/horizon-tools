@@ -119,6 +119,12 @@
         }
     }
 
+    .acf-block-preview{
+        a{
+            color: var(--color-primary-contrast);
+        }
+    }
+
     .notice-info {
         border-left-color: var(--horizon-admin-main-color);
     }
