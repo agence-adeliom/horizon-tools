@@ -36,4 +36,20 @@ class TextWithTags extends Text
 
         return $this;
     }
+
+    /**
+     * Inclut des tags supplémentaires même s'ils ont enabledByDefault = false.
+     *
+     * @param string|array<string> $include Noms des tags à activer en plus des défauts
+     */
+    public function include(string|array $include = []): self
+    {
+        if (is_string($include)) {
+            $include = [$include];
+        }
+
+        $this->settings['include'] = $include;
+
+        return $this;
+    }
 }

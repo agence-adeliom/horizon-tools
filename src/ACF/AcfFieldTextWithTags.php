@@ -28,6 +28,7 @@ if (!class_exists('AcfFieldTextWithTags')):
                 'prepend' => '',
                 'append' => '',
                 'supported_tags' => array_keys(TextService::getTextReplacements()),
+                'include' => [],
             ];
         }
 
@@ -48,7 +49,7 @@ if (!class_exists('AcfFieldTextWithTags')):
 			<?php // Afficher les instructions si elles existent
 
 
-   echo sprintf('<div class="acf-text-tags-toolbar" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">%s</div>', TextService::getTextReplacementInstructionsHtml(exclude: $field['exclude'] ?? []));
+   echo sprintf('<div class="acf-text-tags-toolbar" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">%s</div>', TextService::getTextReplacementInstructionsHtml(exclude: $field['exclude'] ?? [], include: $field['include'] ?? []));
 
    ?>
    <script>
@@ -99,7 +100,7 @@ if (!class_exists('AcfFieldTextWithTags')):
          */
         public function format_value($value, $postId, $field): string
         {
-            return TextService::handleTextReplacements(base: $value, exclude: $field['exclude'] ?? []);
+            return TextService::handleTextReplacements(base: $value, exclude: $field['exclude'] ?? [], include: $field['include'] ?? []);
         }
     }
 endif;

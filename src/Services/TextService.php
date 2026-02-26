@@ -20,10 +20,14 @@ use Illuminate\Support\Facades\Config;
  *             'close' => '{/bold}',
  *             'openReplacement' => '<strong>',
  *             'closeReplacement' => '</strong>',
+ *             'enabledByDefault' => true,
  *         ],
  *     ],
  * ]
  * ```
+ *
+ * Un tag avec `enabledByDefault => false` est masqué et non appliqué
+ * sauf s'il est explicitement listé via le paramètre `$include`.
  */
 class TextService
 {
@@ -33,7 +37,7 @@ class TextService
     }
 
     /**
-     * @return array<string, array{open: string, close: string, openReplacement: string, closeReplacement: string, name?: string}>
+     * @return array<string, array{open: string, close: string, openReplacement: string, closeReplacement: string, name?: string, enabledByDefault?: bool}>
      */
     public static function getTextReplacements(): array
     {
@@ -41,18 +45,41 @@ class TextService
     }
 
     /**
+     * Détermine si un tag doit être actif pour un champ donné.
+     *
+     * Priorité : exclude > include > enabledByDefault (true si absent).
+     *
+     * @param array<string, mixed> $config
+     * @param array<string>        $include
+     * @param array<string>        $exclude
+     */
+    private static function isTagActive(string $key, array $config, array $include, array $exclude): bool
+    {
+        if (in_array($key, $exclude)) {
+            return false;
+        }
+
+        if (in_array($key, $include)) {
+            return true;
+        }
+
+        return $config['enabledByDefault'] ?? true;
+    }
+
+    /**
      * Génère le HTML d'instructions affichant les tags disponibles.
      *
      * @param array<string> $exclude Noms des tags à masquer
-     * @return string HTML avec les tags séparés par des <br>
+     * @param array<string> $include Noms des tags à ajouter même si enabledByDefault = false
+     * @return string HTML avec les boutons de tags
      */
-    public static function getTextReplacementInstructionsHtml(array $exclude = []): string
+    public static function getTextReplacementInstructionsHtml(array $exclude = [], array $include = []): string
     {
         $instructions = [];
 
         if (self::areTextReplacementsEnabled()) {
             foreach (self::getTextReplacements() as $name => $config) {
-                if (in_array($name, $exclude)) {
+                if (!self::isTagActive($name, $config, $include, $exclude)) {
                     continue;
                 }
 
@@ -79,11 +106,14 @@ class TextService
      *
      * Ne remplace un tag que si le nombre d'occurrences ouvrantes
      * et fermantes est identique (pour éviter les remplacements partiels).
+     * Respecte la même logique d'activation que la toolbar (enabledByDefault,
+     * include, exclude) pour éviter tout contournement côté rendu.
      *
-     * @param string|false|null $base   Texte source
+     * @param string|false|null $base    Texte source
      * @param array<string>     $exclude Noms des tags à ignorer
+     * @param array<string>     $include Noms des tags à activer même si enabledByDefault = false
      */
-    public static function handleTextReplacements(null|false|string $base, array $exclude = []): string
+    public static function handleTextReplacements(null|false|string $base, array $exclude = [], array $include = []): string
     {
         if (empty($base)) {
             return '';
@@ -92,7 +122,7 @@ class TextService
         $replacedString = $base;
 
         foreach (self::getTextReplacements() as $key => $data) {
-            if (in_array($key, $exclude)) {
+            if (!self::isTagActive($key, $data, $include, $exclude)) {
                 continue;
             }
 
