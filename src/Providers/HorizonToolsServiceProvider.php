@@ -30,6 +30,7 @@ class HorizonToolsServiceProvider extends SageServiceProvider
     {
         (new CommandsServiceProvider($this->app))->boot();
         (new HttpLoginServiceProvider($this->app))->boot();
+        (new AdminIpRestrictionServiceProvider($this->app))->boot();
         (new CommentsServiceProvider($this->app))->boot();
         (new PostTypeServiceProvider($this->app))->boot();
         (new AdminServiceProvider($this->app))->boot();
