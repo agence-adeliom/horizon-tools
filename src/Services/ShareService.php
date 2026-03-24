@@ -18,6 +18,10 @@ class ShareService
     public const SHARE_BY_CHATGPT = 'chatGPT';
     public const SHARE_BY_CLAUDE = 'claude';
     public const SHARE_BY_PERPLEXITY = 'perplexity';
+    public const SHARE_BY_FACEBOOK = 'facebook';
+    public const SHARE_BY_INSTAGRAM = 'instagram';
+    public const SHARE_BY_LINKEDIN = 'linkedin';
+    public const SHARE_BY_X = 'x';
     private const ALL_SHARE_OPTIONS = [
         self::SHARE_COPY_LINK,
         self::SHARE_BY_EMAIL,
@@ -27,6 +31,10 @@ class ShareService
         self::SHARE_BY_CHATGPT,
         self::SHARE_BY_CLAUDE,
         self::SHARE_BY_PERPLEXITY,
+        self::SHARE_BY_FACEBOOK,
+        self::SHARE_BY_INSTAGRAM,
+        self::SHARE_BY_LINKEDIN,
+        self::SHARE_BY_X,
     ];
 
     public static function areShareOptionsEnabled(): bool

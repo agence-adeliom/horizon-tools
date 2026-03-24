@@ -25,6 +25,10 @@ class ShareOptionsAdmin extends AbstractAdmin
     public const FIELD_SHARE_ENABLE_CHATGPT = 'enableChatGPT';
     public const FIELD_SHARE_ENABLE_CLAUDE = 'enableClaude';
     public const FIELD_SHARE_ENABLE_PERPLEXITY = 'enablePerplexity';
+    public const FIELD_SHARE_ENABLE_FACEBOOK = 'enableFacebook';
+    public const FIELD_SHARE_ENABLE_INSTAGRAM = 'enableInstagram';
+    public const FIELD_SHARE_ENABLE_LINKEDIN = 'enableLinkedin';
+    public const FIELD_SHARE_ENABLE_X = 'enableX';
 
     private const SHARE_FIELD_MAP = [
         ShareService::SHARE_COPY_LINK => ['label' => 'Activer la copie du lien', 'name' => self::FIELD_SHARE_ENABLE_COPY_LINK],
@@ -35,6 +39,10 @@ class ShareOptionsAdmin extends AbstractAdmin
         ShareService::SHARE_BY_CHATGPT => ['label' => 'Activer le partage par ChatGPT', 'name' => self::FIELD_SHARE_ENABLE_CHATGPT],
         ShareService::SHARE_BY_CLAUDE => ['label' => 'Activer le partage par Claude', 'name' => self::FIELD_SHARE_ENABLE_CLAUDE],
         ShareService::SHARE_BY_PERPLEXITY => ['label' => 'Activer le partage par Perplexity', 'name' => self::FIELD_SHARE_ENABLE_PERPLEXITY],
+        ShareService::SHARE_BY_FACEBOOK => ['label' => 'Activer le partage par Facebook', 'name' => self::FIELD_SHARE_ENABLE_FACEBOOK],
+        ShareService::SHARE_BY_INSTAGRAM => ['label' => 'Activer le partage par Instagram', 'name' => self::FIELD_SHARE_ENABLE_INSTAGRAM],
+        ShareService::SHARE_BY_LINKEDIN=> ['label' => 'Activer le partage par LinkedIn', 'name' => self::FIELD_SHARE_ENABLE_LINKEDIN],
+        ShareService::SHARE_BY_X => ['label' => 'Activer le partage par X', 'name' => self::FIELD_SHARE_ENABLE_X],
     ];
 
     private function getShareServiceToggles(): array
