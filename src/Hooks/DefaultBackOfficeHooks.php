@@ -52,10 +52,42 @@ class DefaultBackOfficeHooks extends AbstractHook
         $seenCssUrls = [];
         $blockScriptUrls = [];
 
-        // Block TS entry points: collect script URLs + their associated CSS chunks.
-        $blocksScriptsDir = get_template_directory() . '/resources/scripts/blocks/';
-        foreach (glob($blocksScriptsDir . '*.ts') ?: [] as $file) {
-            $asset = CompilationService::getAsset('resources/scripts/blocks/' . basename($file));
+        // Collect all JS/TS entry points except app.ts.
+        // Production: read the Vite manifest (authoritative — covers blocks/ and components/).
+        // Hot mode: scan the filesystem recursively (no manifest available).
+        $scriptHandles = [];
+        $manifestPath = get_template_directory() . '/public/build/manifest.json';
+
+        if (!$isHot && file_exists($manifestPath)) {
+            $manifest = json_decode(file_get_contents($manifestPath), true) ?? [];
+            foreach ($manifest as $src => $entry) {
+                if (empty($entry['isEntry']) || !str_starts_with($src, 'resources/scripts/')) {
+                    continue;
+                }
+                if (str_ends_with($src, '.css') || $src === 'resources/scripts/app.ts') {
+                    continue;
+                }
+                $scriptHandles[] = $src;
+            }
+        } else {
+            $scriptsDir = get_template_directory() . '/resources/scripts/';
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($scriptsDir, \RecursiveDirectoryIterator::SKIP_DOTS)
+            );
+            foreach ($iterator as $file) {
+                if (!$file->isFile() || !preg_match('/\.(ts|js)$/', $file->getFilename())) {
+                    continue;
+                }
+                $handle = 'resources/scripts/' . str_replace($scriptsDir, '', $file->getPathname());
+                if ($handle === 'resources/scripts/app.ts') {
+                    continue;
+                }
+                $scriptHandles[] = $handle;
+            }
+        }
+
+        foreach ($scriptHandles as $handle) {
+            $asset = CompilationService::getAsset($handle);
             if (!$asset) {
                 continue;
             }
