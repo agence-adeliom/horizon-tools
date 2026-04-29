@@ -4,39 +4,45 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Hooks;
 
-use Adeliom\HorizonTools\Services\BudService;
-use Adeliom\HorizonTools\Services\Compilation\CompilationService;
+use Adeliom\HorizonTools\Services\CssService;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Vite;
 
 class DefaultGutenbergHooks extends AbstractHook
 {
     public function init(): void
     {
-        add_action('enqueue_block_editor_assets', [$this, 'enqueueBlockEditorAssets']);
+        add_filter('block_editor_settings_all', [$this, 'injectEditorStyles']);
     }
 
-    public function enqueueBlockEditorAssets(): void
+    /**
+     * Inject theme styles into the Gutenberg iframe.
+     *
+     * In hot mode: @import url() so Vite HMR keeps styles live.
+     * In production: inlined content with unlayered Tailwind utilities so class
+     * selectors beat unlayered WP base styles inside the iframe.
+     *
+     * Configurable via Config::get('gutenberg.styles', [...defaults...]).
+     */
+    public function injectEditorStyles(array $settings): array
     {
-        $toEnqueue = ['app.css'];
+        $isHot = Vite::isRunningHot();
+        $handles = Config::get('gutenberg.styles', ['resources/styles/app.css', 'resources/styles/editor.css']);
 
-        if ($files = Config::get('gutenberg.assets.enqueue')) {
-            $toEnqueue = $files;
-        }
-
-        foreach ($toEnqueue as $file) {
-            $fileUrl = BudService::getUrl($file);
-
-            if (!$fileUrl) {
-                // Get file extension
-                $ext = pathinfo($file, PATHINFO_EXTENSION);
-                $fileName = pathinfo($file, PATHINFO_FILENAME);
-
-                $fileUrl = CompilationService::getUrlByRegex(sprintf('/%s.[0-9-a-z-A-Z]+.%s/', $fileName, $ext));
-            }
-
-            if ($fileUrl) {
-                wp_enqueue_style('gutenberg-' . $file, $fileUrl, ['common']);
+        foreach ($handles as $handle) {
+            try {
+                $url = Vite::asset($handle);
+                if ($isHot) {
+                    $css = "@import url('$url')";
+                } else {
+                    $css = CssService::prepareForAdmin(Vite::content($handle));
+                }
+                $settings['styles'][] = ['css' => $css];
+            } catch (\Throwable) {
+                // Asset not in manifest — skip silently
             }
         }
+
+        return $settings;
     }
 }

@@ -56,6 +56,15 @@ class CssService
     }
 
     /**
+     * Convenience wrapper: unlayer Tailwind utilities then add editor image overrides.
+     * Call this whenever injecting app.css into a WP admin or block editor context.
+     */
+    public static function prepareForAdmin(string $css): string
+    {
+        return self::addEditorImageOverrides(self::unlayerUtilities($css));
+    }
+
+    /**
      * Remove @layer <name> { … } wrappers from compiled CSS, keeping inner rules
      * as unlayered declarations. Handles arbitrary nesting depth.
      */
