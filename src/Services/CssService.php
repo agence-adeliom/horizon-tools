@@ -16,6 +16,46 @@ class CssService
     }
 
     /**
+     * Auto-generate .block-editor__container img.{utility} overrides for every
+     * single-class rule in $css that touches an image sizing property.
+     *
+     * WP admin common.min.css has an unlayered .block-editor__container img rule
+     * (specificity 0,1,1) that beats unlayered Tailwind utilities (0,1,0). The
+     * generated overrides have specificity 0,2,1, guaranteeing they win regardless
+     * of source order. Call this after unlayerUtilities() when injecting app.css
+     * into admin or editor contexts.
+     */
+    public static function addEditorImageOverrides(string $css): string
+    {
+        $imageProps = ['height', 'width', 'object-fit', 'aspect-ratio', 'object-position'];
+        $overrides = [];
+        $seen = [];
+
+        // Match single-class rules only (no spaces, combinators, or commas in selector;
+        // no nested braces in declarations). Handles both formatted and minified CSS.
+        preg_match_all('/(\.[^{\s,>~+]+)\s*\{([^{}]+)\}/', $css, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as $m) {
+            $selector = trim($m[1]);
+            $declarations = trim($m[2]);
+
+            if (isset($seen[$selector])) {
+                continue;
+            }
+
+            foreach ($imageProps as $prop) {
+                if (preg_match('/(?:^|;)\s*' . preg_quote($prop, '/') . '\s*:/', $declarations)) {
+                    $seen[$selector] = true;
+                    $overrides[] = ".block-editor__container img{$selector}{{$declarations}}";
+                    break;
+                }
+            }
+        }
+
+        return empty($overrides) ? $css : $css . "\n" . implode('', $overrides);
+    }
+
+    /**
      * Remove @layer <name> { … } wrappers from compiled CSS, keeping inner rules
      * as unlayered declarations. Handles arbitrary nesting depth.
      */
