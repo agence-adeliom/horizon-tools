@@ -34,6 +34,8 @@ class DefaultWordPressHooks extends AbstractHook
             ['wp_enqueue_scripts', [$this, 'removeWordPressCoreStyle'], 100, 1],
             ['wp_enqueue_scripts', [$this, 'handleAdminBarStyles'], 10, 1],
             ['admin_init', [$this, 'disabledCustomThemes'], 10, 0],
+            ['admin_menu', [$this, 'removeFontLibraryMenu'], 999, 0],
+            ['admin_init', [$this, 'blockFontLibraryAccess'], 10, 0],
         ];
 
         if (SearchEngineService::isSearchEngineEnabled()) {
@@ -316,6 +318,8 @@ EOF;
                 $styleVars['horizon-admin-main-color'] = $mainColor;
                 $styleVars['horizon-admin-main-color-light'] = $mainColorLight;
                 $styleVars['horizon-admin-main-color-dark'] = $mainColorDark;
+                $styleVars['horizon-admin-main-color-rgb'] = ColorService::hexToRgb($mainColor);
+                $styleVars['horizon-admin-main-color-dark-rgb'] = ColorService::hexToRgb($mainColorDark);
                 $styleVars['horizon-admin-box-shadow'] = $boxShadow;
             }
         }
@@ -349,6 +353,27 @@ EOF;
             $styleContent .= $adminStyle;
 
             echo sprintf('<style>%s%s</style>', $this->getStyleVars(), $styleContent);
+        }
+    }
+
+    /**
+     * Retire l'entrée de menu « Polices » (Font Library, WP 7.0) sous Apparence.
+     */
+    public static function removeFontLibraryMenu(): void
+    {
+        remove_submenu_page('themes.php', 'font-library.php');
+    }
+
+    /**
+     * Bloque l'accès direct à la Font Library par URL (wp-admin/font-library.php).
+     */
+    public static function blockFontLibraryAccess(): void
+    {
+        global $pagenow;
+
+        if ('font-library.php' === $pagenow) {
+            wp_safe_redirect(admin_url());
+            exit;
         }
     }
 
