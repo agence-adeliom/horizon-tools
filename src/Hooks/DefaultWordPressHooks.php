@@ -316,6 +316,8 @@ EOF;
                 $styleVars['horizon-admin-main-color'] = $mainColor;
                 $styleVars['horizon-admin-main-color-light'] = $mainColorLight;
                 $styleVars['horizon-admin-main-color-dark'] = $mainColorDark;
+                $styleVars['horizon-admin-main-color-rgb'] = ColorService::hexToRgb($mainColor);
+                $styleVars['horizon-admin-main-color-dark-rgb'] = ColorService::hexToRgb($mainColorDark);
                 $styleVars['horizon-admin-box-shadow'] = $boxShadow;
             }
         }
