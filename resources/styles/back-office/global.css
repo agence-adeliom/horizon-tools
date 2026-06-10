@@ -5,12 +5,12 @@
  * d'injection face au color scheme natif.
  */
 .wp-admin {
-    --wp-admin-theme-color: var(--horizon-admin-main-color) !important;
-    --wp-admin-theme-color--rgb: var(--horizon-admin-main-color-rgb) !important;
-    --wp-admin-theme-color-darker-10: var(--horizon-admin-main-color-dark) !important;
-    --wp-admin-theme-color-darker-10--rgb: var(--horizon-admin-main-color-dark-rgb) !important;
-    --wp-admin-theme-color-darker-20: var(--horizon-admin-main-color-dark) !important;
-    --wp-admin-theme-color-darker-20--rgb: var(--horizon-admin-main-color-dark-rgb) !important;
+    --wp-admin-theme-color: var(--horizon-admin-main-color, #2271b1) !important;
+    --wp-admin-theme-color--rgb: var(--horizon-admin-main-color-rgb, 34, 113, 177) !important;
+    --wp-admin-theme-color-darker-10: var(--horizon-admin-main-color-dark, #135e96) !important;
+    --wp-admin-theme-color-darker-10--rgb: var(--horizon-admin-main-color-dark-rgb, 19, 94, 150) !important;
+    --wp-admin-theme-color-darker-20: var(--horizon-admin-main-color-dark, #0a4b78) !important;
+    --wp-admin-theme-color-darker-20--rgb: var(--horizon-admin-main-color-dark-rgb, 10, 75, 120) !important;
 }
 
 .wp-admin {
