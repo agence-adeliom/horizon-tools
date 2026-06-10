@@ -71,6 +71,8 @@ abstract class AbstractBlock
             'customClassName' => true,
             'jsx' => false,
             'renaming' => false,
+            // Désactive le champ « CSS additionnel » par bloc ajouté par WordPress 7.0.
+            'customCSS' => false,
         ];
     }
 

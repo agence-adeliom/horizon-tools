@@ -29,6 +29,23 @@ class ColorService
         return '#' . implode($hexCode);
     }
 
+    /**
+     * Convert a hex color (#rgb or #rrggbb) into a "r, g, b" triplet string,
+     * usable inside rgba(var(--…--rgb), a) like WordPress' --wp-admin-theme-color--rgb.
+     */
+    public static function hexToRgb(string $hexCode): string
+    {
+        $hexCode = ltrim($hexCode, '#');
+
+        if (strlen($hexCode) == 3) {
+            $hexCode = $hexCode[0] . $hexCode[0] . $hexCode[1] . $hexCode[1] . $hexCode[2] . $hexCode[2];
+        }
+
+        [$r, $g, $b] = array_map('hexdec', str_split($hexCode, 2));
+
+        return sprintf('%d, %d, %d', $r, $g, $b);
+    }
+
     public static function getSiteMainColorFromIcon(bool $useCache = true): ?string
     {
         if ($useCache) {
