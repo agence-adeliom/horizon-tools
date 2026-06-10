@@ -26,8 +26,25 @@ class AdminServiceProvider extends SageServiceProvider
             require_once $classPath;
         }
 
-        $adminClasses = array_filter(get_declared_classes(), function ($class) {
+        $adminClasses = array_values(array_filter(get_declared_classes(), function ($class) {
             return is_subclass_of($class, AbstractAdmin::class);
+        }));
+
+        // Register parents before children so add_menu_page() populates
+        // $admin_page_hooks for the parent slug BEFORE any add_submenu_page()
+        // call needs it. Otherwise add_submenu_page() falls back to
+        // "admin_page_{slug}" as the page hookname, while wp-admin/menu-header
+        // later resolves the URL via "{parent_hook}_page_{slug}" — the
+        // mismatch leads to broken sidebar links like /wp-admin/global-settings.
+        usort($adminClasses, function (string $a, string $b): int {
+            try {
+                $aParent = (new $a())->getOptionPageParent();
+                $bParent = (new $b())->getOptionPageParent();
+            } catch (\Throwable) {
+                return 0;
+            }
+
+            return (null !== $aParent ? 1 : 0) <=> (null !== $bParent ? 1 : 0);
         });
 
         foreach ($adminClasses as $adminClass) {
