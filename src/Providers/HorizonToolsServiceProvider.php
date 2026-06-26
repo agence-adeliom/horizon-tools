@@ -28,6 +28,7 @@ class HorizonToolsServiceProvider extends SageServiceProvider
 
     public function boot(): void
     {
+        $this->loadHorizonTextdomain('horizon-tools', dirname(__DIR__, 2) . '/languages');
         (new CommandsServiceProvider($this->app))->boot();
         (new HttpLoginServiceProvider($this->app))->boot();
         (new AdminIpRestrictionServiceProvider($this->app))->boot();
@@ -63,6 +64,20 @@ class HorizonToolsServiceProvider extends SageServiceProvider
             } catch (\Exception $e) {
                 throw new SkipProviderException($e->getMessage());
             }
+        }
+    }
+
+    protected function loadHorizonTextdomain(string $domain, string $packageLangDir): void
+    {
+        $locale = determine_locale();
+
+        $override = trailingslashit(WP_LANG_DIR) . 'horizon/' . $domain . '-' . $locale . '.mo';
+        $mofile = is_readable($override)
+            ? $override
+            : rtrim($packageLangDir, '/') . '/' . $domain . '-' . $locale . '.mo';
+
+        if (is_readable($mofile)) {
+            load_textdomain($domain, $mofile);
         }
     }
 }
