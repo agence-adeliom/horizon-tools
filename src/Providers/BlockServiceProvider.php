@@ -67,7 +67,7 @@ class BlockServiceProvider extends SageServiceProvider
                             if (ClassService::isAcfInstalledAndEnabled()) {
                                 register_extended_field_group([
                                     'key' => $class::$slug,
-                                    'title' => $class::$title,
+                                    'title' => $class::getTitle(),
                                     'fields' => $class->getFields() ? iterator_to_array($class->getFields(), false) : [],
                                     'location' => [Location::where('block', 'acf/' . $class::$slug)],
                                 ]);
@@ -95,10 +95,10 @@ class BlockServiceProvider extends SageServiceProvider
 
                                 acf_register_block_type([
                                     'name' => $class::$slug,
-                                    'title' => $class::$title,
+                                    'title' => $class::getTitle(),
                                     'category' => $category,
                                     'mode' => $class::$mode,
-                                    'description' => $class::$description,
+                                    'description' => $class::getDescription(),
                                     'icon' => $class::$icon,
                                     'post_types' => $allowedPostTypes,
                                     'acf_block_version' => $blocksVersion,
