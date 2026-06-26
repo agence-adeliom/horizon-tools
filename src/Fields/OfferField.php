@@ -17,8 +17,8 @@ class OfferField
 
     public static function make(string $label = "Bandeau d'offre", string|null $name = self::OFFER): Group
     {
-        return Group::make("Bandeau d'offre", $name)->fields([
-            TrueFalse::make('Activer', self::OFFER_ENABLE)->stylized(),
+        return Group::make(__("Bandeau d'offre", 'horizon-tools'), $name)->fields([
+            TrueFalse::make(__('Activer', 'horizon-tools'), self::OFFER_ENABLE)->stylized(),
 
             UptitleField::make()
                 ->required()

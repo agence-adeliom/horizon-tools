@@ -150,7 +150,7 @@ class FormsServiceProvider extends SageServiceProvider
                                     case 'type':
                                         if (!empty($field['choices'])) {
                                             $choiceField = [
-                                                'label' => __('Page de confirmation'),
+                                                'label' => __('Page de confirmation', 'horizon-tools'),
                                                 'value' => self::VALUE_TYPE_CUSTOM_PAGE,
                                             ];
 
@@ -210,7 +210,7 @@ class FormsServiceProvider extends SageServiceProvider
 
                         $customFields[] = [
                             'name' => self::VALUE_TYPE_CUSTOM_PAGE,
-                            'label' => esc_html__('Page de confirmation'),
+                            'label' => esc_html__('Page de confirmation', 'horizon-tools'),
                             'type' => 'post_select',
                             'required' => true,
                             'post_type' => GravityFormConfirmationPageType::$slug,

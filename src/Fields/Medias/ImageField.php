@@ -18,11 +18,11 @@ class ImageField extends Image
     public function ratio(?int $width = null, ?int $height = null): static
     {
         if (null !== $width && null !== $height) {
-            $this->settings['instructions'] = 'Ratio recommandé : ' . $width . 'x' . $height . 'px';
+            $this->settings['instructions'] = sprintf(__('Ratio recommandé : %dx%dpx', 'horizon-tools'), $width, $height);
         } elseif (null !== $width) {
-            $this->settings['instructions'] = 'Largeur recommandée : ' . $width . 'px';
+            $this->settings['instructions'] = sprintf(__('Largeur recommandée : %dpx', 'horizon-tools'), $width);
         } elseif (null !== $height) {
-            $this->settings['instructions'] = 'Hauteur recommandée : ' . $height . 'px';
+            $this->settings['instructions'] = sprintf(__('Hauteur recommandée : %dpx', 'horizon-tools'), $height);
         }
         return $this;
     }

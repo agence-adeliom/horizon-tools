@@ -283,10 +283,10 @@ class PostService
 
         switch ($slug) {
             case 'page':
-                $prettyName = $plural ? __('Pages') : __('Page');
+                $prettyName = $plural ? __('Pages', 'horizon-tools') : __('Page', 'horizon-tools');
                 break;
             case 'post':
-                $prettyName = $plural ? __('Articles') : __('Article');
+                $prettyName = $plural ? __('Articles', 'horizon-tools') : __('Article', 'horizon-tools');
                 break;
             default:
                 if ($postTypeClass = ClassService::getPostTypeClassBySlug($slug)) {

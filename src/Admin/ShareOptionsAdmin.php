@@ -56,7 +56,7 @@ class ShareOptionsAdmin extends AbstractAdmin
         foreach (ShareService::getEnabledShareServices() as $service) {
             if (isset(self::SHARE_FIELD_MAP[$service])) {
                 $config = self::SHARE_FIELD_MAP[$service];
-                $toggles[] = TrueFalse::make(__($config['label']), $config['name'])->default(false)->stylized();
+                $toggles[] = TrueFalse::make(__($config['label'], 'horizon-tools'), $config['name'])->default(false)->stylized();
             }
         }
 
@@ -65,8 +65,8 @@ class ShareOptionsAdmin extends AbstractAdmin
 
     public function getFields(): ?iterable
     {
-        yield Tab::make(__('Partage'), 'share_tab')->placement('left');
-        yield Group::make(__('Paramètres de partage'), self::FIELD_SHARE)->fields($this->getShareServiceToggles());
+        yield Tab::make(__('Partage', 'horizon-tools'), 'share_tab')->placement('left');
+        yield Group::make(__('Paramètres de partage', 'horizon-tools'), self::FIELD_SHARE)->fields($this->getShareServiceToggles());
     }
 
     public function getOptionPageParent(): ?string

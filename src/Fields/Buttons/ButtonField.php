@@ -29,7 +29,7 @@ class ButtonField
             return LinkField::make(label: $label, name: $name);
         }
 
-        return Group::make(__('Bouton'), $name)->fields(
+        return Group::make(__('Bouton', 'horizon-tools'), $name)->fields(
             array_filter([$withType ? self::typeField() : null, Link::make($label, self::BUTTON_LINK)])
         );
     }
@@ -42,17 +42,17 @@ class ButtonField
     ): Group {
         return Group::make($title, $name)->fields([
             self::typeField($typeInstructions),
-            $withInternalExternal ? LinkField::make(name: self::BUTTON_LINK) : Link::make('Lien', self::BUTTON_LINK),
+            $withInternalExternal ? LinkField::make(name: self::BUTTON_LINK) : Link::make(__('Lien', 'horizon-tools'), self::BUTTON_LINK),
         ]);
     }
 
     private static function typeField(?string $typeInstructions = null): Select
     {
-        $field = Select::make('Type', self::BUTTON_TYPE)
+        $field = Select::make(__('Type', 'horizon-tools'), self::BUTTON_TYPE)
             ->choices([
-                'primary' => __('Primaire'),
-                'secondary' => __('Secondaire'),
-                'tertiary' => __('Tertiaire'),
+                'primary' => __('Primaire', 'horizon-tools'),
+                'secondary' => __('Secondaire', 'horizon-tools'),
+                'tertiary' => __('Tertiaire', 'horizon-tools'),
             ])
             ->default('primary')
             ->stylized();
@@ -70,17 +70,17 @@ class ButtonField
     public static function group(bool $withType = false, bool $withInternalExternal = false, string $name = self::BUTTONS): Group
     {
         $fields = [
-            self::make(label: __('Bouton principal'), name: self::BUTTON_ONE, withInternalExternal: $withInternalExternal),
-            self::make(label: __('Bouton secondaire'), name: self::BUTTON_TWO, withInternalExternal: $withInternalExternal),
+            self::make(label: __('Bouton principal', 'horizon-tools'), name: self::BUTTON_ONE, withInternalExternal: $withInternalExternal),
+            self::make(label: __('Bouton secondaire', 'horizon-tools'), name: self::BUTTON_TWO, withInternalExternal: $withInternalExternal),
         ];
 
         if ($withType) {
             $fields = [
-                self::types(title: __('Bouton principal'), name: self::BUTTON_ONE, withInternalExternal: $withInternalExternal),
-                self::types(title: __('Bouton secondaire'), name: self::BUTTON_TWO, withInternalExternal: $withInternalExternal),
+                self::types(title: __('Bouton principal', 'horizon-tools'), name: self::BUTTON_ONE, withInternalExternal: $withInternalExternal),
+                self::types(title: __('Bouton secondaire', 'horizon-tools'), name: self::BUTTON_TWO, withInternalExternal: $withInternalExternal),
             ];
         }
 
-        return Group::make(__('Boutons'), $name)->fields($fields);
+        return Group::make(__('Boutons', 'horizon-tools'), $name)->fields($fields);
     }
 }

@@ -23,20 +23,20 @@ class VideoField
 	 */
 	public static function make(): Group
 	{
-		return Group::make("Vidéo", self::VIDEO)
+		return Group::make(__("Vidéo", 'horizon-tools'), self::VIDEO)
 			->fields([
 
-				ImageField::make("Vignette", self::THUMBNAIL)
+				ImageField::make(__("Vignette", 'horizon-tools'), self::THUMBNAIL)
 					->required(),
 
-				TrueFalseField::make("Vidéo YouTube ?", self::IS_YOUTUBE),
+				TrueFalseField::make(__("Vidéo YouTube ?", 'horizon-tools'), self::IS_YOUTUBE),
 
-				Text::make('Identifiant de la vidéo', self::ID_YOUTUBE)
+				Text::make(__('Identifiant de la vidéo', 'horizon-tools'), self::ID_YOUTUBE)
 					->conditionalLogic([
 						ConditionalLogic::where(self::IS_YOUTUBE, "==", 1)
 					]),
 
-				File::make("Fichier", self::VIDEO_FILE)
+				File::make(__("Fichier", 'horizon-tools'), self::VIDEO_FILE)
 					->acceptedFileTypes(["mp4"])
 					->format("array")
 					->required()

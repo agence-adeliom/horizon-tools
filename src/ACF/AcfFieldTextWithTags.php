@@ -20,7 +20,7 @@ if (!class_exists('AcfFieldTextWithTags')):
         {
             parent::initialize();
             $this->name = 'text_with_tags';
-            $this->label = __('Texte avec support des tags');
+            $this->label = __('Texte avec support des tags', 'horizon-tools');
             $this->defaults = [
                 'default_value' => '',
                 'maxlength' => '',

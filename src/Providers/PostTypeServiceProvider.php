@@ -416,8 +416,8 @@ class PostTypeServiceProvider extends SageServiceProvider
                         $columns[$customColumn[AbstractPostType::CUSTOM_COLUMN_KEY]] = [
                             $customColumn[AbstractPostType::CUSTOM_COLUMN_KEY],
                             false,
-                            $customColumn[AbstractPostType::CUSTOM_COLUMN_LABEL] ?? 'Tri',
-                            sprintf('Tableau trié par %s', $customColumn[AbstractPostType::CUSTOM_COLUMN_LABEL] ?? 'colonne'),
+                            $customColumn[AbstractPostType::CUSTOM_COLUMN_LABEL] ?? __('Tri', 'horizon-tools'),
+                            sprintf(__('Tableau trié par %s', 'horizon-tools'), $customColumn[AbstractPostType::CUSTOM_COLUMN_LABEL] ?? __('colonne', 'horizon-tools')),
                         ];
                     }
                 }

@@ -167,7 +167,7 @@ class DefaultWordPressHooks extends AbstractHook
         $manualText = Config::get('back-office.bo.footerText');
 
         if (empty($manualText)) {
-            $defaultTranslatableContent = __('Développé avec soin par l’agence digitale');
+            $defaultTranslatableContent = __('Développé avec soin par l’agence digitale', 'horizon-tools');
 
             $text = <<<EOF
 <span id="footer-thankyou">
