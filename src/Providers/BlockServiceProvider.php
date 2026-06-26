@@ -203,7 +203,7 @@ class BlockServiceProvider extends SageServiceProvider
                 if (defined($enum . '::ASSOCIATIONS')) {
                     if (isset($enum::ASSOCIATIONS[$case->value]) && ($association = $enum::ASSOCIATIONS[$case->value])) {
                         if (isset($association['title'], $association['icon'], $association['order'])) {
-                            $title = $association['title'];
+                            $title = __($association['title'], 'horizon-tools');
                             $icon = $association['icon'];
                             $order = $association['order'];
                         }
