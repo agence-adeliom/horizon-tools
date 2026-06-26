@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: horizon-tools\n"
 "Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-26T15:23:09+00:00\n"
+"PO-Revision-Date: 2026-06-26T15:00:00+00:00\n"
 "Last-Translator: Agence Adeliom <contact@adeliom.com>\n"
 "Language-Team: English (United Kingdom)\n"
 "Language: en_GB\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-26T15:23:09+00:00\n"
-"PO-Revision-Date: 2026-06-26T15:00:00+00:00\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: horizon-tools\n"
 
@@ -66,20 +66,19 @@ msgid "Header"
 msgstr "Header"
 
 #: Admin/SearchEngineOptionsAdmin.php:66
-msgid "Afficher le fil d'ariane"
+msgid "Afficher le fil d’ariane"
 msgstr "Show breadcrumb"
 
 #: Admin/SearchEngineOptionsAdmin.php:69
 msgid "Titre affiché dans le header"
 msgstr "Title displayed in the header"
 
-#: Admin/SearchEngineOptionsAdmin.php:73
-#: Admin/SearchEngineOptionsAdmin.php:113
+#: Admin/SearchEngineOptionsAdmin.php:73 Admin/SearchEngineOptionsAdmin.php:113
 msgid "Recherche pour"
 msgstr "Search for"
 
 #: Admin/SearchEngineOptionsAdmin.php:74
-msgid "Image d'arrière-plan"
+msgid "Image d’arrière-plan"
 msgstr "Background image"
 
 #: Admin/SearchEngineOptionsAdmin.php:75
@@ -95,7 +94,7 @@ msgid "Apparence - Aucune page définie"
 msgstr "Appearance - No page defined"
 
 #: Admin/SearchEngineOptionsAdmin.php:79
-msgid "Veuillez sélectionner une page de résultats pour configurer l'apparence du moteur de recherche."
+msgid "Veuillez sélectionner une page de résultats pour configurer l’apparence du moteur de recherche."
 msgstr "Please select a results page to configure the search engine appearance."
 
 #: Admin/SearchEngineOptionsAdmin.php:81
@@ -119,7 +118,7 @@ msgid "Éléments par page"
 msgstr "Items per page"
 
 #: Admin/SearchEngineOptionsAdmin.php:97
-msgid "Nombre d'éléments à afficher par page. Mettre -1 pour désactiver la pagination."
+msgid "Nombre d’éléments à afficher par page. Mettre -1 pour désactiver la pagination."
 msgstr "Number of items to display per page. Set to -1 to disable pagination."
 
 #: Admin/SearchEngineOptionsAdmin.php:98
@@ -159,15 +158,14 @@ msgid "Afficher la page dans le titre"
 msgstr "Show page number in title"
 
 #: Admin/SearchEngineOptionsAdmin.php:117
-msgid "Permet d'ajouter la page courante (sauf 1) au titre de la page de résultats."
+msgid "Permet d’ajouter la page courante (sauf 1) au titre de la page de résultats."
 msgstr "Allows the current page number (except 1) to be appended to the results page title."
 
 #: Admin/SearchEngineOptionsAdmin.php:124
 msgid "Pour afficher la recherche courante, utilisez :"
 msgstr "To display the current search query, use:"
 
-#: Admin/ShareOptionsAdmin.php:20
-#: Admin/ShareOptionsAdmin.php:68
+#: Admin/ShareOptionsAdmin.php:20 Admin/ShareOptionsAdmin.php:68
 msgid "Partage"
 msgstr "Sharing"
 
@@ -179,13 +177,11 @@ msgstr "Sharing settings"
 msgid "Bouton"
 msgstr "Button"
 
-#: Fields/Buttons/ButtonField.php:45
-#: Fields/Links/LinkField.php:60
+#: Fields/Buttons/ButtonField.php:45 Fields/Links/LinkField.php:60
 msgid "Lien"
 msgstr "Link"
 
-#: Fields/Buttons/ButtonField.php:51
-#: Fields/Medias/MediaField.php:43
+#: Fields/Buttons/ButtonField.php:51 Fields/Medias/MediaField.php:43
 msgid "Type"
 msgstr "Type"
 
@@ -193,8 +189,7 @@ msgstr "Type"
 msgid "Primaire"
 msgstr "Primary"
 
-#: Fields/Buttons/ButtonField.php:54
-#: Fields/Layout/LayoutField.php:149
+#: Fields/Buttons/ButtonField.php:54 Fields/Layout/LayoutField.php:149
 msgid "Secondaire"
 msgstr "Secondary"
 
@@ -202,13 +197,11 @@ msgstr "Secondary"
 msgid "Tertiaire"
 msgstr "Tertiary"
 
-#: Fields/Buttons/ButtonField.php:73
-#: Fields/Buttons/ButtonField.php:79
+#: Fields/Buttons/ButtonField.php:73 Fields/Buttons/ButtonField.php:79
 msgid "Bouton principal"
 msgstr "Primary button"
 
-#: Fields/Buttons/ButtonField.php:74
-#: Fields/Buttons/ButtonField.php:80
+#: Fields/Buttons/ButtonField.php:74 Fields/Buttons/ButtonField.php:80
 msgid "Bouton secondaire"
 msgstr "Secondary button"
 
@@ -244,18 +237,15 @@ msgstr "Media position"
 msgid "Taille de la marge supérieure"
 msgstr "Top margin size"
 
-#: Fields/Layout/LayoutField.php:71
-#: Fields/Layout/LayoutField.php:82
+#: Fields/Layout/LayoutField.php:71 Fields/Layout/LayoutField.php:82
 msgid "Nulle"
 msgstr "None"
 
-#: Fields/Layout/LayoutField.php:72
-#: Fields/Layout/LayoutField.php:83
+#: Fields/Layout/LayoutField.php:72 Fields/Layout/LayoutField.php:83
 msgid "Petite"
 msgstr "Small"
 
-#: Fields/Layout/LayoutField.php:73
-#: Fields/Layout/LayoutField.php:84
+#: Fields/Layout/LayoutField.php:73 Fields/Layout/LayoutField.php:84
 msgid "Grande"
 msgstr "Large"
 
@@ -297,10 +287,9 @@ msgstr "None"
 
 #: Fields/Layout/LayoutField.php:113
 msgid "Fond de couleur"
-msgstr "Colour background"
+msgstr "Solid colour"
 
-#: Fields/Layout/LayoutField.php:116
-#: Fields/Layout/LayoutField.php:133
+#: Fields/Layout/LayoutField.php:116 Fields/Layout/LayoutField.php:133
 msgid "Image de fond"
 msgstr "Background image"
 
@@ -332,10 +321,8 @@ msgstr "Internal"
 msgid "Externe"
 msgstr "External"
 
-#: Fields/Links/LinkField.php:41
-#: Services/PostService.php:286
-#: Services/SeoService.php:207
-#: Services/SeoService.php:219
+#: Fields/Links/LinkField.php:41 Services/PostService.php:286
+#: Services/SeoService.php:207 Services/SeoService.php:219
 msgid "Page"
 msgstr "Page"
 
@@ -363,8 +350,7 @@ msgstr "Open in a new tab"
 msgid "Obfusquer le lien"
 msgstr "Obfuscate the link"
 
-#: Fields/Links/LinkField.php:63
-#: i18n-extracted-strings.php:32
+#: Fields/Links/LinkField.php:63 i18n-extracted-strings.php:32
 msgid "Icône"
 msgstr "Icon"
 
@@ -384,8 +370,7 @@ msgstr "Recommended height: %dpx"
 msgid "Image"
 msgstr "Image"
 
-#: Fields/Medias/MediaField.php:39
-#: Fields/Medias/VideoField.php:26
+#: Fields/Medias/MediaField.php:39 Fields/Medias/VideoField.php:26
 msgid "Vidéo"
 msgstr "Video"
 
@@ -393,10 +378,8 @@ msgstr "Video"
 msgid "Choisir le type de média"
 msgstr "Choose the media type"
 
-#: Fields/Medias/MediaField.php:62
-#: Fields/Medias/MediaField.php:67
-#: Fields/Medias/MediaField.php:79
-#: i18n-extracted-strings.php:25
+#: Fields/Medias/MediaField.php:62 Fields/Medias/MediaField.php:67
+#: Fields/Medias/MediaField.php:79 i18n-extracted-strings.php:25
 msgid "Média"
 msgstr "Media"
 
@@ -440,20 +423,18 @@ msgstr "Offer banner"
 msgid "Activer"
 msgstr "Enable"
 
-#: Fields/Select/PostTypeSelectField.php:34
-#: Services/PostService.php:289
+#: Fields/Select/PostTypeSelectField.php:34 Services/PostService.php:289
 #: Services/SearchEngineService.php:360
 msgid "Articles"
 msgstr "Articles"
 
-#: Fields/Select/PostTypeSelectField.php:35
-#: Services/PostService.php:286
+#: Fields/Select/PostTypeSelectField.php:35 Services/PostService.php:286
 #: Services/SearchEngineService.php:356
 msgid "Pages"
 msgstr "Pages"
 
 #: Hooks/DefaultWordPressHooks.php:170
-msgid "Développé avec soin par l'agence digitale"
+msgid "Développé avec soin par l’agence digitale"
 msgstr "Carefully developed by the digital agency"
 
 #: i18n-extracted-strings.php:22
@@ -592,8 +573,7 @@ msgstr "Testimonials"
 msgid "Autres"
 msgstr "Others"
 
-#: PostTypes/AbstractPostType.php:47
-#: Taxonomies/AbstractTaxonomy.php:44
+#: PostTypes/AbstractPostType.php:47 Taxonomies/AbstractTaxonomy.php:44
 msgid "Champs additionnels"
 msgstr "Additional fields"
 
@@ -672,7 +652,7 @@ msgid "Page parent"
 msgstr "Parent page"
 
 #: Providers/AdminIpRestrictionServiceProvider.php:39
-msgid "Accès refusé. Votre adresse IP (%s) n'est pas autorisée à accéder à cette zone."
+msgid "Accès refusé. Votre adresse IP (%s) n’est pas autorisée à accéder à cette zone."
 msgstr "Access denied. Your IP address (%s) is not authorised to access this area."
 
 #: Providers/AdminIpRestrictionServiceProvider.php:42
