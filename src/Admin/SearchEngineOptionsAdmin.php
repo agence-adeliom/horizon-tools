@@ -19,10 +19,14 @@ use Extended\ACF\Fields\TrueFalse;
 
 class SearchEngineOptionsAdmin extends AbstractAdmin
 {
-    public static ?string $title = 'Recherche';
     public static ?string $slug = 'search-engine-options';
     public static bool $isOptionPage = true;
     public static ?string $optionPageIcon = 'dashicons-search';
+
+    public static function getTitle(): ?string
+    {
+        return __('Recherche', 'horizon-tools');
+    }
 
     public const FIELD_HORIZON_SEARCH = 'horizonSearch';
     public const FIELD_SEARCH_RESULTS_PAGE = 'searchResultsPage';

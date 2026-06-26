@@ -62,7 +62,7 @@ class AdminServiceProvider extends SageServiceProvider
                     if ($fields = $class->getFields()) {
                         if ($customFields = iterator_to_array($fields, false)) {
                             register_extended_field_group([
-                                'title' => $class::$title,
+                                'title' => $class::getTitle(),
                                 'fields' => $customFields,
                                 'style' => $class->getStyle(),
                                 'location' => iterator_to_array($class->getLocation(), false),

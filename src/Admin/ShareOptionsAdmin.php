@@ -11,10 +11,14 @@ use Extended\ACF\Fields\TrueFalse;
 
 class ShareOptionsAdmin extends AbstractAdmin
 {
-    public static ?string $title = 'Partage';
     public static ?string $slug = 'share-options';
     public static bool $isOptionPage = true;
     public static ?string $optionPageIcon = 'dashicons-share';
+
+    public static function getTitle(): ?string
+    {
+        return __('Partage', 'horizon-tools');
+    }
 
     public const FIELD_SHARE = 'share';
     public const FIELD_SHARE_ENABLE_COPY_LINK = 'enableCopyLink';

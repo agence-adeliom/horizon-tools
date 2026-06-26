@@ -14,30 +14,35 @@ abstract class AbstractAdmin
     public static bool $isOptionPage = false;
     public static ?string $optionPageIcon = null;
 
+    public static function getTitle(): ?string
+    {
+        return static::$title;
+    }
+
     public function __construct()
     {
-        if (null === $this::$title) {
+        if (null === static::getTitle()) {
             throw new SkipProviderException(static::class . ' : You must define a title for your admin');
         }
     }
 
     public function getSlug(): ?string
     {
-        return $this::$slug ?? sanitize_title($this::$title);
+        return $this::$slug ?? sanitize_title((string) static::getTitle());
     }
 
     public function getOptionPageParams(): array
     {
         return [
-            'page_title' => $this::$title,
+            'page_title' => static::getTitle(),
             'menu_title' => '',
             'autoload' => 0,
             'position' => '',
             'redirect' => 0,
             'description' => '',
             'icon_url' => '',
-            'update_button' => 'Mise à jour',
-            'updated_message' => 'Options mises à jour',
+            'update_button' => __('Mise à jour', 'horizon-tools'),
+            'updated_message' => __('Options mises à jour', 'horizon-tools'),
             'advanced_configuration' => 0,
             'menu_slug' => $this->getSlug(),
             'capability' => 'edit_theme_options',
