@@ -12,7 +12,7 @@ class ImageField extends Image
 
     public static function make(string $label = 'Image', ?string $name = self::IMAGE): static
     {
-        return parent::make($label, $name)->library('all')->format('array');
+        return parent::make(__($label, 'horizon-tools'), $name)->library('all')->format('array');
     }
 
     public function ratio(?int $width = null, ?int $height = null): static

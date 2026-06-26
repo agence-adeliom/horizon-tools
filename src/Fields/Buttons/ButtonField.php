@@ -30,7 +30,7 @@ class ButtonField
         }
 
         return Group::make(__('Bouton', 'horizon-tools'), $name)->fields(
-            array_filter([$withType ? self::typeField() : null, Link::make($label, self::BUTTON_LINK)])
+            array_filter([$withType ? self::typeField() : null, Link::make(__($label, 'horizon-tools'), self::BUTTON_LINK)])
         );
     }
 
@@ -40,7 +40,7 @@ class ButtonField
         string|null $name = self::BUTTON,
         bool $withInternalExternal = false
     ): Group {
-        return Group::make($title, $name)->fields([
+        return Group::make(__($title, 'horizon-tools'), $name)->fields([
             self::typeField($typeInstructions),
             $withInternalExternal ? LinkField::make(name: self::BUTTON_LINK) : Link::make(__('Lien', 'horizon-tools'), self::BUTTON_LINK),
         ]);
