@@ -22,6 +22,40 @@ class SearchEngineService
         return Config::get('search-engine.enabled', false);
     }
 
+    /**
+     * Language suffix used to scope cache keys.
+     *
+     * The search-engine options live on a Polylang-aware ACF options page, so
+     * their values differ per language. Caching them under a single global key
+     * leaks one language's values onto the others and, worse, lets a context
+     * with no resolved language (WP-CLI, REST, warm-up) cache an empty config
+     * that is then served to every front-end request. Scoping each key by the
+     * current locale keeps languages — and language-less contexts — isolated.
+     *
+     * Mirrors the locale resolution of the ACF↔Polylang options bridge:
+     * outside REST the current Polylang locale, otherwise the WordPress locale.
+     */
+    private static function getCacheLanguageSuffix(): string
+    {
+        if (!defined('REST_API') && function_exists('pll_current_language')) {
+            $locale = pll_current_language('locale');
+
+            if (is_string($locale) && '' !== $locale) {
+                return $locale;
+            }
+        }
+
+        return get_locale();
+    }
+
+    /**
+     * Builds a language-scoped cache key from a stable base.
+     */
+    private static function getCacheKey(string $base): string
+    {
+        return $base . '_' . self::getCacheLanguageSuffix();
+    }
+
     public static function getSearchEngineConfigPageUrl(): false|string
     {
         if (!self::isSearchEngineEnabled()) {
@@ -33,13 +67,30 @@ class SearchEngineService
 
     public static function getSearchEngineConfig(): false|array
     {
-        return Cache::remember('', 60 * 60, function () {
-            if (!self::isSearchEngineEnabled()) {
-                return false;
-            }
+        if (!self::isSearchEngineEnabled()) {
+            return false;
+        }
 
-            return get_field(SearchEngineOptionsAdmin::FIELD_HORIZON_SEARCH, 'option') ?? false;
-        });
+        $cacheKey = self::getCacheKey(self::HORIZON_SEARCH_ENGINE_CONFIG_CACHE_KEY);
+
+        $config = Cache::get($cacheKey);
+
+        if (is_array($config) && !empty($config)) {
+            return $config;
+        }
+
+        $config = get_field(SearchEngineOptionsAdmin::FIELD_HORIZON_SEARCH, 'option');
+
+        // Never cache an empty/unresolved config: a context without a resolved
+        // language would otherwise poison the cache and blank the results page
+        // for everyone until the entry expires.
+        if (is_array($config) && !empty($config)) {
+            Cache::put($cacheKey, $config, 60 * 60);
+
+            return $config;
+        }
+
+        return false;
     }
 
     public static function canSearchEngineBeUsed(): bool
@@ -92,7 +143,7 @@ class SearchEngineService
 
     public static function getSearchEngineGETParameter(): ?string
     {
-        return Cache::remember('search_engine_get_parameter', 60 * 60, function () {
+        return Cache::remember(self::getCacheKey('search_engine_get_parameter'), 60 * 60, function () {
             $param = null;
 
             if ($config = self::getSearchEngineConfig()) {
@@ -107,7 +158,7 @@ class SearchEngineService
 
     public static function getSearchEnginePageGETParameter(): ?string
     {
-        return Cache::remember('search_engine_page_get_parameter', 60 * 60, function () {
+        return Cache::remember(self::getCacheKey('search_engine_page_get_parameter'), 60 * 60, function () {
             $param = null;
 
             if ($config = self::getSearchEngineConfig()) {
@@ -122,7 +173,7 @@ class SearchEngineService
 
     public static function getExcludedIDs(): array
     {
-        return Cache::remember('search_engine_excluded_IDs', 60 * 60, function () {
+        return Cache::remember(self::getCacheKey('search_engine_excluded_IDs'), 60 * 60, function () {
             $excludedIDs = [];
 
             if ($config = self::getSearchEngineConfig()) {
@@ -140,7 +191,7 @@ class SearchEngineService
 
     public static function getPerPage(): ?int
     {
-        return Cache::remember('search_engine_per_page', 60 * 60, function () {
+        return Cache::remember(self::getCacheKey('search_engine_per_page'), 60 * 60, function () {
             $perPage = null;
 
             if ($config = self::getSearchEngineConfig()) {
@@ -158,7 +209,7 @@ class SearchEngineService
 
     public static function getSeparateByTypes(): bool
     {
-        return Cache::remember('search_engine_separate_by_type', 60 * 60, function () {
+        return Cache::remember(self::getCacheKey('search_engine_separate_by_type'), 60 * 60, function () {
             $separateByTypes = false;
 
             if ($config = self::getSearchEngineConfig()) {
@@ -176,7 +227,7 @@ class SearchEngineService
 
     public static function getPostTypes(): ?array
     {
-        return Cache::remember('search_engine_post_types', 60 * 60, function () {
+        return Cache::remember(self::getCacheKey('search_engine_post_types'), 60 * 60, function () {
             $postTypes = null;
 
             if ($config = self::getSearchEngineConfig()) {
@@ -194,7 +245,7 @@ class SearchEngineService
 
     public static function getAllowFilterByType(): bool
     {
-        return Cache::remember('search_engine_filter_by_type', 60 * 60, function () {
+        return Cache::remember(self::getCacheKey('search_engine_filter_by_type'), 60 * 60, function () {
             $allowFilterByType = false;
 
             if ($config = self::getSearchEngineConfig()) {
@@ -212,7 +263,7 @@ class SearchEngineService
 
     public static function getHeaderTitle(): ?string
     {
-        return Cache::remember('search_engine_header_title', 60 * 60, function () {
+        return Cache::remember(self::getCacheKey('search_engine_header_title'), 60 * 60, function () {
             $headerTitle = null;
 
             if ($config = self::getSearchEngineConfig()) {
@@ -230,7 +281,7 @@ class SearchEngineService
 
     public static function getMetaTitle(): ?string
     {
-        return Cache::remember('search_engine_meta_title', 60 * 60, function () {
+        return Cache::remember(self::getCacheKey('search_engine_meta_title'), 60 * 60, function () {
             $metaTitle = null;
 
             if ($config = self::getSearchEngineConfig()) {
@@ -248,7 +299,7 @@ class SearchEngineService
 
     public static function getDisplayBreadcrumbs(): bool
     {
-        return Cache::remember('search_engine_display_breadcrumbs', 60 * 60, function () {
+        return Cache::remember(self::getCacheKey('search_engine_display_breadcrumbs'), 60 * 60, function () {
             $displayBreadcrumbs = false;
 
             if ($config = self::getSearchEngineConfig()) {
@@ -266,7 +317,7 @@ class SearchEngineService
 
     public static function getHeaderImage(): ?array
     {
-        return Cache::remember('search_engine_header_image', 60 * 60, function () {
+        return Cache::remember(self::getCacheKey('search_engine_header_image'), 60 * 60, function () {
             $headerImage = null;
 
             if ($config = self::getSearchEngineConfig()) {
@@ -284,7 +335,7 @@ class SearchEngineService
 
     public static function getAddPageToMetaTitle(): bool
     {
-        return Cache::remember('search_engine_add_page_to_meta_title', 60 * 60, function () {
+        return Cache::remember(self::getCacheKey('search_engine_add_page_to_meta_title'), 60 * 60, function () {
             $addPageToMetaTitle = false;
 
             if ($config = self::getSearchEngineConfig()) {
