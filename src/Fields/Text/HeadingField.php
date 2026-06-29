@@ -32,7 +32,7 @@ class HeadingField
         ?string $tagInstructions = null,
         string $textFieldClass = Text::class
     ): Group {
-        return Group::make(__($label), $name)->fields([
+        return Group::make(__($label, 'horizon-tools'), $name)->fields([
             self::getTagsField(tags: $tags, default: $defaultTag, instructions: $tagInstructions),
             self::getTitleField(label: $label, textFieldClass: $textFieldClass),
         ]);
@@ -60,7 +60,7 @@ class HeadingField
             $default = 'div';
         }
 
-        $select = Select::make(__(self::TAGS_LABEL), self::TAGS_NAME)
+        $select = Select::make(__(self::TAGS_LABEL, 'horizon-tools'), self::TAGS_NAME)
             ->choices($tags)
             ->default($default)
             ->stylized();

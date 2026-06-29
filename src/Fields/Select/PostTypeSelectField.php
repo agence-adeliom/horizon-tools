@@ -31,8 +31,8 @@ class PostTypeSelectField
         if ($with) {
             foreach ($with as $item) {
                 $choices[$item] = match ($item) {
-                    'post' => __('Articles'),
-                    'page' => __('Pages'),
+                    'post' => __('Articles', 'horizon-tools'),
+                    'page' => __('Pages', 'horizon-tools'),
                     default => ucfirst($item),
                 };
             }
@@ -64,6 +64,6 @@ class PostTypeSelectField
             $choices = array_diff_key($choices, array_flip($excluded));
         }
 
-        return Select::make(__($label), $name)->choices($choices)->stylized();
+        return Select::make(__($label, 'horizon-tools'), $name)->choices($choices)->stylized();
     }
 }

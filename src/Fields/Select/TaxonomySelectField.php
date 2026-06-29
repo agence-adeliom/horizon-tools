@@ -16,6 +16,6 @@ class TaxonomySelectField
     {
         $choices = PostService::getAllAssociatedTaxonomies(postType: $postType, excluded: $excluded);
 
-        return Select::make(__($label), $name)->choices($choices)->stylized();
+        return Select::make(__($label, 'horizon-tools'), $name)->choices($choices)->stylized();
     }
 }

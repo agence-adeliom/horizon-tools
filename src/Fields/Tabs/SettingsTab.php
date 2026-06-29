@@ -15,6 +15,6 @@ class SettingsTab extends Tab
 
 	public static function make(string $label = 'Paramètres', ?string $name = null): static
 	{
-		return parent::make($label, $name);
+		return parent::make(__($label, 'horizon-tools'), $name);
 	}
 }

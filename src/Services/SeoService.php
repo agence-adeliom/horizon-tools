@@ -204,7 +204,7 @@ class SeoService
     {
         if (is_int($page)) {
             if ($page > 1) {
-                $metaTitle = sprintf('%s %s %s %d', $metaTitle, self::getTitleSeparator(), __('Page'), $page);
+                $metaTitle = sprintf('%s %s %s %d', $metaTitle, self::getTitleSeparator(), __('Page', 'horizon-tools'), $page);
             }
         } else {
             foreach ($page as $postTypeSlug => $postTypePage) {
@@ -216,7 +216,7 @@ class SeoService
                             '%s %s %s %d %s',
                             $metaTitle,
                             self::getTitleSeparator(),
-                            __('Page'),
+                            __('Page', 'horizon-tools'),
                             $postTypePage,
                             ' des ' . strtolower($postTypePrettyName)
                         );

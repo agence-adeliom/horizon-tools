@@ -32,17 +32,17 @@ class MediaField
         $hasVideo = in_array(self::HAS_VIDEO, $includes, true);
 
         if ($hasImage) {
-            $choices[self::HAS_IMAGE] = 'Image';
+            $choices[self::HAS_IMAGE] = __('Image', 'horizon-tools');
         }
 
         if ($hasVideo) {
-            $choices[self::HAS_VIDEO] = 'Vidéo';
+            $choices[self::HAS_VIDEO] = __('Vidéo', 'horizon-tools');
         }
 
         $fields = [
-            Select::make('Type', self::TYPE)
+            Select::make(__('Type', 'horizon-tools'), self::TYPE)
                 ->choices($choices)
-                ->helperText('Choisir le type de média')
+                ->helperText(__('Choisir le type de média', 'horizon-tools'))
                 ->stylized()
                 ->required(),
         ];
@@ -59,12 +59,12 @@ class MediaField
             $fields[] = $videoField;
         }
 
-        return Group::make('Média', $name)->helperText($instructions)->fields($fields);
+        return Group::make(__('Média', 'horizon-tools'), $name)->helperText($instructions)->fields($fields);
     }
 
     public static function image(string $instructions = '', bool $isImagePosition = false, string $name = self::MEDIA): Group
     {
-        return Group::make('Média', $name)
+        return Group::make(__('Média', 'horizon-tools'), $name)
             ->helperText($instructions)
             ->fields(
                 array_filter([
@@ -76,18 +76,18 @@ class MediaField
 
     public static function video(string $instructions = '', string $name = self::MEDIA): Group
     {
-        return Group::make('Média', $name)
+        return Group::make(__('Média', 'horizon-tools'), $name)
             ->helperText($instructions)
             ->fields([VideoField::make()->conditionalLogic([ConditionalLogic::where(self::TYPE, '==', self::HAS_VIDEO)])]);
     }
 
     public static function imagePosition()
     {
-        return RadioButton::make("Position de l'image", self::IMAGE_POSITION)
+        return RadioButton::make(__("Position de l'image", 'horizon-tools'), self::IMAGE_POSITION)
             ->choices([
-                self::IMAGE_POSITION_TOP => 'Ferrée en haut',
-                self::IMAGE_POSITION_CENTER => 'Centrée',
-                self::IMAGE_POSITION_BOTTOM => 'Ferrée en bas',
+                self::IMAGE_POSITION_TOP => __('Ferrée en haut', 'horizon-tools'),
+                self::IMAGE_POSITION_CENTER => __('Centrée', 'horizon-tools'),
+                self::IMAGE_POSITION_BOTTOM => __('Ferrée en bas', 'horizon-tools'),
             ])
             ->default(self::IMAGE_POSITION_CENTER);
     }

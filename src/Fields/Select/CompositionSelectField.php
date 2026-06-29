@@ -14,6 +14,6 @@ class CompositionSelectField
 
     public static function make(string $label = self::LABEL, ?string $name = self::NAME): Select
     {
-        return Select::make(__($label), $name)->choices(CompositionService::getCompositionChoices())->stylized();
+        return Select::make(__($label, 'horizon-tools'), $name)->choices(CompositionService::getCompositionChoices())->stylized();
     }
 }

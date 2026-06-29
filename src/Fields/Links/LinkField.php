@@ -32,35 +32,35 @@ class LinkField
     {
         $withObfuscation = SeoService::isObfuscationEnabled();
 
-        return Group::make(__($label), $name)->fields(
+        return Group::make(__($label, 'horizon-tools'), $name)->fields(
             array_filter([
-                ButtonGroup::make(__('Type de lien'), self::FIELD_TYPE)->choices([
-                    self::VALUE_TYPE_INTERNAL => __('Interne'),
-                    self::VALUE_TYPE_EXTERNAL => __('Externe'),
+                ButtonGroup::make(__('Type de lien', 'horizon-tools'), self::FIELD_TYPE)->choices([
+                    self::VALUE_TYPE_INTERNAL => __('Interne', 'horizon-tools'),
+                    self::VALUE_TYPE_EXTERNAL => __('Externe', 'horizon-tools'),
                 ]),
-                PostObject::make(__('Page'), self::FIELD_POST)
-                    ->helperText(__('Sélectionner une page'))
+                PostObject::make(__('Page', 'horizon-tools'), self::FIELD_POST)
+                    ->helperText(__('Sélectionner une page', 'horizon-tools'))
                     ->required()
                     ->conditionalLogic([ConditionalLogic::where(self::FIELD_TYPE, '==', self::VALUE_TYPE_INTERNAL)])
                     ->wrapper(['width' => 50]),
-                Text::make(__('Texte'), self::FIELD_POST_LABEL)
-                    ->helperText(__('Si renseigné, permet de remplacer le titre de la page'))
-                    ->placeholder(__('Titre du lien'))
+                Text::make(__('Texte', 'horizon-tools'), self::FIELD_POST_LABEL)
+                    ->helperText(__('Si renseigné, permet de remplacer le titre de la page', 'horizon-tools'))
+                    ->placeholder(__('Titre du lien', 'horizon-tools'))
                     ->conditionalLogic([ConditionalLogic::where(self::FIELD_TYPE, '==', self::VALUE_TYPE_INTERNAL)])
                     ->wrapper(['width' => 50]),
-                TrueFalse::make(__('Ouvrir dans un nouvel onglet'), self::FIELD_IS_TARGET_BLANK)
+                TrueFalse::make(__('Ouvrir dans un nouvel onglet', 'horizon-tools'), self::FIELD_IS_TARGET_BLANK)
                     ->stylized()
                     ->conditionalLogic([ConditionalLogic::where(self::FIELD_TYPE, '==', self::VALUE_TYPE_INTERNAL)])
                     ->wrapper(['width' => $withObfuscation ? 50 : 100]),
                 $withObfuscation
-                    ? TrueFalse::make(__('Obfusquer le lien'), self::FIELD_OBFUSCATE)
+                    ? TrueFalse::make(__('Obfusquer le lien', 'horizon-tools'), self::FIELD_OBFUSCATE)
                         ->stylized()
                         ->wrapper(['width' => 50])
                     : null,
-                Link::make(__('Lien'), self::FIELD_EXTERNAL_LINK)
+                Link::make(__('Lien', 'horizon-tools'), self::FIELD_EXTERNAL_LINK)
                     ->required()
                     ->conditionalLogic([ConditionalLogic::where(self::FIELD_TYPE, '==', self::VALUE_TYPE_EXTERNAL)]),
-                IconField::make(__('Icône'), self::FIELD_ICON)->format('object'),
+                IconField::make(__('Icône', 'horizon-tools'), self::FIELD_ICON)->format('object'),
             ])
         );
     }

@@ -15,6 +15,6 @@ class ContentTab extends Tab
 
 	public static function make(string $label = 'Contenu', ?string $name = self::TAB_KEY): static
 	{
-		return parent::make($label, $name);
+		return parent::make(__($label, 'horizon-tools'), $name);
 	}
 }

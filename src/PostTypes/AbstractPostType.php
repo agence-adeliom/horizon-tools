@@ -44,7 +44,7 @@ abstract class AbstractPostType
 
     public function getFieldsTitle(): string
     {
-        return __('Champs additionnels');
+        return __('Champs additionnels', 'horizon-tools');
     }
 
     public function getFields(): ?iterable
@@ -101,7 +101,7 @@ abstract class AbstractPostType
 
     public function getSearchResultsTitle(): string
     {
-        return __('Tous les résultats :') . ' ' . ($this->getConfig()['args']['labels']['name'] ?? static::$slug);
+        return __('Tous les résultats :', 'horizon-tools') . ' ' . ($this->getConfig()['args']['labels']['name'] ?? static::$slug);
     }
 
     /**

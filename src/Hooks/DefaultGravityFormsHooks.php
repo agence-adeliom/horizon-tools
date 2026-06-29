@@ -90,11 +90,11 @@ class DefaultGravityFormsHooks extends AbstractHook
                                 $label_inner = $matches[1];
 
                                 // Ne pas injecter deux fois si rechargé
-                                if (strpos($label_inner, sprintf('(%s)', __($optionalText))) !== false) {
+                                if (strpos($label_inner, sprintf('(%s)', __($optionalText, 'horizon-tools'))) !== false) {
                                     return $matches[0];
                                 }
 
-                                $new_label = $label_inner . sprintf(' <span class="gfield_optional">(%s)</span>', __($optionalText));
+                                $new_label = $label_inner . sprintf(' <span class="gfield_optional">(%s)</span>', __($optionalText, 'horizon-tools'));
                                 return str_replace($label_inner, $new_label, $matches[0]);
                             },
                             $content

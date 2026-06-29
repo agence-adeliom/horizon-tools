@@ -19,22 +19,22 @@ if (!class_exists('Adeliom\HorizonTools\PostTypes\GravityFormConfirmationPageTyp
         public function getConfig(array $config = []): array
         {
             $config['args'] = [
-                'label' => __('P. de confirmation'),
+                'label' => __('P. de confirmation', 'horizon-tools'),
                 'labels' => [
-                    'name' => __('Pages de confirmation'),
-                    'singular_name' => __('Page de confirmation'),
-                    'menu_name' => __('Confirmations'),
-                    'add_new' => __('Ajouter une page de confirmation'),
-                    'add_new_item' => __('Ajouter une nouvelle page de confirmation'),
-                    'edit_item' => __('Modifier la page de confirmation'),
-                    'new_item' => __('Nouvelle page de confirmation'),
-                    'view_item' => __('Voir la page de confirmation'),
-                    'view_items' => __('Voir les pages de confirmation'),
-                    'search_items' => __('Rechercher une page de confirmation'),
-                    'not_found' => __('Aucune page de confirmation trouvée'),
-                    'not_found_in_trash' => __('Aucune page de confirmation trouvée dans la corbeille'),
-                    'all_items' => __('Toutes les pages de confirmation'),
-                    'archives' => __('Archives des pages de confirmation'),
+                    'name' => __('Pages de confirmation', 'horizon-tools'),
+                    'singular_name' => __('Page de confirmation', 'horizon-tools'),
+                    'menu_name' => __('Confirmations', 'horizon-tools'),
+                    'add_new' => __('Ajouter une page de confirmation', 'horizon-tools'),
+                    'add_new_item' => __('Ajouter une nouvelle page de confirmation', 'horizon-tools'),
+                    'edit_item' => __('Modifier la page de confirmation', 'horizon-tools'),
+                    'new_item' => __('Nouvelle page de confirmation', 'horizon-tools'),
+                    'view_item' => __('Voir la page de confirmation', 'horizon-tools'),
+                    'view_items' => __('Voir les pages de confirmation', 'horizon-tools'),
+                    'search_items' => __('Rechercher une page de confirmation', 'horizon-tools'),
+                    'not_found' => __('Aucune page de confirmation trouvée', 'horizon-tools'),
+                    'not_found_in_trash' => __('Aucune page de confirmation trouvée dans la corbeille', 'horizon-tools'),
+                    'all_items' => __('Toutes les pages de confirmation', 'horizon-tools'),
+                    'archives' => __('Archives des pages de confirmation', 'horizon-tools'),
                 ],
                 'rewrite' => false,
                 'hierarchical' => false,
@@ -53,8 +53,8 @@ if (!class_exists('Adeliom\HorizonTools\PostTypes\GravityFormConfirmationPageTyp
 
         public function getFields(): ?iterable
         {
-            yield Group::make(__('Configuration de la page'), self::FIELD_CONFIGURATION)->fields([
-                PostObject::make(__('Page parent'), self::FIELD_PARENT)
+            yield Group::make(__('Configuration de la page', 'horizon-tools'), self::FIELD_CONFIGURATION)->fields([
+                PostObject::make(__('Page parent', 'horizon-tools'), self::FIELD_PARENT)
                     ->postTypes(PostService::getAllPostTypeSlugs())
                     ->nullable(),
             ]);

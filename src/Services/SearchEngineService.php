@@ -353,12 +353,12 @@ class SearchEngineService
 
             switch ($typeToFetch) {
                 case 'page':
-                    $postTypeNames[$typeToFetch] = __('Pages');
-                    $postTypeTitles[$typeToFetch] = Config::get('pages.search.title', __('Toutes les pages'));
+                    $postTypeNames[$typeToFetch] = __('Pages', 'horizon-tools');
+                    $postTypeTitles[$typeToFetch] = Config::get('pages.search.title', __('Toutes les pages', 'horizon-tools'));
                     break;
                 case 'post':
-                    $postTypeNames[$typeToFetch] = __('Articles');
-                    $postTypeTitles[$typeToFetch] = Config::get('posts.search.title', __('Tous les articles'));
+                    $postTypeNames[$typeToFetch] = __('Articles', 'horizon-tools');
+                    $postTypeTitles[$typeToFetch] = Config::get('posts.search.title', __('Tous les articles', 'horizon-tools'));
                     break;
                 default:
                     $postTypeInstance = new $postTypeClass();
@@ -440,7 +440,7 @@ class SearchEngineService
 
                         $results[$postTypeSlug]['title'] = $postTypeTitles[$postTypeSlug]
                             ? $postTypeTitles[$postTypeSlug]
-                            : __('Résultats');
+                            : __('Résultats', 'horizon-tools');
                     }
                 }
             }

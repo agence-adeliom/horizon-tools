@@ -41,7 +41,7 @@ abstract class AbstractTaxonomy
 
     public function getFieldsTitle(): string
     {
-        return __('Champs additionnels');
+        return __('Champs additionnels', 'horizon-tools');
     }
 
     public function getFields(): ?iterable

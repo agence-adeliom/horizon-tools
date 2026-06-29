@@ -11,6 +11,6 @@ class IconField
 
 	public static function make(string $label = self::LABEL, ?string $name = self::NAME): FontAwesomeIcon
 	{
-		return FontAwesomeIcon::make($label, $name);
+		return FontAwesomeIcon::make(__($label, 'horizon-tools'), $name);
 	}
 }

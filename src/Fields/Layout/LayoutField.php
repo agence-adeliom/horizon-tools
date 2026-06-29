@@ -37,20 +37,22 @@ class LayoutField
 
     public static function darkMode(): TrueFalse
     {
-        return TrueFalse::make(__('Dark mode'), self::FIELD_DARK_MODE)
-            ->helperText('Activer le fond sombre pour ce bloc')
+        return TrueFalse::make(__('Dark mode', 'horizon-tools'), self::FIELD_DARK_MODE)
+            ->helperText(__('Activer le fond sombre pour ce bloc', 'horizon-tools'))
             ->stylized();
     }
 
-    public static function mediaPosition(
-        array $choices = [
-            self::VALUE_MEDIA_POSITION_LEFT   => 'À gauche',
-            self::VALUE_MEDIA_POSITION_RIGHT  => 'À droite',
-            self::VALUE_MEDIA_POSITION_BOTTOM => 'En bas',
-        ]
-    ): RadioButton
+    public static function mediaPosition(array $choices = []): RadioButton
     {
-        return RadioButton::make(__('Position du média'), self::FIELD_MEDIA_POSITION)
+        if (empty($choices)) {
+            $choices = [
+                self::VALUE_MEDIA_POSITION_LEFT   => __('À gauche', 'horizon-tools'),
+                self::VALUE_MEDIA_POSITION_RIGHT  => __('À droite', 'horizon-tools'),
+                self::VALUE_MEDIA_POSITION_BOTTOM => __('En bas', 'horizon-tools'),
+            ];
+        }
+
+        return RadioButton::make(__('Position du média', 'horizon-tools'), self::FIELD_MEDIA_POSITION)
             ->choices($choices)
             ->default('left')
             ->required();
@@ -64,58 +66,58 @@ class LayoutField
         $fieldsGroup = [];
 
         if (in_array(self::FIELD_MARGIN_TOP_SIZE, $fields)) {
-            $fieldsGroup[] = Select::make('Taille de la marge supérieure', self::FIELD_MARGIN_TOP_SIZE)
+            $fieldsGroup[] = Select::make(__('Taille de la marge supérieure', 'horizon-tools'), self::FIELD_MARGIN_TOP_SIZE)
                 ->choices([
-                    'none'  => 'Nulle',
-                    'small' => 'Petite',
-                    'large' => 'Grande',
+                    'none'  => __('Nulle', 'horizon-tools'),
+                    'small' => __('Petite', 'horizon-tools'),
+                    'large' => __('Grande', 'horizon-tools'),
                 ])
                 ->default('large')
                 ->helperText('');
         }
 
         if (in_array(self::FIELD_MARGIN_BOTTOM_SIZE, $fields)) {
-            $fieldsGroup[] = Select::make('Taille de la marge inférieure', self::FIELD_MARGIN_BOTTOM_SIZE)
+            $fieldsGroup[] = Select::make(__('Taille de la marge inférieure', 'horizon-tools'), self::FIELD_MARGIN_BOTTOM_SIZE)
                 ->choices([
-                    'none'  => 'Nulle',
-                    'small' => 'Petite',
-                    'large' => 'Grande',
+                    'none'  => __('Nulle', 'horizon-tools'),
+                    'small' => __('Petite', 'horizon-tools'),
+                    'large' => __('Grande', 'horizon-tools'),
                 ])
                 ->default('large')
                 ->helperText('');
         }
 
-        return Group::make('Marges', self::FIELD_MARGIN)->fields($fieldsGroup);
+        return Group::make(__('Marges', 'horizon-tools'), self::FIELD_MARGIN)->fields($fieldsGroup);
     }
 
     public static function mediaRatio(): Group
     {
         $fieldsGroup = [
-            TrueFalse::make('Contraindre le ratio du média', self::FIELD_HAS_MEDIA_RATIO)->stylized(),
-            RadioButton::make('Ratio', self::FIELD_MEDIA_RATIO_VALUE)
+            TrueFalse::make(__('Contraindre le ratio du média', 'horizon-tools'), self::FIELD_HAS_MEDIA_RATIO)->stylized(),
+            RadioButton::make(__('Ratio', 'horizon-tools'), self::FIELD_MEDIA_RATIO_VALUE)
                 ->choices([
-                    'auto'     => 'Automatique',
-                    'paysage'  => 'Paysage',
-                    'portrait' => 'Portrait',
+                    'auto'     => __('Automatique', 'horizon-tools'),
+                    'paysage'  => __('Paysage', 'horizon-tools'),
+                    'portrait' => __('Portrait', 'horizon-tools'),
                 ])
                 ->conditionalLogic([ConditionalLogic::where('has_ratio', '==', 1)]),
         ];
 
-        return Group::make('Ratio du média', self::FIELD_MEDIA_RATIO)->fields($fieldsGroup);
+        return Group::make(__('Ratio du média', 'horizon-tools'), self::FIELD_MEDIA_RATIO)->fields($fieldsGroup);
     }
 
     public static function choicesBackgroundType(bool $allowColor = true, bool $allowImage = true): Group
     {
-        $choices = ['none' => 'Aucun'];
+        $choices = ['none' => __('Aucun', 'horizon-tools')];
         if ($allowColor) {
-            $choices[self::FIELD_BG_COLOR] = 'Fond de couleur';
+            $choices[self::FIELD_BG_COLOR] = __('Fond de couleur', 'horizon-tools');
         }
         if ($allowImage) {
-            $choices[self::FIELD_BG_IMAGE] = 'Image de fond';
+            $choices[self::FIELD_BG_IMAGE] = __('Image de fond', 'horizon-tools');
         }
 
         $fieldsGroup = [
-            RadioButton::make('Type de fond', self::FIELD_BG_TYPE)
+            RadioButton::make(__('Type de fond', 'horizon-tools'), self::FIELD_BG_TYPE)
                 ->choices($choices),
             self::backgroundColorSelection()
                 ->conditionalLogic([ConditionalLogic::where(self::FIELD_BG_TYPE, '==', self::FIELD_BG_COLOR)]),
@@ -123,12 +125,12 @@ class LayoutField
                 ->conditionalLogic([ConditionalLogic::where(self::FIELD_BG_TYPE, '==', self::FIELD_BG_IMAGE)]),
         ];
 
-        return Group::make('Fond', self::FIELD_BG_GROUP)->fields($fieldsGroup);
+        return Group::make(__('Fond', 'horizon-tools'), self::FIELD_BG_GROUP)->fields($fieldsGroup);
     }
 
     public static function backgroundImage()
     {
-        return Image::make('Image de fond', self::FIELD_BG_IMAGE);
+        return Image::make(__('Image de fond', 'horizon-tools'), self::FIELD_BG_IMAGE);
     }
 
     public static function backgroundColorSelection(?array $choices = null): Select
@@ -136,15 +138,15 @@ class LayoutField
         if ($choices === null) {
             $choices = self::getColorChoices();
         }
-        return Select::make('Couleur de fond', self::FIELD_BG_COLOR)
+        return Select::make(__('Couleur de fond', 'horizon-tools'), self::FIELD_BG_COLOR)
             ->choices($choices);
     }
 
     private static function getColorChoices(): array
     {
         return [
-            'bg-color-02-50'  => 'Principale',
-            'bg-color-04-200' => 'Secondaire',
+            'bg-color-02-50'  => __('Principale', 'horizon-tools'),
+            'bg-color-04-200' => __('Secondaire', 'horizon-tools'),
         ];
     }
 }

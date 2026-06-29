@@ -27,7 +27,7 @@ abstract class AbstractBlock
             throw new SkipProviderException(static::class . ' : You must define a slug for your block');
         }
 
-        if (null === $this::$title) {
+        if (null === static::getTitle()) {
             throw new SkipProviderException(static::class . ' : You must define a title for your block');
         }
     }
@@ -35,6 +35,16 @@ abstract class AbstractBlock
     final public static function getFullName(): string
     {
         return 'acf/' . static::$slug;
+    }
+
+    public static function getTitle(): ?string
+    {
+        return static::$title;
+    }
+
+    public static function getDescription(): ?string
+    {
+        return static::$description;
     }
 
     public function getFields(): ?iterable
