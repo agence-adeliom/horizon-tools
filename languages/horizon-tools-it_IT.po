@@ -1,0 +1,708 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Italian <it@li.org>\n"
+"Language: it_IT\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-06-26T15:23:09+00:00\n"
+"PO-Revision-Date: 2026-06-29 00:00+0000\n"
+"X-Generator: WP-CLI 2.11.0\n"
+"X-Domain: horizon-tools\n"
+
+#: ACF/AcfFieldTextWithTags.php:23
+msgid "Texte avec support des tags"
+msgstr "Testo con supporto dei tag"
+
+#: Admin/AbstractAdmin.php:44
+msgid "Mise à jour"
+msgstr "Aggiorna"
+
+#: Admin/AbstractAdmin.php:45
+msgid "Options mises à jour"
+msgstr "Opzioni aggiornate"
+
+#: Admin/SearchEngineOptionsAdmin.php:28
+msgid "Recherche"
+msgstr "Ricerca"
+
+#: Admin/SearchEngineOptionsAdmin.php:50
+msgid "Moteur de recherche"
+msgstr "Motore di ricerca"
+
+#: Admin/SearchEngineOptionsAdmin.php:51
+msgid "Général"
+msgstr "Generale"
+
+#: Admin/SearchEngineOptionsAdmin.php:52
+msgid "Page des résultats"
+msgstr "Pagina dei risultati"
+
+#: Admin/SearchEngineOptionsAdmin.php:54
+msgid "Laisser vide pour désactiver le moteur de recherche"
+msgstr "Lasciare vuoto per disabilitare il motore di ricerca"
+
+#: Admin/SearchEngineOptionsAdmin.php:55
+msgid "Types de contenus"
+msgstr "Tipi di contenuto"
+
+#: Admin/SearchEngineOptionsAdmin.php:58
+msgid "Permet de sélectionner les types de contenus inclus dans le moteur de recherche"
+msgstr "Permette di selezionare i tipi di contenuto inclusi nel motore di ricerca"
+
+#: Admin/SearchEngineOptionsAdmin.php:59
+msgid "Éléments exclus"
+msgstr "Elementi esclusi"
+
+#: Admin/SearchEngineOptionsAdmin.php:63
+msgid "La page de résultats est automatiquement exclue."
+msgstr "La pagina dei risultati è automaticamente esclusa."
+
+#: Admin/SearchEngineOptionsAdmin.php:65
+msgid "Header"
+msgstr "Intestazione"
+
+#: Admin/SearchEngineOptionsAdmin.php:66
+msgid "Afficher le fil d’ariane"
+msgstr "Mostra il breadcrumb"
+
+#: Admin/SearchEngineOptionsAdmin.php:69
+msgid "Titre affiché dans le header"
+msgstr "Titolo visualizzato nell'intestazione"
+
+#: Admin/SearchEngineOptionsAdmin.php:73
+#: Admin/SearchEngineOptionsAdmin.php:113
+msgid "Recherche pour"
+msgstr "Ricerca per"
+
+#: Admin/SearchEngineOptionsAdmin.php:74
+msgid "Image d’arrière-plan"
+msgstr "Immagine di sfondo"
+
+#: Admin/SearchEngineOptionsAdmin.php:75
+msgid "Laisser vide pour la désactiver"
+msgstr "Lasciare vuoto per disabilitarlo"
+
+#: Admin/SearchEngineOptionsAdmin.php:77
+msgid "Apparence"
+msgstr "Aspetto"
+
+#: Admin/SearchEngineOptionsAdmin.php:78
+msgid "Apparence - Aucune page définie"
+msgstr "Aspetto - Nessuna pagina definita"
+
+#: Admin/SearchEngineOptionsAdmin.php:79
+msgid "Veuillez sélectionner une page de résultats pour configurer l’apparence du moteur de recherche."
+msgstr "Selezionare una pagina dei risultati per configurare l'aspetto del motore di ricerca."
+
+#: Admin/SearchEngineOptionsAdmin.php:81
+msgid "Séparer par types"
+msgstr "Separa per tipo"
+
+#: Admin/SearchEngineOptionsAdmin.php:85
+msgid "Si activé, les résultats seront séparés par type de contenu."
+msgstr "Se attivato, i risultati saranno separati per tipo di contenuto."
+
+#: Admin/SearchEngineOptionsAdmin.php:87
+msgid "Permettre de filtrer par type"
+msgstr "Permetti filtro per tipo"
+
+#: Admin/SearchEngineOptionsAdmin.php:91
+msgid "Active ou non la possibilité de filtrer les résultats par type de contenu"
+msgstr "Attiva o disattiva la possibilità di filtrare i risultati per tipo di contenuto"
+
+#: Admin/SearchEngineOptionsAdmin.php:93
+msgid "Éléments par page"
+msgstr "Elementi per pagina"
+
+#: Admin/SearchEngineOptionsAdmin.php:97
+msgid "Nombre d’éléments à afficher par page. Mettre -1 pour désactiver la pagination."
+msgstr "Numero di elementi da visualizzare per pagina. Inserire -1 per disabilitare la paginazione."
+
+#: Admin/SearchEngineOptionsAdmin.php:98
+msgid "Paramètre GET pour la recherche"
+msgstr "Parametro GET per la ricerca"
+
+#: Admin/SearchEngineOptionsAdmin.php:100
+msgid "Permet de définir le nom du paramètre GET utilisé pour la recherche."
+msgstr "Permette di definire il nome del parametro GET utilizzato per la ricerca."
+
+#: Admin/SearchEngineOptionsAdmin.php:102
+msgid "Paramètre GET pour la page"
+msgstr "Parametro GET per la pagina"
+
+#: Admin/SearchEngineOptionsAdmin.php:104
+msgid "Permet de définir le nom du paramètre GET utilisé pour la pagination (ne peut pas être \"page\")."
+msgstr "Permette di definire il nome del parametro GET utilizzato per la paginazione (non può essere \"page\")."
+
+#: Admin/SearchEngineOptionsAdmin.php:106
+msgid "SEO"
+msgstr "SEO"
+
+#: Admin/SearchEngineOptionsAdmin.php:107
+msgid "SEO - Aucune page définie"
+msgstr "SEO - Nessuna pagina definita"
+
+#: Admin/SearchEngineOptionsAdmin.php:108
+msgid "Veuillez sélectionner une page de résultats pour configurer le SEO du moteur de recherche."
+msgstr "Selezionare una pagina dei risultati per configurare il SEO del motore di ricerca."
+
+#: Admin/SearchEngineOptionsAdmin.php:110
+msgid "Titre de la page de résultats"
+msgstr "Titolo della pagina dei risultati"
+
+#: Admin/SearchEngineOptionsAdmin.php:114
+msgid "Afficher la page dans le titre"
+msgstr "Mostra la pagina nel titolo"
+
+#: Admin/SearchEngineOptionsAdmin.php:117
+msgid "Permet d’ajouter la page courante (sauf 1) au titre de la page de résultats."
+msgstr "Permette di aggiungere la pagina corrente (tranne 1) al titolo della pagina dei risultati."
+
+#: Admin/SearchEngineOptionsAdmin.php:124
+msgid "Pour afficher la recherche courante, utilisez :"
+msgstr "Per visualizzare la ricerca corrente, utilizzare:"
+
+#: Admin/ShareOptionsAdmin.php:20
+#: Admin/ShareOptionsAdmin.php:68
+msgid "Partage"
+msgstr "Condivisione"
+
+#: Admin/ShareOptionsAdmin.php:69
+msgid "Paramètres de partage"
+msgstr "Impostazioni di condivisione"
+
+#: Fields/Buttons/ButtonField.php:32
+msgid "Bouton"
+msgstr "Pulsante"
+
+#: Fields/Buttons/ButtonField.php:45
+#: Fields/Links/LinkField.php:60
+msgid "Lien"
+msgstr "Collegamento"
+
+#: Fields/Buttons/ButtonField.php:51
+#: Fields/Medias/MediaField.php:43
+msgid "Type"
+msgstr "Tipo"
+
+#: Fields/Buttons/ButtonField.php:53
+msgid "Primaire"
+msgstr "Principale"
+
+#: Fields/Buttons/ButtonField.php:54
+#: Fields/Layout/LayoutField.php:149
+msgid "Secondaire"
+msgstr "Secondario"
+
+#: Fields/Buttons/ButtonField.php:55
+msgid "Tertiaire"
+msgstr "Terziario"
+
+#: Fields/Buttons/ButtonField.php:73
+#: Fields/Buttons/ButtonField.php:79
+msgid "Bouton principal"
+msgstr "Pulsante principale"
+
+#: Fields/Buttons/ButtonField.php:74
+#: Fields/Buttons/ButtonField.php:80
+msgid "Bouton secondaire"
+msgstr "Pulsante secondario"
+
+#: Fields/Buttons/ButtonField.php:84
+msgid "Boutons"
+msgstr "Pulsanti"
+
+#: Fields/Layout/LayoutField.php:40
+msgid "Dark mode"
+msgstr "Modalità scura"
+
+#: Fields/Layout/LayoutField.php:41
+msgid "Activer le fond sombre pour ce bloc"
+msgstr "Attiva lo sfondo scuro per questo blocco"
+
+#: Fields/Layout/LayoutField.php:49
+msgid "À gauche"
+msgstr "A sinistra"
+
+#: Fields/Layout/LayoutField.php:50
+msgid "À droite"
+msgstr "A destra"
+
+#: Fields/Layout/LayoutField.php:51
+msgid "En bas"
+msgstr "In basso"
+
+#: Fields/Layout/LayoutField.php:55
+msgid "Position du média"
+msgstr "Posizione del media"
+
+#: Fields/Layout/LayoutField.php:69
+msgid "Taille de la marge supérieure"
+msgstr "Dimensione del margine superiore"
+
+#: Fields/Layout/LayoutField.php:71
+#: Fields/Layout/LayoutField.php:82
+msgid "Nulle"
+msgstr "Nessuno"
+
+#: Fields/Layout/LayoutField.php:72
+#: Fields/Layout/LayoutField.php:83
+msgid "Petite"
+msgstr "Piccolo"
+
+#: Fields/Layout/LayoutField.php:73
+#: Fields/Layout/LayoutField.php:84
+msgid "Grande"
+msgstr "Grande"
+
+#: Fields/Layout/LayoutField.php:80
+msgid "Taille de la marge inférieure"
+msgstr "Dimensione del margine inferiore"
+
+#: Fields/Layout/LayoutField.php:90
+msgid "Marges"
+msgstr "Margini"
+
+#: Fields/Layout/LayoutField.php:96
+msgid "Contraindre le ratio du média"
+msgstr "Vincola il rapporto del media"
+
+#: Fields/Layout/LayoutField.php:97
+msgid "Ratio"
+msgstr "Proporzioni"
+
+#: Fields/Layout/LayoutField.php:99
+msgid "Automatique"
+msgstr "Automatico"
+
+#: Fields/Layout/LayoutField.php:100
+msgid "Paysage"
+msgstr "Orizzontale"
+
+#: Fields/Layout/LayoutField.php:101
+msgid "Portrait"
+msgstr "Verticale"
+
+#: Fields/Layout/LayoutField.php:106
+msgid "Ratio du média"
+msgstr "Proporzioni del media"
+
+#: Fields/Layout/LayoutField.php:111
+msgid "Aucun"
+msgstr "Nessuno"
+
+#: Fields/Layout/LayoutField.php:113
+msgid "Fond de couleur"
+msgstr "Sfondo colorato"
+
+#: Fields/Layout/LayoutField.php:116
+#: Fields/Layout/LayoutField.php:133
+msgid "Image de fond"
+msgstr "Immagine di sfondo"
+
+#: Fields/Layout/LayoutField.php:120
+msgid "Type de fond"
+msgstr "Tipo di sfondo"
+
+#: Fields/Layout/LayoutField.php:128
+msgid "Fond"
+msgstr "Sfondo"
+
+#: Fields/Layout/LayoutField.php:141
+msgid "Couleur de fond"
+msgstr "Colore di sfondo"
+
+#: Fields/Layout/LayoutField.php:148
+msgid "Principale"
+msgstr "Principale"
+
+#: Fields/Links/LinkField.php:37
+msgid "Type de lien"
+msgstr "Tipo di collegamento"
+
+#: Fields/Links/LinkField.php:38
+msgid "Interne"
+msgstr "Interno"
+
+#: Fields/Links/LinkField.php:39
+msgid "Externe"
+msgstr "Esterno"
+
+#: Fields/Links/LinkField.php:41
+#: Services/PostService.php:286
+#: Services/SeoService.php:207
+#: Services/SeoService.php:219
+msgid "Page"
+msgstr "Pagina"
+
+#: Fields/Links/LinkField.php:42
+msgid "Sélectionner une page"
+msgstr "Seleziona una pagina"
+
+#: Fields/Links/LinkField.php:46
+msgid "Texte"
+msgstr "Testo"
+
+#: Fields/Links/LinkField.php:47
+msgid "Si renseigné, permet de remplacer le titre de la page"
+msgstr "Se compilato, permette di sostituire il titolo della pagina"
+
+#: Fields/Links/LinkField.php:48
+msgid "Titre du lien"
+msgstr "Titolo del collegamento"
+
+#: Fields/Links/LinkField.php:51
+msgid "Ouvrir dans un nouvel onglet"
+msgstr "Apri in una nuova scheda"
+
+#: Fields/Links/LinkField.php:56
+msgid "Obfusquer le lien"
+msgstr "Oscura il collegamento"
+
+#: Fields/Links/LinkField.php:63
+#: i18n-extracted-strings.php:32
+msgid "Icône"
+msgstr "Icona"
+
+#: Fields/Medias/ImageField.php:21
+msgid "Ratio recommandé : %dx%dpx"
+msgstr "Proporzioni consigliate: %dx%dpx"
+
+#: Fields/Medias/ImageField.php:23
+msgid "Largeur recommandée : %dpx"
+msgstr "Larghezza consigliata: %dpx"
+
+#: Fields/Medias/ImageField.php:25
+msgid "Hauteur recommandée : %dpx"
+msgstr "Altezza consigliata: %dpx"
+
+#: Fields/Medias/MediaField.php:35
+msgid "Image"
+msgstr "Immagine"
+
+#: Fields/Medias/MediaField.php:39
+#: Fields/Medias/VideoField.php:26
+msgid "Vidéo"
+msgstr "Video"
+
+#: Fields/Medias/MediaField.php:45
+msgid "Choisir le type de média"
+msgstr "Scegli il tipo di media"
+
+#: Fields/Medias/MediaField.php:62
+#: Fields/Medias/MediaField.php:67
+#: Fields/Medias/MediaField.php:79
+#: i18n-extracted-strings.php:25
+msgid "Média"
+msgstr "Media"
+
+#: Fields/Medias/MediaField.php:86
+msgid "Position de l'image"
+msgstr "Posizione dell'immagine"
+
+#: Fields/Medias/MediaField.php:88
+msgid "Ferrée en haut"
+msgstr "Allineata in alto"
+
+#: Fields/Medias/MediaField.php:89
+msgid "Centrée"
+msgstr "Centrata"
+
+#: Fields/Medias/MediaField.php:90
+msgid "Ferrée en bas"
+msgstr "Allineata in basso"
+
+#: Fields/Medias/VideoField.php:29
+msgid "Vignette"
+msgstr "Miniatura"
+
+#: Fields/Medias/VideoField.php:32
+msgid "Vidéo YouTube ?"
+msgstr "Video YouTube?"
+
+#: Fields/Medias/VideoField.php:34
+msgid "Identifiant de la vidéo"
+msgstr "Identificatore del video"
+
+#: Fields/Medias/VideoField.php:39
+msgid "Fichier"
+msgstr "File"
+
+#: Fields/OfferField.php:20
+msgid "Bandeau d'offre"
+msgstr "Banner offerta"
+
+#: Fields/OfferField.php:21
+msgid "Activer"
+msgstr "Attiva"
+
+#: Fields/Select/PostTypeSelectField.php:34
+#: Services/PostService.php:289
+#: Services/SearchEngineService.php:360
+msgid "Articles"
+msgstr "Articoli"
+
+#: Fields/Select/PostTypeSelectField.php:35
+#: Services/PostService.php:286
+#: Services/SearchEngineService.php:356
+msgid "Pages"
+msgstr "Pagine"
+
+#: Hooks/DefaultWordPressHooks.php:170
+msgid "Développé avec soin par l’agence digitale"
+msgstr "Sviluppato con cura dall'agenzia digitale"
+
+#: i18n-extracted-strings.php:22
+msgid "Contenu"
+msgstr "Contenuto"
+
+#: i18n-extracted-strings.php:23
+msgid "Global"
+msgstr "Globale"
+
+#: i18n-extracted-strings.php:24
+msgid "Mise en page"
+msgstr "Impaginazione"
+
+#: i18n-extracted-strings.php:26
+msgid "Paramètres"
+msgstr "Impostazioni"
+
+#: i18n-extracted-strings.php:29
+msgid "Titre"
+msgstr "Titolo"
+
+#: i18n-extracted-strings.php:30
+msgid "Tag HTML"
+msgstr "Tag HTML"
+
+#: i18n-extracted-strings.php:31
+msgid "Sur-titre"
+msgstr "Soprattitolo"
+
+#: i18n-extracted-strings.php:33
+msgid "Description"
+msgstr "Descrizione"
+
+#: i18n-extracted-strings.php:34
+msgid "Vrai/Faux"
+msgstr "Vero/Falso"
+
+#: i18n-extracted-strings.php:37
+msgid "Activer la copie du lien"
+msgstr "Attiva la copia del collegamento"
+
+#: i18n-extracted-strings.php:38
+msgid "Activer le partage par e-mail"
+msgstr "Attiva la condivisione tramite e-mail"
+
+#: i18n-extracted-strings.php:39
+msgid "Activer le partage par SMS"
+msgstr "Attiva la condivisione tramite SMS"
+
+#: i18n-extracted-strings.php:40
+msgid "Activer le partage par WhatsApp"
+msgstr "Attiva la condivisione tramite WhatsApp"
+
+#: i18n-extracted-strings.php:41
+msgid "Activer le partage par Messenger"
+msgstr "Attiva la condivisione tramite Messenger"
+
+#: i18n-extracted-strings.php:42
+msgid "Activer le partage par ChatGPT"
+msgstr "Attiva la condivisione tramite ChatGPT"
+
+#: i18n-extracted-strings.php:43
+msgid "Activer le partage par Claude"
+msgstr "Attiva la condivisione tramite Claude"
+
+#: i18n-extracted-strings.php:44
+msgid "Activer le partage par Perplexity"
+msgstr "Attiva la condivisione tramite Perplexity"
+
+#: i18n-extracted-strings.php:45
+msgid "Activer le partage par Facebook"
+msgstr "Attiva la condivisione tramite Facebook"
+
+#: i18n-extracted-strings.php:46
+msgid "Activer le partage par Instagram"
+msgstr "Attiva la condivisione tramite Instagram"
+
+#: i18n-extracted-strings.php:47
+msgid "Activer le partage par LinkedIn"
+msgstr "Attiva la condivisione tramite LinkedIn"
+
+#: i18n-extracted-strings.php:48
+msgid "Activer le partage par X"
+msgstr "Attiva la condivisione tramite X"
+
+#: i18n-extracted-strings.php:51
+msgid "Haut de page"
+msgstr "Intestazione pagina"
+
+#: i18n-extracted-strings.php:52
+msgid "Blog"
+msgstr "Blog"
+
+#: i18n-extracted-strings.php:53
+msgid "Actions"
+msgstr "Azioni"
+
+#: i18n-extracted-strings.php:54
+msgid "Réassurance"
+msgstr "Riassicurazione"
+
+#: i18n-extracted-strings.php:55
+msgid "Listes"
+msgstr "Liste"
+
+#: i18n-extracted-strings.php:56
+msgid "Navigation"
+msgstr "Navigazione"
+
+#: i18n-extracted-strings.php:57
+msgid "Texte et Images"
+msgstr "Testo e Immagini"
+
+#: i18n-extracted-strings.php:58
+msgid "Remontées automatiques"
+msgstr "Caricamenti automatici"
+
+#: i18n-extracted-strings.php:59
+msgid "Accordéons"
+msgstr "Fisarmoniche"
+
+#: i18n-extracted-strings.php:60
+msgid "Relation"
+msgstr "Relazione"
+
+#: i18n-extracted-strings.php:61
+msgid "Téléchargement"
+msgstr "Download"
+
+#: i18n-extracted-strings.php:62
+msgid "Témoignages"
+msgstr "Testimonianze"
+
+#: i18n-extracted-strings.php:63
+msgid "Autres"
+msgstr "Altro"
+
+#: PostTypes/AbstractPostType.php:47
+#: Taxonomies/AbstractTaxonomy.php:44
+msgid "Champs additionnels"
+msgstr "Campi aggiuntivi"
+
+#: PostTypes/AbstractPostType.php:104
+msgid "Tous les résultats :"
+msgstr "Tutti i risultati:"
+
+#: PostTypes/GravityFormConfirmationPageType.php:22
+msgid "P. de confirmation"
+msgstr "P. di conferma"
+
+#: PostTypes/GravityFormConfirmationPageType.php:24
+msgid "Pages de confirmation"
+msgstr "Pagine di conferma"
+
+#: PostTypes/GravityFormConfirmationPageType.php:25
+#: Providers/FormsServiceProvider.php:153
+#: Providers/FormsServiceProvider.php:213
+msgid "Page de confirmation"
+msgstr "Pagina di conferma"
+
+#: PostTypes/GravityFormConfirmationPageType.php:26
+msgid "Confirmations"
+msgstr "Conferme"
+
+#: PostTypes/GravityFormConfirmationPageType.php:27
+msgid "Ajouter une page de confirmation"
+msgstr "Aggiungi una pagina di conferma"
+
+#: PostTypes/GravityFormConfirmationPageType.php:28
+msgid "Ajouter une nouvelle page de confirmation"
+msgstr "Aggiungi una nuova pagina di conferma"
+
+#: PostTypes/GravityFormConfirmationPageType.php:29
+msgid "Modifier la page de confirmation"
+msgstr "Modifica la pagina di conferma"
+
+#: PostTypes/GravityFormConfirmationPageType.php:30
+msgid "Nouvelle page de confirmation"
+msgstr "Nuova pagina di conferma"
+
+#: PostTypes/GravityFormConfirmationPageType.php:31
+msgid "Voir la page de confirmation"
+msgstr "Visualizza la pagina di conferma"
+
+#: PostTypes/GravityFormConfirmationPageType.php:32
+msgid "Voir les pages de confirmation"
+msgstr "Visualizza le pagine di conferma"
+
+#: PostTypes/GravityFormConfirmationPageType.php:33
+msgid "Rechercher une page de confirmation"
+msgstr "Cerca una pagina di conferma"
+
+#: PostTypes/GravityFormConfirmationPageType.php:34
+msgid "Aucune page de confirmation trouvée"
+msgstr "Nessuna pagina di conferma trovata"
+
+#: PostTypes/GravityFormConfirmationPageType.php:35
+msgid "Aucune page de confirmation trouvée dans la corbeille"
+msgstr "Nessuna pagina di conferma nel cestino"
+
+#: PostTypes/GravityFormConfirmationPageType.php:36
+msgid "Toutes les pages de confirmation"
+msgstr "Tutte le pagine di conferma"
+
+#: PostTypes/GravityFormConfirmationPageType.php:37
+msgid "Archives des pages de confirmation"
+msgstr "Archivi delle pagine di conferma"
+
+#: PostTypes/GravityFormConfirmationPageType.php:56
+msgid "Configuration de la page"
+msgstr "Configurazione della pagina"
+
+#: PostTypes/GravityFormConfirmationPageType.php:57
+msgid "Page parent"
+msgstr "Pagina padre"
+
+#: Providers/AdminIpRestrictionServiceProvider.php:39
+msgid "Accès refusé. Votre adresse IP (%s) n’est pas autorisée à accéder à cette zone."
+msgstr "Accesso negato. Il tuo indirizzo IP (%s) non è autorizzato ad accedere a questa area."
+
+#: Providers/AdminIpRestrictionServiceProvider.php:42
+msgid "Accès interdit"
+msgstr "Accesso vietato"
+
+#: Providers/PostTypeServiceProvider.php:419
+msgid "Tri"
+msgstr "Ordinamento"
+
+#: Providers/PostTypeServiceProvider.php:420
+msgid "Tableau trié par %s"
+msgstr "Tabella ordinata per %s"
+
+#: Providers/PostTypeServiceProvider.php:420
+msgid "colonne"
+msgstr "colonna"
+
+#: Services/PostService.php:289
+msgid "Article"
+msgstr "Articolo"
+
+#: Services/SearchEngineService.php:357
+msgid "Toutes les pages"
+msgstr "Tutte le pagine"
+
+#: Services/SearchEngineService.php:361
+msgid "Tous les articles"
+msgstr "Tutti gli articoli"
+
+#: Services/SearchEngineService.php:443
+msgid "Résultats"
+msgstr "Risultati"
