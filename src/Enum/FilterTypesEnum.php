@@ -9,4 +9,5 @@ enum FilterTypesEnum: string
     case TAXONOMY = 'taxonomy';
     case META = 'meta';
     case SEARCH = 'search';
+    case PERIOD = 'period';
 }
