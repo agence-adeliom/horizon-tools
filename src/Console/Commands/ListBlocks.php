@@ -20,7 +20,10 @@ class ListBlocks extends Command
 
         foreach (ClassService::getAllCustomBlockClasses() as $blockClass) {
             $slug = $blockClass::$slug;
-            $title = $blockClass::$title;
+            // getTitle() and not the $title property: blocks are free to override the getter to
+            // return a translated title, and AbstractBlock::getTitle() falls back to $title
+            // anyway. Reading the property left every such block listed without a name.
+            $title = $blockClass::getTitle();
 
             $data[] = [$title, $slug, $blockClass];
         }
