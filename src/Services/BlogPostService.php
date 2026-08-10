@@ -239,6 +239,10 @@ class BlogPostService
                 return $headings;
             }
 
+            // Une citation est souvent composée avec un titre pour sa mise en forme : ce n'est pas
+            // une section de l'article, on l'écarte avant de relever les titres.
+            $html = preg_replace(pattern: '#<blockquote\b[^>]*>.*?</blockquote>#is', replacement: '', subject: $html) ?? $html;
+
             // Pattern pour matcher h1 à h6 avec leur contenu
             preg_match_all(pattern: '/<h([1-6])[^>]*>(.*?)<\/h\1>/is', subject: $html, matches: $matches, flags: PREG_SET_ORDER);
 
