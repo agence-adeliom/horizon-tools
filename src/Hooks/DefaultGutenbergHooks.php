@@ -13,6 +13,24 @@ class DefaultGutenbergHooks extends AbstractHook
     public function init(): void
     {
         add_filter('block_editor_settings_all', [$this, 'injectEditorStyles']);
+
+        if (!Config::get('gutenberg.block_directory', false)) {
+            $this->disableBlockDirectory();
+        }
+    }
+
+    /**
+     * Remove the Block Directory from the block inserter.
+     *
+     * Without it, searching in the inserter lists plugins to install from
+     * wordpress.org next to the site's own blocks — never desirable on a
+     * project where the available blocks are the ones we ship.
+     *
+     * Re-enable per project via Config::set('gutenberg.block_directory', true).
+     */
+    public function disableBlockDirectory(): void
+    {
+        remove_action('enqueue_block_editor_assets', 'wp_enqueue_editor_block_directory_assets');
     }
 
     /**
