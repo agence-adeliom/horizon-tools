@@ -10,6 +10,7 @@ use Adeliom\HorizonTools\Hooks\DefaultBackOfficeHooks;
 use Adeliom\HorizonTools\Hooks\DefaultCompilationHooks;
 use Adeliom\HorizonTools\Hooks\DefaultGravityFormsHooks;
 use Adeliom\HorizonTools\Hooks\DefaultGutenbergHooks;
+use Adeliom\HorizonTools\Hooks\DefaultMailSenderHooks;
 use Adeliom\HorizonTools\Hooks\DefaultTaxonomyHooks;
 use Adeliom\HorizonTools\Hooks\DefaultWordPressHooks;
 use Adeliom\HorizonTools\Hooks\PostHooks;
@@ -44,6 +45,7 @@ class HooksServiceProvider extends SageServiceProvider
                 DefaultCompilationHooks::class,
                 DefaultAcfHooks::class,
                 DefaultGravityFormsHooks::class,
+                DefaultMailSenderHooks::class,
                 WysiwygHooks::class,
                 QueryBuilderHooks::class,
                 DefaultTaxonomyHooks::class,
