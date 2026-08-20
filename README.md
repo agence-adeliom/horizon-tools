@@ -372,6 +372,35 @@ Customize the WordPress admin appearance via `config/back-office.php`:
 - **Confirmation Pages**: Optional post type for Gravity Forms confirmation pages (config-gated).
 - **Optional Labels**: Automatically replaces "nécessaire" with "facultatif" on optional fields.
 - **FormField**: ACF field to select Gravity Forms in your custom fields.
+- **Global Mail Sender**: One sender address and name for every form notification and every WordPress
+  mail, set in Forms > Settings > E-mails (config-gated, off by default).
+
+```php
+// config/gravityforms.php
+return [
+    'sender' => [
+        // Off by default: enabling it changes the sender of existing notifications.
+        'enabled' => true,
+        // Set to false to leave non-Gravity-Forms mails (password reset, WordPress alerts) untouched.
+        'applyToWordPressMails' => true,
+    ],
+];
+```
+
+The setting is a default, never a constraint: it only fills a notification's From Email that is empty
+or still on the `{admin_email}` Gravity Forms puts there, so an address typed into one notification
+always wins. Reply-To is filled the same way, with the visitor's email, on notifications sent to a
+fixed address — never on the ones sent back to the visitor.
+
+A theme that would rather drive the sender from its own options page can skip the Gravity Forms
+screen entirely and answer the `horizon_tools_mail_sender` filter:
+
+```php
+add_filter('horizon_tools_mail_sender', fn (array $sender): array => [
+    'address' => get_field('sender_address', 'option') ?: $sender['address'],
+    'name' => get_field('sender_name', 'option') ?: $sender['name'],
+]);
+```
 
 ### WYSIWYG Customization
 
