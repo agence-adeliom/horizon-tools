@@ -49,6 +49,19 @@ class ShareOptionsAdmin extends AbstractAdmin
         ShareService::SHARE_BY_X => ['label' => 'Activer le partage par X', 'name' => self::FIELD_SHARE_ENABLE_X],
     ];
 
+    /**
+     * Sub-field names of the share group, in declaration order.
+     *
+     * ShareService needs them to read a language's stored toggles directly
+     * when ACF cannot resolve them (see ShareService::readStoredOptions()).
+     *
+     * @return array<string>
+     */
+    public static function getShareFieldNames(): array
+    {
+        return array_column(self::SHARE_FIELD_MAP, 'name');
+    }
+
     private function getShareServiceToggles(): array
     {
         $toggles = [];
