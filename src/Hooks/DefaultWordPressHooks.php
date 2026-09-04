@@ -352,6 +352,20 @@ EOF;
 
             $styleContent .= $adminStyle;
 
+            /*
+             * Avant WP 7.0, buttons.css codait la couleur des boutons de l'admin en dur :
+             * remapper --wp-admin-theme-color* ne suffit pas, il faut encore les repeindre.
+             * Depuis, le core les dérive lui-même des variables, et ce complément ferait plus
+             * de mal que de bien (cf. l'en-tête de buttons-legacy.css).
+             */
+            if (version_compare($GLOBALS['wp_version'] ?? '0', '7.0', '<')) {
+                $legacyButtonsPath = sprintf('%s/../../resources/styles/back-office/buttons-legacy.css', __DIR__);
+
+                if (file_exists($legacyButtonsPath)) {
+                    $styleContent .= file_get_contents($legacyButtonsPath);
+                }
+            }
+
             echo sprintf('<style>%s%s</style>', $this->getStyleVars(), $styleContent);
         }
     }

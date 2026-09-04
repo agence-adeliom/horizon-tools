@@ -1,0 +1,43 @@
+/*
+ * Boutons de l'admin aux couleurs du site, pour WordPress < 7.0 seulement.
+ *
+ * wp-includes/css/buttons.css ne dérive les états de `.button`, `.button-secondary`,
+ * `.button-link` et `.button-primary` de `--wp-admin-theme-color*` que depuis WP 7.0 ;
+ * avant, la couleur (#2271b1) y était codée en dur, et remapper les variables ne
+ * suffisait donc pas. Ce fichier n'est injecté que sur ces versions (cf.
+ * DefaultWordPressHooks::handleAdminStyles), parce qu'il a un effet de bord connu :
+ * `.button:not(.button-primary)` bat la règle de n'importe quelle extension et
+ * repeint le libellé de ses boutons sans toucher au fond qu'elle a posé — un bouton
+ * d'extension à fond foncé (Gravity Forms, Folders…) en sort illisible.
+ */
+.wp-admin.wp-core-ui {
+    .button {
+        border-color: var(--horizon-admin-main-color);
+
+        &:not(.button-primary) {
+            color: var(--horizon-admin-main-color);
+            &:hover {
+                color: var(--horizon-admin-main-color-dark);
+                border-color: var(--horizon-admin-main-color-dark);
+                background-color: var(--horizon-admin-main-color-light);
+            }
+        }
+    }
+
+    .button-link {
+        color: var(--horizon-admin-main-color);
+        &:hover {
+            color: var(--horizon-admin-main-color-dark);
+        }
+    }
+
+    .button-primary {
+        background: var(--horizon-admin-main-color);
+        border-color: var(--horizon-admin-main-color);
+
+        &:hover {
+            background: var(--horizon-admin-main-color-dark);
+            border-color: var(--horizon-admin-main-color-dark);
+        }
+    }
+}
