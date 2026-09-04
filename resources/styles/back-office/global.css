@@ -107,12 +107,27 @@
      * codaient ces couleurs en dur : elles reçoivent buttons-legacy.css à la place.
      */
 
-    a {
+    /*
+     * Liens de l'admin : `:where()` ramène volontairement ces deux sélecteurs à une
+     * spécificité de 0,1,0 (`:is(.wp-admin)` seul compte), là où `.wp-admin a` valait 0,1,1.
+     *
+     * Ce fichier est imprimé sur `admin_enqueue_scripts`, donc *avant* les feuilles mises en
+     * file par le core et les extensions. À 0,1,0 on bat toujours le `a { color: #2271b1 }`
+     * de common.css (0,0,1 — le core code encore cette couleur en dur, contrairement aux
+     * boutons, cf. buttons-legacy.css), mais on perd l'égalité de spécificité face à toute
+     * extension qui a pris la peine de styler son lien. Les liens-boutons à fond propre
+     * gardent donc leur libellé : Folders (`a.add-new-folder`, fond #fa166b) sortait en vert
+     * sur rose, à 2,56:1.
+     *
+     * Le survol est écrit à plat plutôt qu'en `&:hover` imbriqué : imbriqué, il repasserait
+     * à 0,2,0 et reprendrait l'avantage sur les extensions.
+     */
+    :where(a) {
         color: var(--horizon-admin-main-color);
+    }
 
-        &:hover {
-            color: var(--horizon-admin-main-color-dark);
-        }
+    :where(a:hover) {
+        color: var(--horizon-admin-main-color-dark);
     }
 
     .acf-block-preview{
