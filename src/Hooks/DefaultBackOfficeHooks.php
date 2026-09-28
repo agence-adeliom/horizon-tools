@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Adeliom\HorizonTools\Hooks;
 
 use Adeliom\HorizonTools\Services\Compilation\CompilationService;
+use Adeliom\HorizonTools\ViewModels\Asset\AssetViewModel;
 use Illuminate\Support\Facades\Vite;
 use Livewire\Mechanisms\FrontendAssets\FrontendAssets as LivewireFrontendAssets;
 
@@ -94,10 +95,7 @@ class DefaultBackOfficeHooks extends AbstractHook
             $blockScriptUrls[] = $asset->getUrl();
             // CSS chunks (e.g. Swiper) — hot mode: Vite HMR injects them on module load.
             if (!$isHot) {
-                foreach ($asset->getAssociatedAssets() ?? [] as $cssAsset) {
-                    if (!$cssAsset->isStyle()) {
-                        continue;
-                    }
+                foreach (self::collectStyleAssets($asset) as $cssAsset) {
                     $cssUrl = $cssAsset->getUrl();
                     if (!$cssUrl || isset($seenCssUrls[$cssUrl])) {
                         continue;
@@ -171,5 +169,36 @@ class DefaultBackOfficeHooks extends AbstractHook
         } catch (\Throwable) {
             // Livewire not fully available — CSS already enqueued above
         }
+    }
+
+    /**
+     * Collect the CSS assets of a script, including those attached to the JS chunks it imports.
+     *
+     * When several entries import the same library (e.g. Swiper), Vite extracts it into a shared
+     * chunk and attaches its CSS to that chunk in the manifest, not to the importing entries.
+     *
+     * @param array<string, true> $visited
+     * @return AssetViewModel[]
+     */
+    private static function collectStyleAssets(AssetViewModel $asset, array &$visited = []): array
+    {
+        $styles = [];
+
+        foreach ($asset->getAssociatedAssets() ?? [] as $associatedAsset) {
+            if ($associatedAsset->isStyle()) {
+                $styles[] = $associatedAsset;
+                continue;
+            }
+
+            $url = $associatedAsset->getUrl();
+            if (!$url || isset($visited[$url])) {
+                continue;
+            }
+            $visited[$url] = true;
+
+            array_push($styles, ...self::collectStyleAssets($associatedAsset, $visited));
+        }
+
+        return $styles;
     }
 }
