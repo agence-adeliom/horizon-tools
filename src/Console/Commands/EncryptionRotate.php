@@ -29,67 +29,81 @@ class EncryptionRotate extends Command
             return self::FAILURE;
         }
 
-        $rotated = 0;
-        $unreadable = [];
+        $results = ['rotated' => [], 'unreadable' => [], 'failed' => []];
 
         foreach ($repository->all() as $value) {
-            // decrypt() essaie APP_KEY puis APP_PREVIOUS_KEYS ; encrypt() utilise toujours APP_KEY.
-            $plain = $codec->decrypt($value->value);
+            $write = static function (string $token) use ($repository, $value): bool {
+                $repository->write($value->table, $value->objectId, $value->key, $token);
 
-            if ($plain === null) {
-                $unreadable[] = $value->location();
-
-                continue;
-            }
-
-            $repository->write($value->table, $value->objectId, $value->key, $codec->encrypt($plain));
-            $rotated++;
+                return true;
+            };
+            $results[$this->rotateToken($codec, $value->value, $write)][] = $value->location();
         }
 
         foreach ($repository->contentTokens() as $item) {
-            $plain = $codec->decrypt($item['token']);
-
-            if ($plain === null) {
-                $unreadable[] = sprintf('posts:%d:post_content', $item['postId']);
-
-                continue;
-            }
-
-            $repository->replaceInContent($item['postId'], $item['token'], $codec->encrypt($plain));
-            $rotated++;
+            $write = static fn(string $token): bool => $repository->replaceInContent($item['postId'], $item['token'], $token);
+            $results[$this->rotateToken($codec, $item['token'], $write)][] = sprintf('posts:%d:post_content', $item['postId']);
         }
 
         foreach ($repository->embeddedOptionTokens() as $item) {
-            $plain = $codec->decrypt($item['token']);
-
-            if ($plain === null) {
-                $unreadable[] = sprintf('options:0:%s (contenu)', $item['option']);
-
-                continue;
-            }
-
-            $repository->replaceInOption($item['option'], $item['token'], $codec->encrypt($plain));
-            $rotated++;
+            $write = static fn(string $token): bool => $repository->replaceInOption($item['option'], $item['token'], $token);
+            $results[$this->rotateToken($codec, $item['token'], $write)][] = sprintf('options:0:%s (contenu)', $item['option']);
         }
 
         wp_cache_flush();
-        $this->info(sprintf('%d valeur(s) rechiffrée(s) avec APP_KEY.', $rotated));
+        $this->info(sprintf('%d valeur(s) rechiffrée(s) avec APP_KEY.', count($results['rotated'])));
 
-        if ($unreadable !== []) {
-            $this->warn(
-                sprintf(
-                    '%d valeur(s) illisible(s), laissée(s) en l’état (ancienne clé absente de APP_PREVIOUS_KEYS ?) :',
-                    count($unreadable)
-                )
-            );
+        $this->listLocations(
+            $results['unreadable'],
+            '%d valeur(s) illisible(s), laissée(s) en l’état (ancienne clé absente de APP_PREVIOUS_KEYS ?) :'
+        );
+        $this->listLocations(
+            $results['failed'],
+            '%d valeur(s) non rechiffrée(s), laissée(s) en l’état (écriture en échec ou clair vide) :'
+        );
 
-            foreach ($unreadable as $location) {
-                $this->line('  ' . $location);
-            }
-
+        if ($results['unreadable'] !== [] || $results['failed'] !== []) {
             return self::FAILURE;
         }
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Rechiffre un jeton avec APP_KEY et le réécrit avec $write. decrypt() essaie APP_KEY puis
+     * APP_PREVIOUS_KEYS. Seul un remplacement effectif compte : un jeton dont le clair est vide
+     * (ou déjà préfixé) donnerait encrypt($plain) === $plain, il n’est jamais réécrit.
+     *
+     * @param callable(string): bool $write vrai si la valeur a bien été remplacée
+     *
+     * @return 'rotated'|'unreadable'|'failed'
+     */
+    private function rotateToken(EncryptedValueCodec $codec, string $token, callable $write): string
+    {
+        $plain = $codec->decrypt($token);
+
+        if ($plain === null) {
+            return 'unreadable';
+        }
+
+        $encrypted = $codec->encrypt($plain);
+
+        return $encrypted !== $plain && $write($encrypted) ? 'rotated' : 'failed';
+    }
+
+    /**
+     * @param list<string> $locations
+     */
+    private function listLocations(array $locations, string $message): void
+    {
+        if ($locations === []) {
+            return;
+        }
+
+        $this->warn(sprintf($message, count($locations)));
+
+        foreach ($locations as $location) {
+            $this->line('  ' . $location);
+        }
     }
 }

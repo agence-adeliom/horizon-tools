@@ -23,9 +23,14 @@ class EncryptionSnapshotCommand extends Command
         // Jamais bloquant : sans clé il n'y a rien de lisible à sauvegarder, et cette
         // commande tourne en amont d'un db:pull qu'elle ne doit pas empêcher. On écrit
         // quand même un instantané vide : un ancien fichier ne doit pas rester en place.
+        // Si l’écriture échoue (dossier refusé, disque plein…), on avertit sans échouer.
         if ($codec === null) {
-            $this->warn('APP_KEY absente : aucune valeur à sauvegarder (instantané vide écrit).');
-            EncryptionSnapshot::capture($repository, null, $path);
+            try {
+                EncryptionSnapshot::capture($repository, null, $path);
+                $this->warn('APP_KEY absente : aucune valeur à sauvegarder (instantané vide écrit).');
+            } catch (\Throwable $e) {
+                $this->warn(sprintf('APP_KEY absente : aucune valeur à sauvegarder (instantané vide non écrit : %s).', $e->getMessage()));
+            }
 
             return self::SUCCESS;
         }
