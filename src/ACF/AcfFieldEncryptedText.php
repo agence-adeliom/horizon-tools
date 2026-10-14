@@ -55,10 +55,71 @@ final class AcfFieldEncryptedText extends \acf_field
      */
     public function render_field($field): void
     {
-        printf(
-            '<input type="password" name="%s[value]" value="" autocomplete="new-password" spellcheck="false" />',
-            esc_attr($field['name'])
-        );
+        $revealable = !empty($field['revealable']);
+        $hasValue = is_string($field['value']) && $field['value'] !== '';
+
+        if (EncryptedValueCodec::make() === null) {
+            printf(
+                '<p class="acf-notice -error"><strong>%s</strong></p>',
+                esc_html__('APP_KEY absente : ce champ chiffré ne peut être ni lu ni enregistré.', 'horizon-tools')
+            );
+        } elseif ($this->isUnreadable($field)) {
+            printf(
+                '<p class="acf-notice -warning hz-encrypted-text__unreadable"><strong>%s</strong></p>',
+                esc_html__(
+                    'Une valeur est enregistrée mais illisible avec la clé actuelle (APP_KEY changée ou base importée d’un autre environnement). Ressaisir la valeur, ou restaurer l’ancienne clé.',
+                    'horizon-tools'
+                )
+            );
+        }
+
+        $placeholder =
+            $hasValue && !$revealable
+                ? __('•••••••• (valeur enregistrée — laisser vide pour la conserver)', 'horizon-tools')
+                : (string) $field['placeholder'];
+        ?>
+        <div class="hz-encrypted-text" style="display:flex;gap:6px;align-items:center;">
+            <input
+                type="password"
+                id="<?php echo esc_attr($field['id'] ?? ''); ?>"
+                name="<?php echo esc_attr($field['name']); ?>[value]"
+                value="<?php echo $revealable ? esc_attr((string) $field['value']) : ''; ?>"
+                placeholder="<?php echo esc_attr($placeholder); ?>"
+                autocomplete="new-password"
+                spellcheck="false"
+                <?php disabled(!empty($field['disabled'])); ?>
+                style="flex:1;"
+            />
+            <?php if ($revealable): ?>
+                <button type="button" class="button hz-encrypted-text__toggle" aria-pressed="false"><?php esc_html_e(
+                    'Afficher',
+                    'horizon-tools'
+                ); ?></button>
+            <?php endif; ?>
+        </div>
+        <?php if ($hasValue && !$revealable): ?>
+            <label style="display:inline-block;margin-top:6px;">
+                <input type="checkbox" name="<?php echo esc_attr($field['name']); ?>[clear]" value="1" />
+                <?php esc_html_e('Effacer la valeur enregistrée', 'horizon-tools'); ?>
+            </label>
+        <?php endif; ?>
+        <script>
+        if (!window._hzEncryptedTextInit) {
+            window._hzEncryptedTextInit = true;
+            document.addEventListener('click', function (e) {
+                var button = e.target.closest('.hz-encrypted-text__toggle');
+                if (!button) return;
+                var input = button.parentElement.querySelector('input');
+                var reveal = input.type === 'password';
+                input.type = reveal ? 'text' : 'password';
+                button.setAttribute('aria-pressed', reveal ? 'true' : 'false');
+                button.textContent = reveal ? <?php echo wp_json_encode(
+                    __('Masquer', 'horizon-tools')
+                ); ?> : <?php echo wp_json_encode(__('Afficher', 'horizon-tools')); ?>;
+            });
+        }
+        </script>
+        <?php
     }
 
     /**
@@ -178,6 +239,62 @@ final class AcfFieldEncryptedText extends \acf_field
         }
 
         return $codec->encrypt($value);
+    }
+
+    /**
+     * @param bool|string          $valid
+     * @param mixed                $value
+     * @param array<string, mixed> $field
+     * @param string               $input
+     */
+    public function validate_value($valid, $value, $field, $input): bool|string
+    {
+        if ($valid !== true) {
+            return $valid;
+        }
+
+        $submitted = is_array($value) ? (string) ($value['value'] ?? '') : (string) $value;
+
+        if ($submitted !== '' && EncryptedValueCodec::make() === null) {
+            return __('Clé de chiffrement (APP_KEY) absente : impossible d’enregistrer cette valeur.', 'horizon-tools');
+        }
+
+        return $valid;
+    }
+
+    /**
+     * Dans un bloc ACF, la valeur est stockée dans les attributs du bloc (post_content)
+     * sans passer par update_value : elle serait enregistrée en clair. On l'empêche.
+     *
+     * @param array<string, mixed> $field
+     *
+     * @return array<string, mixed>
+     */
+    public function prepare_field($field): array
+    {
+        if ($this->isRenderedInBlock($field)) {
+            $field['instructions'] = __(
+                'Champ chiffré indisponible dans un bloc : à placer dans une page d’options, un type de contenu, une taxonomie ou un profil.',
+                'horizon-tools'
+            );
+            $field['disabled'] = 1;
+        }
+
+        return $field;
+    }
+
+    /**
+     * Vrai si le champ est rendu dans un bloc ACF.
+     *
+     * ACF 6.8.10, pro/blocks.php (l. 1012, 1146, 1672) : le formulaire d’un bloc passe par
+     * acf_prefix_fields($fields, "acf-{$block['id']}") avant acf_render_fields, et l’id de
+     * bloc est toujours préfixé « block_ » (acf_ensure_block_id_prefix, l. 840).
+     *
+     * @param array<string, mixed> $field
+     */
+    private function isRenderedInBlock(array $field): bool
+    {
+        return str_starts_with((string) ($field['prefix'] ?? ''), 'acf-block_');
     }
 
     /**
