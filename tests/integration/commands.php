@@ -44,8 +44,8 @@ app()->forgetInstance('encrypter');
 config(['app.key' => $savedKey]);
 app()->forgetInstance('encrypter');
 hz_check($code === 0 && str_contains($output, 'APP_KEY absente'), 'M4 : sans clé, écriture impossible -> avertissement, SUCCESS');
-[$code] = $run('encryption:snapshot', ['--file' => $notADirectory . '/snap.json']);
-hz_check($code !== 0, 'M4 : avec clé, écriture impossible -> échec (comportement inchangé)');
+[$code, $output] = $run('encryption:snapshot', ['--file' => $notADirectory . '/snap.json']);
+hz_check($code === 1 && str_contains($output, 'Instantané non écrit'), 'M4 : avec clé, écriture impossible -> erreur affichée, FAILURE');
 unlink($notADirectory);
 
 // M5 : rotate ne compte que les remplacements effectifs.
