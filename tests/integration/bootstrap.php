@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+// Pas de declare(strict_types=1) : WP-CLI eval-file le refuse (« must be the very first statement »).
 
 /*
  * Helpers des contrôles d'intégration, exécutés via `wp eval-file` dans un projet

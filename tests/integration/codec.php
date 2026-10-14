@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+// Pas de declare(strict_types=1) : WP-CLI eval-file le refuse (« must be the very first statement »).
 
 use Adeliom\HorizonTools\Services\Encryption\EncryptedValueCodec;
 use Illuminate\Encryption\Encrypter;
@@ -9,6 +9,10 @@ require __DIR__ . '/bootstrap.php';
 
 $codec = EncryptedValueCodec::make();
 hz_check($codec !== null, 'APP_KEY présente : codec disponible');
+
+if ($codec === null) {
+    hz_done();
+}
 
 $stored = $codec->encrypt('sk_test_123');
 hz_check(str_starts_with($stored, 'hz_enc:v1:'), 'valeur chiffrée préfixée');
