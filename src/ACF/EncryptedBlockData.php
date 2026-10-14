@@ -93,7 +93,7 @@ final class EncryptedBlockData
 
             $name = substr($reference, 1);
 
-            if (array_key_exists($name, $data) && self::isEncryptedField($key)) {
+            if (array_key_exists($name, $data) && self::encryptedField($key) !== null) {
                 $data[$name] = self::encryptValue($data[$name], $name);
             }
         }
@@ -112,8 +112,9 @@ final class EncryptedBlockData
     private static function encryptRequestData(array $data): array
     {
         foreach ($data as $key => $value) {
-            if (is_string($key) && acf_is_field_key($key) && self::isEncryptedField($key)) {
-                $field = acf_get_field($key);
+            $field = is_string($key) && acf_is_field_key($key) ? self::encryptedField($key) : null;
+
+            if ($field !== null) {
                 $data[$key] = self::encryptValue($value, (string) ($field['name'] ?? $key));
             } elseif (is_array($value)) {
                 $data[$key] = self::encryptRequestData($value);
@@ -123,11 +124,16 @@ final class EncryptedBlockData
         return $data;
     }
 
-    private static function isEncryptedField(string $key): bool
+    /**
+     * Champ « Texte chiffré » de clé `$key`, ou null.
+     *
+     * @return array<string, mixed>|null
+     */
+    private static function encryptedField(string $key): ?array
     {
         $field = acf_get_field($key);
 
-        return is_array($field) && ($field['type'] ?? '') === AcfFieldEncryptedText::TYPE;
+        return is_array($field) && ($field['type'] ?? '') === AcfFieldEncryptedText::TYPE ? $field : null;
     }
 
     /**

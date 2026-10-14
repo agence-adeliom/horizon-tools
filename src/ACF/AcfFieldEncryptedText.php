@@ -308,9 +308,17 @@ final class AcfFieldEncryptedText extends \acf_field
             return $valid;
         }
 
+        // « Effacer » : rien à chiffrer.
+        if (is_array($value) && !empty($value['clear'])) {
+            return $valid;
+        }
+
         $submitted = is_array($value) ? (string) ($value['value'] ?? '') : (string) $value;
 
-        if ($submitted !== '' && EncryptedValueCodec::make() === null) {
+        // Valeur déjà chiffrée (formulaire de bloc prérempli avec une valeur illisible ou sans clé) :
+        // conservée telle quelle par update_value, sinon la validation du bloc (pro/blocks.php
+        // l. 1951-1955) bloquerait l’enregistrement de la page.
+        if ($submitted !== '' && !EncryptedValueCodec::isEncrypted($submitted) && EncryptedValueCodec::make() === null) {
             return __('Clé de chiffrement (APP_KEY) absente : impossible d’enregistrer cette valeur.', 'horizon-tools');
         }
 

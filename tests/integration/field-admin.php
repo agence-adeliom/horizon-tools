@@ -148,6 +148,19 @@ $valid = $type->validate_value(true, ['value' => 'x'], acf_get_field('field_hz_e
 hz_check(is_string($valid) && str_contains($valid, 'APP_KEY'), 'sans clé : saisie refusée avec un message');
 $valid = $type->validate_value(true, ['value' => ''], acf_get_field('field_hz_enc_admin'), 'acf[field_hz_enc_admin]');
 hz_check($valid === true, 'sans clé : soumission vide acceptée (rien à chiffrer)');
+// Formulaire de bloc prérempli avec la valeur chiffrée (valeur illisible ou sans clé) : la validation
+// lancée à chaque modification du bloc (pro/blocks.php l. 1951-1953) ne doit pas bloquer l’enregistrement.
+$valid = $type->validate_value(
+    true,
+    ['value' => $foreign->encrypt('conservee')],
+    acf_get_field('field_hz_enc_admin'),
+    'acf[field_hz_enc_admin]'
+);
+hz_check($valid === true, 'sans clé : valeur déjà chiffrée acceptée (conservée telle quelle)');
+$valid = $type->validate_value(true, ['value' => 'x', 'clear' => '1'], acf_get_field('field_hz_enc_admin'), 'acf[field_hz_enc_admin]');
+hz_check($valid === true, 'sans clé : « Effacer » accepté');
+$valid = $type->validate_value(true, ['value' => 'plain'], acf_get_field('field_hz_enc_admin'), 'acf[field_hz_enc_admin]');
+hz_check(is_string($valid) && str_contains($valid, 'APP_KEY'), 'sans clé : nouveau clair toujours refusé');
 
 foreach (['hz_enc_admin', 'hz_enc_admin_rev'] as $name) {
     delete_option('options_' . $name);
