@@ -95,6 +95,31 @@ Supporting classes: `MetaQuery`, `TaxQuery`, `LatLngQuery`.
 
 `src/Services/` contains ~29 service classes for business logic (SEO multi-plugin support, media handling, image color extraction, search engine, caching, etc.). Services use Laravel facades (`Config`, `Cache`, `View`).
 
+### Encrypted Text Field
+
+ACF field type `encrypted_text` (`src/ACF/AcfFieldEncryptedText.php`, registered in `Hooks/DefaultAcfHooks` via `acf_register_field_type`, its hooks in `registerEncryptedTextHooks()`) with the Extended ACF wrapper `Fields/Text/EncryptedText` (`->writeOnly()` opt-in). Values are encrypted with Acorn's Laravel Encrypter (`APP_KEY`, rotation through `APP_PREVIOUS_KEYS`); reading the value needs both the code (`.env`) and the database.
+
+| Class | Role |
+|---|---|
+| `Services/Encryption/EncryptedValueCodec` | Only place that encrypts/decrypts. Stored format `hz_enc:v1:<Laravel payload>`; unprefixed values are legacy plaintext, read as-is |
+| `ACF/AcfFieldEncryptedText` | Encrypts in `update_value`, decrypts in `load_value` (never `format_value`), admin rendering, validation, hidden from ACF REST |
+| `ACF/EncryptedBlockData` | ACF blocks: `acf/pre_save_block`, `use_post_meta` pending store, `widget_block` option, `isBlockFormField()` (`acf-block_` prefix) |
+| `Services/Encryption/EncryptedValueRepository` | Finds encrypted values by prefix (`TABLES`, `TOKEN_PATTERN` built from the codec prefix): options, post/term/user meta, tokens embedded in `post_content` and serialized options. `write()` returns whether the value was written |
+| `Services/Encryption/SnapshotStore` | Snapshot/restore around a DB import (keys differing per environment) |
+| `Console/Commands/Encryption{Status,Rotate,Snapshot,Restore}` | `encryption:*` commands (no `Command` suffix, repo convention) |
+| `Console/Listeners/PreventKeyGenerate` | `CommandStarting` listener: throws to block `key:generate` (without `--show`) while readable values exist |
+
+Invariants to preserve:
+
+- **Never write plaintext.** Without a key, admin saves are refused (`validate_value`); block paths store `''` and log, they never throw (that would break the whole page save).
+- **Never silently empty a value.** An unreadable value (missing key or other key) is kept on save, flagged in admin (warning + `error_log`), and only the « Effacer » checkbox clears it.
+- **Admin form arrays are slashed** (`['value' => …, 'clear' => …]` from `$_POST`): `wp_unslash` in that branch only; strings from `update_field()` and block data are not slashed.
+- `writeOnly` is ignored in blocks and inside repeater/flexible-content rows (the stored value is read back by an indexed name).
+- `APP_KEY` becomes data to back up: `key:generate` is blocked by `PreventKeyGenerate` (registered in `CommandsServiceProvider` before the commands' `try`) while readable values exist. Never let `key:generate` (without `--show`) run against a project's `.env`, even with an injected key: Acorn's version replaces the current key, or prepends a new `APP_KEY` line when it cannot find it. `tests/integration/commands.php` redirects the environment file to a temp file.
+- Snapshot/restore only covers options and meta (not block content nor widgets); restore recreates absent values for `options` only, because post/term/user IDs are not stable across environments.
+
+Known unsupported paths (documented in README « Limites connues »): classic ACF widget, Customizer, ACF REST_Save array values.
+
 ### Code Generation
 
 `src/Console/Commands/` contains `Make*` commands that generate classes from stubs in `src/Console/stubs/`. Each stub uses `%%PLACEHOLDER%%` tokens.

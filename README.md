@@ -482,7 +482,7 @@ Le champ fonctionne dans n’importe quel bloc ACF existant :
 |---|---|
 | `wp acorn encryption:status` | Vérifie la clé, liste les valeurs chiffrées (options, métadonnées, contenu des pages et révisions, widgets « Bloc ») et signale celles qui sont illisibles |
 | `wp acorn encryption:rotate` | Rechiffre toutes ces valeurs avec `APP_KEY` après un changement de clé |
-| `wp acorn encryption:snapshot` | Sauvegarde les valeurs lisibles des options et des métadonnées, blocs `use_post_meta` compris (pas le contenu des pages ni les widgets), avant un import de base. Sans clé, n’échoue jamais |
+| `wp acorn encryption:snapshot` | Sauvegarde les valeurs lisibles des options et des métadonnées, blocs `use_post_meta` compris (pas le contenu des pages ni les widgets), avant un import de base. Sans clé, n’échoue jamais ; avec clé, échoue si l’instantané ne peut pas être écrit |
 | `wp acorn encryption:restore` | Remet ces valeurs après l’import (règles ci-dessous), puis supprime l’instantané (`--keep` pour le garder) |
 
 **Changer de clé :** placer l’ancienne clé dans `APP_PREVIOUS_KEYS`, la nouvelle dans `APP_KEY`, lancer `encryption:rotate`, puis retirer `APP_PREVIOUS_KEYS`.
@@ -502,7 +502,7 @@ Règles de `encryption:restore` :
 - **métadonnées** (posts, termes, utilisateurs) : seule une valeur chiffrée illisible est restaurée. Une métadonnée absente ou vide est ignorée, car les identifiants (ID de post, de terme, d’utilisateur) ne sont pas stables d’un environnement à l’autre ;
 - une valeur lisible (ou en clair) est conservée telle quelle.
 
-Après la restauration, le fichier est supprimé (`--keep` pour le conserver). Il est conservé si des entrées ont été ignorées : la commande l’indique avec son chemin, à supprimer une fois traité. Si la suppression échoue, la commande avertit sans échouer.
+Après la restauration, le fichier est supprimé (`--keep` pour le conserver). Il est conservé si des entrées ont été ignorées ou n’ont pas pu être écrites : la commande l’indique avec son chemin, à supprimer une fois traité. Une écriture en échec est listée et fait échouer la commande (code de sortie non nul). Si la suppression échoue, la commande avertit sans échouer.
 
 `encryption:status` distingue les valeurs illisibles : pour les options et métadonnées, ressaisir ou lancer `encryption:restore` ; pour les jetons des contenus (posts, options « (contenu) »), hors instantané, ressaisir ou remettre l’ancienne clé dans `APP_PREVIOUS_KEYS`. `encryption:rotate` échoue (code de sortie non nul, valeurs listées) si une valeur est illisible ou n’a pas pu être réécrite.
 
