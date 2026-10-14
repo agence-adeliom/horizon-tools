@@ -267,6 +267,7 @@ foreach ($rowCases as $key => [$indexedName, $forced, $label]) {
     }
 
     delete_option('options_' . $indexedName);
+    delete_option('_options_' . $indexedName);
 }
 
 // Relecture finale I4 : jamais de valeur déchiffrée dans l’API REST (formats light et standard, sous-champs compris).
@@ -291,7 +292,7 @@ update_field('field_hz_enc_rep', [], 'options');
 delete_option('options_hz_enc_rep_0_secret');
 delete_option('_options_hz_enc_rep_0_secret');
 
-foreach (['hz_enc_admin', 'hz_enc_admin_rev'] as $name) {
+foreach (['hz_enc_admin', 'hz_enc_admin_rev', 'hz_enc_rep'] as $name) {
     delete_option('options_' . $name);
     delete_option('_options_' . $name);
 }
