@@ -32,7 +32,17 @@ class EncryptionRestoreCommand extends Command
             return self::FAILURE;
         }
 
-        $result = EncryptionSnapshot::restore($repository, $codec, $path);
+        try {
+            $result = EncryptionSnapshot::restore($repository, $codec, $path);
+        } catch (\JsonException | \RuntimeException $e) {
+            $this->error(
+                $e instanceof \JsonException
+                    ? sprintf('Instantané invalide (%s) : rien n’a été restauré.', $e->getMessage())
+                    : $e->getMessage()
+            );
+
+            return self::FAILURE;
+        }
 
         $this->info(
             sprintf(

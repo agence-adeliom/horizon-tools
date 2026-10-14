@@ -27,13 +27,32 @@ final class EncryptionSnapshot
     public static function capture(EncryptedValueRepository $repository, EncryptedValueCodec $codec, string $path): int
     {
         $values = array_values(
-            array_filter($repository->all(), static fn(StoredEncryptedValue $value): bool => $codec->decrypt($value->value) !== null)
+            array_filter(
+                $repository->all(),
+                static fn(StoredEncryptedValue $value): bool => EncryptedValueCodec::isEncrypted($value->value) &&
+                    $codec->decrypt($value->value) !== null
+            )
         );
 
         $directory = dirname($path);
 
-        if (!is_dir($directory) && !mkdir($directory, 0700, true) && !is_dir($directory)) {
+        // Le dossier par défaut est dans un /tmp partagé : on refuse tout ce qui n’est pas à nous.
+        if (is_link($directory) || (file_exists($directory) && !is_dir($directory))) {
+            throw new \RuntimeException(sprintf('Dossier d’instantané refusé (lien symbolique ou non-dossier) : %s', $directory));
+        }
+
+        if (is_dir($directory)) {
+            if (fileowner($directory) !== self::currentUserId()) {
+                throw new \RuntimeException(sprintf('Dossier d’instantané refusé (propriétaire différent) : %s', $directory));
+            }
+
+            chmod($directory, 0700);
+        } elseif (!mkdir($directory, 0700, true) && !is_dir($directory)) {
             throw new \RuntimeException(sprintf('Impossible de créer le dossier %s', $directory));
+        }
+
+        if (is_link($path)) {
+            throw new \RuntimeException(sprintf('Fichier d’instantané refusé (lien symbolique) : %s', $path));
         }
 
         $json = json_encode(
@@ -45,7 +64,15 @@ final class EncryptionSnapshot
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR
         );
 
-        if (file_put_contents($path, $json, LOCK_EX) === false) {
+        $previousUmask = umask(0077);
+
+        try {
+            $written = file_put_contents($path, $json, LOCK_EX);
+        } finally {
+            umask($previousUmask);
+        }
+
+        if ($written === false) {
             throw new \RuntimeException(sprintf('Impossible d’écrire %s', $path));
         }
 
@@ -55,20 +82,29 @@ final class EncryptionSnapshot
     }
 
     /**
+     * L’instantané entier est validé avant la première écriture en base.
+     *
      * @return array{restored: list<string>, kept: list<string>, skipped: list<string>}
+     *
+     * @throws \JsonException
+     * @throws \RuntimeException instantané illisible ou invalide (rien n’a été restauré)
      */
     public static function restore(EncryptedValueRepository $repository, EncryptedValueCodec $codec, string $path): array
     {
-        $result = ['restored' => [], 'kept' => [], 'skipped' => []];
-        $data = json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
-
-        if (($data['version'] ?? null) !== self::VERSION) {
-            throw new \RuntimeException(sprintf('Version d’instantané non prise en charge dans %s', $path));
+        if (is_link($path)) {
+            throw new \RuntimeException(sprintf('Fichier d’instantané refusé (lien symbolique) : %s', $path));
         }
 
-        foreach ($data['values'] as $entry) {
-            $saved = StoredEncryptedValue::fromArray($entry);
+        $contents = is_file($path) ? file_get_contents($path) : false;
 
+        if ($contents === false) {
+            throw new \RuntimeException(sprintf('Instantané illisible (%s) : rien n’a été restauré.', $path));
+        }
+
+        $entries = self::validate(json_decode($contents, true, 512, JSON_THROW_ON_ERROR), $path);
+        $result = ['restored' => [], 'kept' => [], 'skipped' => []];
+
+        foreach ($entries as $saved) {
             if ($codec->decrypt($saved->value) === null) {
                 $result['skipped'][] = $saved->location();
 
@@ -89,10 +125,6 @@ final class EncryptionSnapshot
                 continue;
             }
 
-            if ($current === $saved->value) {
-                continue;
-            }
-
             $repository->write($saved->table, $saved->objectId, $saved->key, $saved->value);
 
             $referenceKey = '_' . $saved->key;
@@ -107,5 +139,60 @@ final class EncryptionSnapshot
         wp_cache_flush();
 
         return $result;
+    }
+
+    /**
+     * @return list<StoredEncryptedValue>
+     */
+    private static function validate(mixed $data, string $path): array
+    {
+        $fail = static fn(string $reason): \RuntimeException => new \RuntimeException(
+            sprintf('Instantané invalide (%s : %s) : rien n’a été restauré.', $path, $reason)
+        );
+
+        if (!is_array($data) || ($data['version'] ?? null) !== self::VERSION) {
+            throw $fail('version non prise en charge');
+        }
+
+        if (!isset($data['values']) || !is_array($data['values']) || !array_is_list($data['values'])) {
+            throw $fail('liste « values » absente');
+        }
+
+        $entries = [];
+
+        foreach ($data['values'] as $index => $entry) {
+            if (!is_array($entry)) {
+                throw $fail(sprintf('entrée %d non valide', $index));
+            }
+
+            if (!in_array($entry['table'] ?? null, ['options', 'postmeta', 'termmeta', 'usermeta'], true)) {
+                throw $fail(sprintf('entrée %d : table inconnue', $index));
+            }
+
+            if (!is_int($entry['objectId'] ?? null) || $entry['objectId'] < 0) {
+                throw $fail(sprintf('entrée %d : objectId invalide', $index));
+            }
+
+            if (!is_string($entry['key'] ?? null) || $entry['key'] === '') {
+                throw $fail(sprintf('entrée %d : clé invalide', $index));
+            }
+
+            if (!EncryptedValueCodec::isEncrypted($entry['value'] ?? null)) {
+                throw $fail(sprintf('entrée %d : valeur non chiffrée', $index));
+            }
+
+            if (($entry['reference'] ?? null) !== null && !is_string($entry['reference'])) {
+                throw $fail(sprintf('entrée %d : référence invalide', $index));
+            }
+
+            $entries[] = StoredEncryptedValue::fromArray($entry);
+        }
+
+        return $entries;
+    }
+
+    private static function currentUserId(): int
+    {
+        return function_exists('posix_geteuid') ? posix_geteuid() : getmyuid();
     }
 }

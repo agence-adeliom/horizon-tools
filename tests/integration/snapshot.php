@@ -12,7 +12,8 @@ require __DIR__ . '/bootstrap.php';
 $codec = EncryptedValueCodec::make();
 $repo = new EncryptedValueRepository();
 $prod = new EncryptedValueCodec(new Encrypter(Encrypter::generateKey('AES-256-CBC'), 'AES-256-CBC'));
-$path = sys_get_temp_dir() . '/hz-snapshot-check.json';
+$dir = sys_get_temp_dir() . '/hz-snapshot-check';
+$path = $dir . '/snapshot.json';
 
 // État local avant le pull : trois valeurs lisibles
 update_option('options_hz_snap_a', $codec->encrypt('local-a'));
@@ -43,9 +44,43 @@ hz_check($again['restored'] === [], 'restauration idempotente');
 
 hz_check(EncryptionSnapshot::restore($repo, $prod, $path)['restored'] === [], 'autre clé : rien restauré (instantané illisible)');
 
+// Instantané invalide ou étranger : rien ne doit être écrit
+$bad = sys_get_temp_dir() . '/hz-snapshot-bad.json';
+$entry = ['table' => 'options', 'objectId' => 0, 'key' => 'options_hz_snap_plain', 'value' => 'secret-en-clair', 'reference' => null];
+file_put_contents($bad, json_encode(['version' => 1, 'values' => [$entry]]));
+$threw = false;
+try {
+    EncryptionSnapshot::restore($repo, $codec, $bad);
+} catch (\RuntimeException) {
+    $threw = true;
+}
+hz_check($threw && get_option('options_hz_snap_plain') === false, 'entrée en clair : exception, rien d’écrit');
+
+file_put_contents($bad, '{');
+$threw = false;
+try {
+    EncryptionSnapshot::restore($repo, $codec, $bad);
+} catch (\JsonException) {
+    $threw = true;
+}
+hz_check($threw, 'JSON mal formé : exception');
+
+$ghost = [
+    'table' => 'postmeta',
+    'objectId' => 999999999,
+    'key' => 'hz_snap_ghost',
+    'value' => $codec->encrypt('fantome'),
+    'reference' => null,
+];
+file_put_contents($bad, json_encode(['version' => 1, 'values' => [$ghost]]));
+$ghostResult = EncryptionSnapshot::restore($repo, $codec, $bad);
+hz_check($ghostResult['skipped'] === ['postmeta:999999999:hz_snap_ghost'] && $ghostResult['restored'] === [], 'objet absent : ignoré');
+unlink($bad);
+
 foreach (['a', 'common', 'new'] as $suffix) {
     delete_option('options_hz_snap_' . $suffix);
     delete_option('_options_hz_snap_' . $suffix);
 }
 unlink($path);
+rmdir($dir);
 hz_done();
