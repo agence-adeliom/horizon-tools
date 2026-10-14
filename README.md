@@ -433,3 +433,47 @@ Horizon Tools includes ~29 service classes in `src/Services/` for common WordPre
 | `StringService` | String truncation, singular/plural, camelCase |
 | `ValidationService` | Regex patterns for phone, email |
 | `VersionService` | Package version detection with caching |
+
+## Champ « Texte chiffré »
+
+Pour les clés API, jetons de CRM, clés de licence… La valeur est chiffrée en base avec la clé `APP_KEY` du `.env` (AES-256-CBC, via Acorn) : il faut le code ET la base pour la lire.
+
+```php
+use Adeliom\HorizonTools\Fields\Text\EncryptedText;
+
+EncryptedText::make('Clé API Google Maps', 'googleMapsKey')
+    ->helperText('Clé navigateur restreinte au domaine')
+    ->revealable(); // facultatif : permet d’afficher la valeur dans l’admin
+```
+
+`get_field()` renvoie la valeur en clair. Par défaut, la valeur enregistrée n’est jamais renvoyée au navigateur : le champ reste vide (« laisser vide pour conserver ») avec une case « Effacer ».
+
+Non disponible dans les blocs ACF (leurs données sont stockées dans le contenu de la page, hors chiffrement).
+
+### Prérequis
+
+`APP_KEY` dans le `.env` de chaque environnement (`wp acorn key:generate` pour en créer une **sur un projet qui n’a encore aucune valeur chiffrée**). Les projets utilisant Livewire l’ont déjà.
+
+> ⚠️ **`APP_KEY` est une donnée à sauvegarder.** Perdue ou régénérée, toutes les valeurs chiffrées sont irrécupérables. Conserver la clé de chaque environnement dans le gestionnaire de mots de passe de l’équipe. Une valeur illisible s’affiche vide en front, avec un avertissement dans le champ en admin et une ligne dans le journal PHP. `wp acorn key:generate` est refusé tant que des valeurs chiffrées lisibles existent : changer de clé passe par `encryption:rotate`.
+
+### Commandes
+
+| Commande | Rôle |
+|---|---|
+| `wp acorn encryption:status` | Vérifie la clé, liste les valeurs chiffrées et signale celles qui sont illisibles |
+| `wp acorn encryption:rotate` | Rechiffre toutes les valeurs avec `APP_KEY` après un changement de clé |
+| `wp acorn encryption:snapshot` | Sauvegarde les valeurs lisibles (toujours chiffrées) avant un import de base |
+| `wp acorn encryption:restore` | Remet ces valeurs à la place des valeurs illisibles après l’import |
+
+**Changer de clé :** placer l’ancienne clé dans `APP_PREVIOUS_KEYS`, la nouvelle dans `APP_KEY`, lancer `encryption:rotate`, puis retirer `APP_PREVIOUS_KEYS`.
+
+**Clé différente par environnement :** après un `db:pull`, les valeurs de la prod sont illisibles en local. Avec `horizon-deployer-recipe` ≥ 1.7.0, l’automatiser dans `deploy.php` :
+
+```php
+set('transfer_before_import', ['acorn encryption:snapshot']);
+set('transfer_after_import', ['acorn encryption:restore']);
+```
+
+L’instantané est écrit par défaut dans le dossier temporaire du système (`sys_get_temp_dir()`, par exemple `/tmp/horizon-tools-<hash>/encryption-snapshot.json`), hors de la racine web et des dépôts ; l’option `--file=<chemin>` permet de choisir un autre emplacement.
+
+Avec une clé commune à tous les environnements, rien à faire.

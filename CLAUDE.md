@@ -35,9 +35,13 @@ wp acorn make:hook            # Generate a Hook class
 wp acorn list:posttypes       # List all registered PostTypes
 wp acorn list:taxonomies      # List all registered Taxonomies
 wp acorn list:blocks          # List all registered Blocks
+wp acorn encryption:status    # Clé de chiffrement + valeurs chiffrées lisibles / illisibles
+wp acorn encryption:rotate    # Rechiffre avec APP_KEY (ancienne clé dans APP_PREVIOUS_KEYS)
+wp acorn encryption:snapshot  # Sauvegarde les valeurs chiffrées locales avant un import de base
+wp acorn encryption:restore   # Les restaure après l'import (valeurs illisibles uniquement)
 ```
 
-There is no test suite in this repository.
+There is no unit test suite. `tests/integration/*.php` are integration checks run from a consuming Horizon project with `wp eval-file` (they need WordPress, ACF and Acorn); each exits with code 1 on failure. Run them with the container's absolute path, e.g. `wp eval-file /var/www/html/vendor/agence-adeliom/horizon-tools/tests/integration/<x>.php`. They have no `declare(strict_types=1)`: WP-CLI `eval-file` refuses it as the first statement.
 
 ## Architecture
 
