@@ -18,8 +18,14 @@ namespace Adeliom\HorizonTools\Services\Encryption;
  */
 final class EncryptedValueRepository
 {
-    /** Un jeton chiffré au milieu d’un texte (base64 : ni `-` ni caractère échappé par JSON). */
-    public const TOKEN_PATTERN = '/hz_enc:v1:[A-Za-z0-9+\/=]+/';
+    /** Tables couvertes : wp_options et les trois tables de métadonnées. */
+    public const TABLES = ['options', 'postmeta', 'termmeta', 'usermeta'];
+
+    /**
+     * Un jeton chiffré au milieu d’un texte (base64 : ni `-` ni caractère échappé par JSON).
+     * Le préfixe du codec n’a aucun caractère spécial d’expression régulière.
+     */
+    public const TOKEN_PATTERN = '/' . EncryptedValueCodec::PREFIX . '[A-Za-z0-9+\/=]+/';
 
     private const META_TYPES = ['postmeta' => 'post', 'termmeta' => 'term', 'usermeta' => 'user'];
 
@@ -268,17 +274,6 @@ final class EncryptedValueRepository
 
         // update_metadata() déséchappe sa valeur : wp_slash() la préserve à l’identique.
         return update_metadata($this->metaType($table), $objectId, wp_slash($key), wp_slash($value)) !== false;
-    }
-
-    public function objectExists(string $table, int $objectId): bool
-    {
-        return match ($table) {
-            'options' => true,
-            'postmeta' => get_post($objectId) !== null,
-            'termmeta' => get_term($objectId) instanceof \WP_Term,
-            'usermeta' => get_userdata($objectId) !== false,
-            default => throw new \InvalidArgumentException(sprintf('Table inconnue : %s', $table)),
-        };
     }
 
     private function metaType(string $table): string

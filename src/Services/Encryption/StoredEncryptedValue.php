@@ -11,7 +11,7 @@ namespace Adeliom\HorizonTools\Services\Encryption;
 final class StoredEncryptedValue
 {
     /**
-     * @param string      $table     options | postmeta | termmeta | usermeta
+     * @param string      $table     une de EncryptedValueRepository::TABLES
      * @param int         $objectId  0 pour les options
      * @param string|null $reference valeur de la meta de référence ACF « _<clé> » (clé du champ)
      */

@@ -193,7 +193,7 @@ final class EncryptionSnapshot
                 throw $fail(sprintf('entrée %d non valide', $index));
             }
 
-            if (!in_array($entry['table'] ?? null, ['options', 'postmeta', 'termmeta', 'usermeta'], true)) {
+            if (!in_array($entry['table'] ?? null, EncryptedValueRepository::TABLES, true)) {
                 throw $fail(sprintf('entrée %d : table inconnue', $index));
             }
 

@@ -41,7 +41,6 @@ $refuseMeta = static fn(mixed $check, int $objectId, string $key): mixed => $key
 add_filter('update_post_metadata', $refuseMeta, 10, 3);
 hz_check($repo->write('postmeta', $postId, 'hz_repo_check', 'hz_enc:v1:refusée') === false, 'write() : meta non écrite -> faux');
 remove_filter('update_post_metadata', $refuseMeta, 10);
-hz_check($repo->objectExists('postmeta', $postId) && !$repo->objectExists('postmeta', 999999999), 'objectExists()');
 
 $roundTrip = StoredEncryptedValue::fromArray($found['options:0:options_hz_repo_check']->toArray());
 hz_check(
