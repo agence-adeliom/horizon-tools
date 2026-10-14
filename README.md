@@ -455,9 +455,11 @@ Par défaut, la valeur enregistrée est préremplie et masquée (saisie de type 
 
 `->writeOnly()` (« écriture seule ») retire le bouton « Afficher » et ne renvoie jamais la valeur au navigateur : le champ reste vide, avec le texte « •••••••• (valeur enregistrée — laisser vide pour la conserver) ». Un champ vide conserve la valeur ; la case « Effacer la valeur enregistrée » sert à la supprimer.
 
-Dans les deux modes, la valeur n’est jamais envoyée au site public : seul le code du thème la lit, via `get_field()`.
+Dans un répéteur ou un contenu flexible (même imbriqué, par exemple dans un groupe d’une ligne), `->writeOnly()` est ignoré : le champ est affichable. « Vide = conserver » relirait la valeur par un nom indexé (`repeteur_0_cle`) qui change de ligne quand les lignes sont réordonnées ou supprimées. Un groupe seul ne change rien : `->writeOnly()` y est respecté.
 
-Une valeur illisible (clé changée, base importée d’un autre environnement) est conservée à l’enregistrement tant qu’on ne la remplace pas ; la case « Effacer » reste proposée.
+Dans les deux modes, la valeur n’est jamais envoyée au site public : seul le code du thème la lit, via `get_field()`. Elle n’est pas non plus exposée par l’API REST : pour un groupe de champs avec `show_in_rest`, un champ chiffré vaut toujours `null` (sous-champs compris).
+
+Une valeur illisible (clé changée, base importée d’un autre environnement) est conservée à l’enregistrement tant qu’on ne la remplace pas ; la case « Effacer » reste proposée. Exception : les blocs `use_post_meta` (voir « Limites connues »).
 
 ### Blocs
 
@@ -465,7 +467,8 @@ Le champ fonctionne dans n’importe quel bloc ACF existant :
 
 - dans un bloc, `->writeOnly()` est ignoré : la valeur reste toujours affichable ;
 - la valeur est chiffrée dans le contenu de la page (attributs du bloc dans `post_content`), révisions comprises. Sont couverts : les blocs classiques, les blocs `use_post_meta` (valeurs en métadonnées) et les widgets « Bloc » (option `widget_block`) ;
-- `encryption:status` et `encryption:rotate` couvrent ces valeurs ; `encryption:snapshot` et `encryption:restore` ne les couvrent pas : après un `db:pull` avec des clés différentes, ressaisir les valeurs des blocs.
+- `encryption:status` et `encryption:rotate` couvrent toutes ces valeurs ;
+- `encryption:snapshot` et `encryption:restore` couvrent les blocs `use_post_meta`, dont les valeurs sont des métadonnées de post. Ils ne couvrent pas les blocs classiques (`post_content`) ni les widgets « Bloc » : après un `db:pull` avec des clés différentes, ressaisir ces valeurs.
 
 ### Prérequis
 
@@ -479,8 +482,8 @@ Le champ fonctionne dans n’importe quel bloc ACF existant :
 |---|---|
 | `wp acorn encryption:status` | Vérifie la clé, liste les valeurs chiffrées (options, métadonnées, contenu des pages et révisions, widgets « Bloc ») et signale celles qui sont illisibles |
 | `wp acorn encryption:rotate` | Rechiffre toutes ces valeurs avec `APP_KEY` après un changement de clé |
-| `wp acorn encryption:snapshot` | Sauvegarde les valeurs lisibles des options et des métadonnées (pas le contenu des pages) avant un import de base |
-| `wp acorn encryption:restore` | Remet ces valeurs à la place des valeurs illisibles après l’import, puis supprime l’instantané (`--keep` pour le garder) |
+| `wp acorn encryption:snapshot` | Sauvegarde les valeurs lisibles des options et des métadonnées, blocs `use_post_meta` compris (pas le contenu des pages ni les widgets), avant un import de base. Sans clé, n’échoue jamais |
+| `wp acorn encryption:restore` | Remet ces valeurs après l’import (règles ci-dessous), puis supprime l’instantané (`--keep` pour le garder) |
 
 **Changer de clé :** placer l’ancienne clé dans `APP_PREVIOUS_KEYS`, la nouvelle dans `APP_KEY`, lancer `encryption:rotate`, puis retirer `APP_PREVIOUS_KEYS`.
 
@@ -493,13 +496,23 @@ set('transfer_after_import', ['acorn encryption:restore']);
 
 L’instantané est écrit par défaut dans le dossier temporaire du système (`sys_get_temp_dir()`, par exemple `/tmp/horizon-tools-<hash>/encryption-snapshot.json`), hors de la racine web et des dépôts. L’option `--file=<chemin>` permet de choisir un autre emplacement : le même `--file` doit être donné à `snapshot` et à `restore`.
 
-`encryption:restore` ne touche qu’aux valeurs illisibles : une valeur déjà lisible est conservée. Une valeur absente n’est recréée que pour les pages d’options (entrées de `wp_options`) ; une métadonnée absente est ignorée, car ses identifiants (ID de post, de terme, d’utilisateur) ne sont pas stables d’un environnement à l’autre. Après une restauration réussie, le fichier est supprimé (`--keep` pour le conserver).
+Règles de `encryption:restore` :
+
+- **options** (entrées de `wp_options`) : une valeur absente, vide ou chiffrée illisible est restaurée ;
+- **métadonnées** (posts, termes, utilisateurs) : seule une valeur chiffrée illisible est restaurée. Une métadonnée absente ou vide est ignorée, car les identifiants (ID de post, de terme, d’utilisateur) ne sont pas stables d’un environnement à l’autre ;
+- une valeur lisible (ou en clair) est conservée telle quelle.
+
+Après la restauration, le fichier est supprimé (`--keep` pour le conserver). Il est conservé si des entrées ont été ignorées : la commande l’indique avec son chemin, à supprimer une fois traité. Si la suppression échoue, la commande avertit sans échouer.
+
+`encryption:status` distingue les valeurs illisibles : pour les options et métadonnées, ressaisir ou lancer `encryption:restore` ; pour les jetons des contenus (posts, options « (contenu) »), hors instantané, ressaisir ou remettre l’ancienne clé dans `APP_PREVIOUS_KEYS`. `encryption:rotate` échoue (code de sortie non nul, valeurs listées) si une valeur est illisible ou n’a pas pu être réécrite.
 
 Avec une clé commune à tous les environnements, rien à faire.
 
 ## Limites connues
 
 - **Widget ACF classique (hors éditeur de blocs)** : non couvert. Seuls les widgets « Bloc » (`widget_block`) sont traités.
-- **Personnaliseur** : le brouillon de modifications (changeset) peut contenir la valeur en clair avant publication.
-- **REST_Save d’ACF** : ces chemins d’enregistrement ne sont pas couverts. Préférer les pages d’options ou les blocs.
-- **`unfiltered_html`** : pour un utilisateur sans la capacité `unfiltered_html`, ACF filtre les données soumises (`wp_kses_post_deep`) avant l’enregistrement : un secret contenant `&` ou `<` peut être altéré dans les formulaires d’administration classiques (pages d’options, écrans d’édition des contenus, termes et utilisateurs). Les blocs ne sont pas concernés, le chiffrement s’y applique avant le filtre.
+- **Personnaliseur** : le brouillon de modifications (changeset) peut contenir la valeur en clair avant publication. Ses brouillons peuvent aussi faire apparaître de faux « illisibles » dans `encryption:status` et faire échouer `encryption:rotate`.
+- **REST_Save d’ACF** : les valeurs envoyées sous forme de tableau via l’écriture REST d’ACF ne sont pas couvertes. Préférer les pages d’options ou les blocs. (En lecture, l’API REST renvoie toujours `null` pour un champ chiffré.)
+- **`unfiltered_html`** : pour un utilisateur sans la capacité `unfiltered_html`, ACF filtre les données soumises (`wp_kses_post_deep`) avant l’enregistrement : un secret contenant `&` ou `<` peut être altéré dans les formulaires d’administration classiques (pages d’options, écrans d’édition des contenus, termes et utilisateurs). En mode affichable (par défaut), la valeur préremplie est renvoyée à chaque enregistrement : elle est donc altérée même si le champ n’a pas été modifié. Les blocs ne sont pas concernés, le chiffrement s’y applique avant le filtre.
+- **Valeur illisible dans un bloc `use_post_meta`** : elle est effacée si le formulaire du bloc est réenregistré. La restaurer d’abord (`encryption:restore`) ou la ressaisir.
+- **Répéteur et contenu flexible** : `->writeOnly()` y est ignoré, le champ est affichable (voir plus haut).
