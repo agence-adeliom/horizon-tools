@@ -442,17 +442,34 @@ Pour les clés API, jetons de CRM, clés de licence… La valeur est chiffrée e
 use Adeliom\HorizonTools\Fields\Text\EncryptedText;
 
 EncryptedText::make('Clé API Google Maps', 'googleMapsKey')
-    ->helperText('Clé navigateur restreinte au domaine')
-    ->revealable(); // facultatif : permet d’afficher la valeur dans l’admin
+    ->helperText('Clé navigateur restreinte au domaine');
+
+// Option : écriture seule, la valeur n’est jamais renvoyée au navigateur
+EncryptedText::make('Jeton CRM', 'crmToken')
+    ->writeOnly();
 ```
 
-`get_field()` renvoie la valeur en clair. Par défaut, la valeur enregistrée n’est jamais renvoyée au navigateur : le champ reste vide (« laisser vide pour conserver ») avec une case « Effacer ».
+`get_field()` renvoie la valeur en clair.
 
-Non disponible dans les blocs ACF (leurs données sont stockées dans le contenu de la page, hors chiffrement).
+Par défaut, la valeur enregistrée est préremplie et masquée (saisie de type mot de passe) : le bouton « Afficher » permet de la lire dans l’administration. Vider le champ et enregistrer efface la valeur.
+
+`->writeOnly()` (« écriture seule ») retire le bouton « Afficher » et ne renvoie jamais la valeur au navigateur : le champ reste vide, avec le texte « •••••••• (valeur enregistrée — laisser vide pour la conserver) ». Un champ vide conserve la valeur ; la case « Effacer la valeur enregistrée » sert à la supprimer.
+
+Dans les deux modes, la valeur n’est jamais envoyée au site public : seul le code du thème la lit, via `get_field()`.
+
+Une valeur illisible (clé changée, base importée d’un autre environnement) est conservée à l’enregistrement tant qu’on ne la remplace pas ; la case « Effacer » reste proposée.
+
+### Blocs
+
+Le champ fonctionne dans n’importe quel bloc ACF existant :
+
+- dans un bloc, `->writeOnly()` est ignoré : la valeur reste toujours affichable ;
+- la valeur est chiffrée dans le contenu de la page (attributs du bloc dans `post_content`), révisions comprises. Sont couverts : les blocs classiques, les blocs `use_post_meta` (valeurs en métadonnées) et les widgets « Bloc » (option `widget_block`) ;
+- `encryption:status` et `encryption:rotate` couvrent ces valeurs ; `encryption:snapshot` et `encryption:restore` ne les couvrent pas : après un `db:pull` avec des clés différentes, ressaisir les valeurs des blocs.
 
 ### Prérequis
 
-`APP_KEY` dans le `.env` de chaque environnement (`wp acorn key:generate` pour en créer une **sur un projet qui n’a encore aucune valeur chiffrée**). Les projets utilisant Livewire l’ont déjà.
+`APP_KEY` dans le `.env` de chaque environnement (`wp acorn key:generate --show` pour en générer une **sur un projet qui n’a encore aucune valeur chiffrée**). Les projets utilisant Livewire l’ont déjà.
 
 > ⚠️ **`APP_KEY` est une donnée à sauvegarder.** Perdue ou régénérée, toutes les valeurs chiffrées sont irrécupérables. Conserver la clé de chaque environnement dans le gestionnaire de mots de passe de l’équipe. Une valeur illisible s’affiche vide en front, avec un avertissement dans le champ en admin et une ligne dans le journal PHP. `wp acorn key:generate` est refusé tant que des valeurs chiffrées lisibles existent : changer de clé passe par `encryption:rotate`.
 
@@ -460,20 +477,29 @@ Non disponible dans les blocs ACF (leurs données sont stockées dans le contenu
 
 | Commande | Rôle |
 |---|---|
-| `wp acorn encryption:status` | Vérifie la clé, liste les valeurs chiffrées et signale celles qui sont illisibles |
-| `wp acorn encryption:rotate` | Rechiffre toutes les valeurs avec `APP_KEY` après un changement de clé |
-| `wp acorn encryption:snapshot` | Sauvegarde les valeurs lisibles (toujours chiffrées) avant un import de base |
-| `wp acorn encryption:restore` | Remet ces valeurs à la place des valeurs illisibles après l’import |
+| `wp acorn encryption:status` | Vérifie la clé, liste les valeurs chiffrées (options, métadonnées, contenu des pages et révisions, widgets « Bloc ») et signale celles qui sont illisibles |
+| `wp acorn encryption:rotate` | Rechiffre toutes ces valeurs avec `APP_KEY` après un changement de clé |
+| `wp acorn encryption:snapshot` | Sauvegarde les valeurs lisibles des options et des métadonnées (pas le contenu des pages) avant un import de base |
+| `wp acorn encryption:restore` | Remet ces valeurs à la place des valeurs illisibles après l’import, puis supprime l’instantané (`--keep` pour le garder) |
 
 **Changer de clé :** placer l’ancienne clé dans `APP_PREVIOUS_KEYS`, la nouvelle dans `APP_KEY`, lancer `encryption:rotate`, puis retirer `APP_PREVIOUS_KEYS`.
 
-**Clé différente par environnement :** après un `db:pull`, les valeurs de la prod sont illisibles en local. Avec `horizon-deployer-recipe` ≥ 1.7.0, l’automatiser dans `deploy.php` :
+**Clé différente par environnement :** après un `db:pull`, les valeurs de la prod sont illisibles en local. Avec `horizon-deployer-recipe` (hooks `transfer_before_import` / `transfer_after_import` disponibles depuis la 1.5.0), l’automatiser dans `deploy.php` :
 
 ```php
 set('transfer_before_import', ['acorn encryption:snapshot']);
 set('transfer_after_import', ['acorn encryption:restore']);
 ```
 
-L’instantané est écrit par défaut dans le dossier temporaire du système (`sys_get_temp_dir()`, par exemple `/tmp/horizon-tools-<hash>/encryption-snapshot.json`), hors de la racine web et des dépôts ; l’option `--file=<chemin>` permet de choisir un autre emplacement.
+L’instantané est écrit par défaut dans le dossier temporaire du système (`sys_get_temp_dir()`, par exemple `/tmp/horizon-tools-<hash>/encryption-snapshot.json`), hors de la racine web et des dépôts. L’option `--file=<chemin>` permet de choisir un autre emplacement : le même `--file` doit être donné à `snapshot` et à `restore`.
+
+`encryption:restore` ne touche qu’aux valeurs illisibles : une valeur déjà lisible est conservée. Une valeur absente n’est recréée que pour les pages d’options (entrées de `wp_options`) ; une métadonnée absente est ignorée, car ses identifiants (ID de post, de terme, d’utilisateur) ne sont pas stables d’un environnement à l’autre. Après une restauration réussie, le fichier est supprimé (`--keep` pour le conserver).
 
 Avec une clé commune à tous les environnements, rien à faire.
+
+## Limites connues
+
+- **Widget ACF classique (hors éditeur de blocs)** : non couvert. Seuls les widgets « Bloc » (`widget_block`) sont traités.
+- **Personnaliseur** : le brouillon de modifications (changeset) peut contenir la valeur en clair avant publication.
+- **REST_Save d’ACF** : ces chemins d’enregistrement ne sont pas couverts. Préférer les pages d’options ou les blocs.
+- **`unfiltered_html`** : pour un utilisateur sans la capacité `unfiltered_html`, un secret contenant `&` ou `<` peut être altéré (comportement standard d’ACF).
