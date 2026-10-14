@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Hooks;
 
+use Adeliom\HorizonTools\ACF\AcfFieldEncryptedText;
 use Adeliom\HorizonTools\ACF\AcfFieldTextWithTags;
 use Adeliom\HorizonTools\Services\TextService;
 
@@ -14,18 +15,20 @@ class DefaultAcfHooks extends AbstractHook
 {
     public function init(): void
     {
-        if (TextService::areTextReplacementsEnabled()) {
-            if (did_action('acf/include_field_types')) {
-                $this->addTextWithTagsField();
-            } else {
-                add_action('acf/include_field_types', [$this, 'addTextWithTagsField']);
-            }
+        if (did_action('acf/include_field_types')) {
+            $this->registerFieldTypes();
+        } else {
+            add_action('acf/include_field_types', [$this, 'registerFieldTypes']);
         }
     }
 
-    public function addTextWithTagsField(): void
+    public function registerFieldTypes(): void
     {
-        // The field registers itself via the acf_field parent constructor
-        new AcfFieldTextWithTags();
+        // Chaque type s’enregistre lui-même via le constructeur parent acf_field
+        if (TextService::areTextReplacementsEnabled()) {
+            new AcfFieldTextWithTags();
+        }
+
+        acf_register_field_type(AcfFieldEncryptedText::class);
     }
 }
