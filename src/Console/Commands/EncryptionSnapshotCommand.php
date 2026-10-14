@@ -18,15 +18,18 @@ class EncryptionSnapshotCommand extends Command
     {
         $codec = EncryptedValueCodec::make();
 
+        $path = $this->option('file') ?: EncryptionSnapshot::defaultPath();
+
         // Jamais bloquant : sans clé il n'y a rien de lisible à sauvegarder, et cette
-        // commande tourne en amont d'un db:pull qu'elle ne doit pas empêcher.
+        // commande tourne en amont d'un db:pull qu'elle ne doit pas empêcher. On écrit
+        // quand même un instantané vide : un ancien fichier ne doit pas rester en place.
         if ($codec === null) {
-            $this->warn('APP_KEY absente : aucune valeur à sauvegarder.');
+            $this->warn('APP_KEY absente : aucune valeur à sauvegarder (instantané vide écrit).');
+            EncryptionSnapshot::capture($repository, null, $path);
 
             return self::SUCCESS;
         }
 
-        $path = $this->option('file') ?: EncryptionSnapshot::defaultPath();
         $count = EncryptionSnapshot::capture($repository, $codec, $path);
         $this->info(sprintf('%d valeur(s) chiffrée(s) sauvegardée(s) dans %s', $count, $path));
 

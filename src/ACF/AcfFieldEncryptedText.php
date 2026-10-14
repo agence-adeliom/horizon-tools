@@ -57,13 +57,14 @@ final class AcfFieldEncryptedText extends \acf_field
     {
         $revealable = !empty($field['revealable']);
         $hasValue = is_string($field['value']) && $field['value'] !== '';
+        $unreadable = $this->isUnreadable($field);
 
         if (EncryptedValueCodec::make() === null) {
             printf(
                 '<p class="acf-notice -error"><strong>%s</strong></p>',
                 esc_html__('APP_KEY absente : ce champ chiffré ne peut être ni lu ni enregistré.', 'horizon-tools')
             );
-        } elseif ($this->isUnreadable($field)) {
+        } elseif ($unreadable) {
             printf(
                 '<p class="acf-notice -warning hz-encrypted-text__unreadable"><strong>%s</strong></p>',
                 esc_html__(
@@ -97,7 +98,7 @@ final class AcfFieldEncryptedText extends \acf_field
                 ); ?></button>
             <?php endif; ?>
         </div>
-        <?php if ($hasValue && !$revealable): ?>
+        <?php if (($hasValue && !$revealable) || $unreadable): ?>
             <label style="display:inline-block;margin-top:6px;">
                 <input type="checkbox" name="<?php echo esc_attr($field['name']); ?>[clear]" value="1" />
                 <?php esc_html_e('Effacer la valeur enregistrée', 'horizon-tools'); ?>
@@ -213,12 +214,19 @@ final class AcfFieldEncryptedText extends \acf_field
                 return '';
             }
 
-            $value = (string) ($value['value'] ?? '');
+            // ACF reçoit $_POST échappé par WordPress (magic quotes) : on ne le déséchappe pas
+            // ailleurs pour la valeur en clair, sinon elle serait chiffrée avec ses barres obliques.
+            $value = wp_unslash((string) ($value['value'] ?? ''));
 
             // Valeur jamais renvoyée au navigateur : un champ laissé vide signifie
-            // « conserver ». En mode affichable, le champ est prérempli : vide = effacer.
-            if ($value === '' && empty($field['revealable'])) {
-                $value = $this->storedValue($postId, $field);
+            // « conserver ». En mode affichable, le champ est prérempli : vide = effacer,
+            // sauf si la valeur stockée est illisible (le champ est alors vide malgré elle).
+            if ($value === '') {
+                $stored = $this->storedValue($postId, $field);
+
+                if (empty($field['revealable']) || $this->isStoredUnreadable($stored)) {
+                    $value = $stored;
+                }
             }
         }
 
@@ -239,6 +247,20 @@ final class AcfFieldEncryptedText extends \acf_field
         }
 
         return $codec->encrypt($value);
+    }
+
+    /**
+     * Vrai si la valeur brute est chiffrée mais ne peut pas être déchiffrée (clé absente ou autre clé).
+     */
+    private function isStoredUnreadable(string $stored): bool
+    {
+        if (!EncryptedValueCodec::isEncrypted($stored)) {
+            return false;
+        }
+
+        $codec = EncryptedValueCodec::make();
+
+        return $codec === null || $codec->decrypt($stored) === null;
     }
 
     /**

@@ -24,15 +24,19 @@ final class EncryptionSnapshot
         return sys_get_temp_dir() . '/horizon-tools-' . substr(md5(ABSPATH), 0, 12) . '/encryption-snapshot.json';
     }
 
-    public static function capture(EncryptedValueRepository $repository, EncryptedValueCodec $codec, string $path): int
+    public static function capture(EncryptedValueRepository $repository, ?EncryptedValueCodec $codec, string $path): int
     {
-        $values = array_values(
-            array_filter(
-                $repository->all(),
-                static fn(StoredEncryptedValue $value): bool => EncryptedValueCodec::isEncrypted($value->value) &&
-                    $codec->decrypt($value->value) !== null
-            )
-        );
+        // Sans clé : instantané vide, pour ne jamais laisser en place un ancien fichier périmé.
+        $values =
+            $codec === null
+                ? []
+                : array_values(
+                    array_filter(
+                        $repository->all(),
+                        static fn(StoredEncryptedValue $value): bool => EncryptedValueCodec::isEncrypted($value->value) &&
+                            $codec->decrypt($value->value) !== null
+                    )
+                );
 
         $directory = dirname($path);
 
@@ -46,7 +50,11 @@ final class EncryptionSnapshot
                 throw new \RuntimeException(sprintf('Dossier d’instantané refusé (propriétaire différent) : %s', $directory));
             }
 
-            chmod($directory, 0700);
+            // Les droits d’un dossier existant choisi par l’utilisateur (--file) ne sont jamais modifiés :
+            // seul le dossier par défaut, qui est à nous, est resserré.
+            if ($directory === dirname(self::defaultPath())) {
+                chmod($directory, 0700);
+            }
         } elseif (!mkdir($directory, 0700, true) && !is_dir($directory)) {
             throw new \RuntimeException(sprintf('Impossible de créer le dossier %s', $directory));
         }
@@ -91,6 +99,9 @@ final class EncryptionSnapshot
      */
     public static function restore(EncryptedValueRepository $repository, EncryptedValueCodec $codec, string $path): array
     {
+        // Le cache d’objets peut contenir des valeurs d’avant l’import de base.
+        wp_cache_flush();
+
         if (is_link($path)) {
             throw new \RuntimeException(sprintf('Fichier d’instantané refusé (lien symbolique) : %s', $path));
         }
@@ -119,7 +130,10 @@ final class EncryptionSnapshot
                 continue;
             }
 
-            if (!$repository->objectExists($saved->table, $saved->objectId)) {
+            // Les ID de posts, termes et utilisateurs ne sont pas stables d’un environnement à l’autre :
+            // une ligne de métadonnée absente n’est jamais recréée (elle pourrait viser un autre objet).
+            // Seules les options, sans identifiant d’objet, sont recréées.
+            if ($current === null && $saved->table !== 'options') {
                 $result['skipped'][] = $saved->location();
 
                 continue;

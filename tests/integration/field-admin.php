@@ -70,6 +70,44 @@ hz_check(
     'valeur illisible : avertissement affiché dans le champ'
 );
 
+// I1 : valeur chiffrée illisible (autre clé) et soumission vide : on conserve, quel que soit le mode.
+update_option('options_hz_enc_admin_rev', $foreign->encrypt('secret-perdu-rev'));
+$foreignRaw = get_option('options_hz_enc_admin_rev');
+acf_flush_value_cache('options', 'hz_enc_admin_rev');
+get_field('hz_enc_admin_rev', 'options');
+hz_check(
+    str_contains($render('field_hz_enc_admin_rev'), 'name="acf[field_hz_enc_admin_rev][clear]"'),
+    'affichable illisible : case « Effacer » présente'
+);
+acf_update_value(wp_slash(['value' => '']), 'options', acf_get_field('field_hz_enc_admin_rev'));
+hz_check(get_option('options_hz_enc_admin_rev') === $foreignRaw, 'affichable illisible soumis vide : valeur brute conservée');
+acf_update_value(wp_slash(['value' => '', 'clear' => '1']), 'options', acf_get_field('field_hz_enc_admin_rev'));
+hz_check(get_option('options_hz_enc_admin_rev') === '', 'affichable illisible + « Effacer » : valeur supprimée');
+
+// I1 sans clé : soumission vide = valeur brute inchangée.
+$keyless = $foreign->encrypt('secret-sans-cle');
+update_option('options_hz_enc_admin_rev', $keyless);
+$savedKey = config('app.key');
+config(['app.key' => '']);
+app()->forgetInstance('encrypter');
+acf_update_value(wp_slash(['value' => '']), 'options', acf_get_field('field_hz_enc_admin_rev'));
+hz_check(get_option('options_hz_enc_admin_rev') === $keyless, 'sans clé, soumission vide : valeur brute inchangée');
+config(['app.key' => $savedKey]);
+app()->forgetInstance('encrypter');
+delete_option('options_hz_enc_admin_rev');
+
+// C1 : barres obliques de WordPress (acf_save_post reçoit $_POST échappé).
+$tricky = 'a"b\\c\'d';
+foreach (['field_hz_enc_admin' => 'hz_enc_admin', 'field_hz_enc_admin_rev' => 'hz_enc_admin_rev'] as $key => $name) {
+    $mode = $key === 'field_hz_enc_admin' ? 'non affichable' : 'affichable';
+    acf_update_value(wp_slash(['value' => $tricky]), 'options', acf_get_field($key));
+    acf_flush_value_cache('options', $name);
+    hz_check(get_field($name, 'options') === $tricky, 'C1 ' . $mode . ' : guillemets et barre oblique inverse intacts');
+    acf_update_value(wp_slash(['value' => get_field($name, 'options')]), 'options', acf_get_field($key));
+    acf_flush_value_cache('options', $name);
+    hz_check(get_field($name, 'options') === $tricky, 'C1 ' . $mode . ' : second enregistrement sans barre ajoutée');
+}
+
 $type = acf_get_field_type('encrypted_text');
 
 // Blocs ACF : stockage dans post_content, hors update_value.

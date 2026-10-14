@@ -11,7 +11,7 @@ use Illuminate\Console\Command;
 
 class EncryptionRestoreCommand extends Command
 {
-    protected $signature = 'encryption:restore {--file= : Fichier d’instantané (défaut : dossier temporaire du système, voir le chemin affiché)}';
+    protected $signature = 'encryption:restore {--file= : Fichier d’instantané (défaut : dossier temporaire du système, voir le chemin affiché)} {--keep : Conserve le fichier d’instantané après une restauration réussie}';
     protected $description = 'Remet les valeurs chiffrées sauvegardées à la place des valeurs illisibles, après un import de base (db:pull)';
 
     public function handle(EncryptedValueRepository $repository): int
@@ -52,6 +52,11 @@ class EncryptionRestoreCommand extends Command
                 count($result['skipped'])
             )
         );
+
+        // Un instantané restauré devient périmé : on ne le laisse pas traîner (il contient des valeurs chiffrées).
+        if (!$this->option('keep')) {
+            unlink($path);
+        }
 
         foreach ($result['skipped'] as $location) {
             $this->line('  ignorée : ' . $location);
