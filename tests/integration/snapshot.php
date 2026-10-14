@@ -60,10 +60,15 @@ file_put_contents($bad, '{');
 $threw = false;
 try {
     EncryptionSnapshot::restore($repo, $codec, $bad);
-} catch (\JsonException) {
-    $threw = true;
+} catch (\RuntimeException $e) {
+    $threw = str_starts_with($e->getMessage(), 'Instantané invalide (') && $e->getPrevious() instanceof \JsonException;
 }
-hz_check($threw, 'JSON mal formé : exception');
+hz_check($threw, 'JSON mal formé : RuntimeException « Instantané invalide », JsonException en cause');
+$code = Illuminate\Support\Facades\Artisan::call('encryption:restore', ['--file' => $bad]);
+hz_check(
+    $code === 1 && str_contains(Illuminate\Support\Facades\Artisan::output(), 'rien n’a été restauré'),
+    'JSON mal formé : commande -> message, FAILURE'
+);
 
 $ghost = [
     'table' => 'postmeta',

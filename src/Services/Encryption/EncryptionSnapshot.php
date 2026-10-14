@@ -101,8 +101,7 @@ final class EncryptionSnapshot
      * @return array{restored: list<string>, kept: list<string>, skipped: list<string>, failed: list<string>}
      *         failed : écriture en échec, valeur laissée en l’état
      *
-     * @throws \JsonException
-     * @throws \RuntimeException instantané illisible ou invalide (rien n’a été restauré)
+     * @throws \RuntimeException instantané illisible ou invalide, JSON mal formé compris (rien n’a été restauré)
      */
     public static function restore(EncryptedValueRepository $repository, EncryptedValueCodec $codec, string $path): array
     {
@@ -119,7 +118,13 @@ final class EncryptionSnapshot
             throw new \RuntimeException(sprintf('Instantané illisible (%s) : rien n’a été restauré.', $path));
         }
 
-        $entries = self::validate(json_decode($contents, true, 512, JSON_THROW_ON_ERROR), $path);
+        try {
+            $data = json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            throw self::invalid($path, $e->getMessage(), $e);
+        }
+
+        $entries = self::validate($data, $path);
         $result = ['restored' => [], 'kept' => [], 'skipped' => [], 'failed' => []];
 
         foreach ($entries as $saved) {
@@ -174,49 +179,51 @@ final class EncryptionSnapshot
      */
     private static function validate(mixed $data, string $path): array
     {
-        $fail = static fn(string $reason): \RuntimeException => new \RuntimeException(
-            sprintf('Instantané invalide (%s : %s) : rien n’a été restauré.', $path, $reason)
-        );
-
         if (!is_array($data) || ($data['version'] ?? null) !== self::VERSION) {
-            throw $fail('version non prise en charge');
+            throw self::invalid($path, 'version non prise en charge');
         }
 
         if (!isset($data['values']) || !is_array($data['values']) || !array_is_list($data['values'])) {
-            throw $fail('liste « values » absente');
+            throw self::invalid($path, 'liste « values » absente');
         }
 
         $entries = [];
 
         foreach ($data['values'] as $index => $entry) {
             if (!is_array($entry)) {
-                throw $fail(sprintf('entrée %d non valide', $index));
+                throw self::invalid($path, sprintf('entrée %d non valide', $index));
             }
 
             if (!in_array($entry['table'] ?? null, EncryptedValueRepository::TABLES, true)) {
-                throw $fail(sprintf('entrée %d : table inconnue', $index));
+                throw self::invalid($path, sprintf('entrée %d : table inconnue', $index));
             }
 
             if (!is_int($entry['objectId'] ?? null) || $entry['objectId'] < 0) {
-                throw $fail(sprintf('entrée %d : objectId invalide', $index));
+                throw self::invalid($path, sprintf('entrée %d : objectId invalide', $index));
             }
 
             if (!is_string($entry['key'] ?? null) || $entry['key'] === '') {
-                throw $fail(sprintf('entrée %d : clé invalide', $index));
+                throw self::invalid($path, sprintf('entrée %d : clé invalide', $index));
             }
 
             if (!EncryptedValueCodec::isEncrypted($entry['value'] ?? null)) {
-                throw $fail(sprintf('entrée %d : valeur non chiffrée', $index));
+                throw self::invalid($path, sprintf('entrée %d : valeur non chiffrée', $index));
             }
 
             if (($entry['reference'] ?? null) !== null && !is_string($entry['reference'])) {
-                throw $fail(sprintf('entrée %d : référence invalide', $index));
+                throw self::invalid($path, sprintf('entrée %d : référence invalide', $index));
             }
 
             $entries[] = StoredEncryptedValue::fromArray($entry);
         }
 
         return $entries;
+    }
+
+    /** Erreur commune aux instantanés invalides (JSON mal formé ou contenu refusé par validate()). */
+    private static function invalid(string $path, string $reason, ?\Throwable $previous = null): \RuntimeException
+    {
+        return new \RuntimeException(sprintf('Instantané invalide (%s : %s) : rien n’a été restauré.', $path, $reason), 0, $previous);
     }
 
     private static function currentUserId(): int
