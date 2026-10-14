@@ -287,13 +287,9 @@ final class AcfFieldEncryptedText extends \acf_field
      */
     private function isStoredUnreadable(string $stored): bool
     {
-        if (!EncryptedValueCodec::isEncrypted($stored)) {
-            return false;
-        }
-
         $codec = EncryptedValueCodec::make();
 
-        return $codec === null || $codec->decrypt($stored) === null;
+        return $codec === null ? EncryptedValueCodec::isEncrypted($stored) : $codec->isUnreadableToken($stored);
     }
 
     /**

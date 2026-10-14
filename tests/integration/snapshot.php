@@ -136,6 +136,77 @@ hz_check(
 );
 EncryptionSnapshot::capture($repo, $codec, $path);
 
+// Relecture finale I1 : une métadonnée n’est écrite que si elle est chiffrée ET illisible.
+$metaPost = wp_insert_post(['post_title' => 'hz snapshot meta', 'post_status' => 'draft']);
+update_post_meta($metaPost, 'hz_snap_empty', $codec->encrypt('meta-vide'));
+update_post_meta($metaPost, 'hz_snap_plain', $codec->encrypt('meta-clair'));
+update_post_meta($metaPost, 'hz_snap_lost', $codec->encrypt('meta-perdue'));
+update_option('options_hz_snap_blank', $codec->encrypt('option-vide'));
+$metaPath = $dir . '/meta.json';
+EncryptionSnapshot::capture($repo, $codec, $metaPath);
+update_post_meta($metaPost, 'hz_snap_empty', '');
+update_post_meta($metaPost, 'hz_snap_plain', 'valeur-en-clair');
+update_post_meta($metaPost, 'hz_snap_lost', $prod->encrypt('meta-prod'));
+update_option('options_hz_snap_blank', '');
+$metaResult = EncryptionSnapshot::restore($repo, $codec, $metaPath);
+$at = static fn(string $key): string => sprintf('postmeta:%d:%s', $metaPost, $key);
+hz_check(
+    in_array($at('hz_snap_empty'), $metaResult['skipped'], true) && get_post_meta($metaPost, 'hz_snap_empty', true) === '',
+    'I1 : meta vide sur un post existant -> skipped, pas d’écriture'
+);
+hz_check(
+    in_array($at('hz_snap_plain'), $metaResult['kept'], true) && get_post_meta($metaPost, 'hz_snap_plain', true) === 'valeur-en-clair',
+    'I1 : meta en clair -> kept, pas d’écriture'
+);
+hz_check(
+    in_array($at('hz_snap_lost'), $metaResult['restored'], true) &&
+        $codec->decrypt((string) get_post_meta($metaPost, 'hz_snap_lost', true)) === 'meta-perdue',
+    'I1 : meta chiffrée illisible -> restaurée'
+);
+hz_check(
+    in_array('options:0:options_hz_snap_blank', $metaResult['restored'], true) &&
+        $codec->decrypt((string) get_option('options_hz_snap_blank')) === 'option-vide',
+    'I1 : option vide -> restaurée (recréable)'
+);
+wp_delete_post($metaPost, true);
+delete_option('options_hz_snap_blank');
+unlink($metaPath);
+
+// Relecture finale I2 : des entrées ignorées -> l’instantané est conservé et son chemin affiché.
+$ghostPath = $dir . '/ghost.json';
+file_put_contents($ghostPath, json_encode(['version' => 1, 'values' => [$ghost]]));
+$code = Illuminate\Support\Facades\Artisan::call('encryption:restore', ['--file' => $ghostPath]);
+$output = Illuminate\Support\Facades\Artisan::output();
+hz_check(
+    $code === 0 && is_file($ghostPath) && str_contains($output, 'conservé') && str_contains($output, $ghostPath),
+    'I2 : entrées ignorées -> instantané conservé, chemin affiché'
+);
+if (is_file($ghostPath)) {
+    unlink($ghostPath);
+}
+
+// I2 : suppression impossible -> avertissement, la commande n’échoue pas.
+$locked = sys_get_temp_dir() . '/hz-snapshot-locked';
+if (!is_dir($locked)) {
+    mkdir($locked, 0700);
+}
+EncryptionSnapshot::capture($repo, $codec, $locked . '/snap.json');
+chmod($locked, 0500);
+$code = null;
+$output = '';
+try {
+    $code = Illuminate\Support\Facades\Artisan::call('encryption:restore', ['--file' => $locked . '/snap.json']);
+    $output = Illuminate\Support\Facades\Artisan::output();
+} catch (\Throwable $e) {
+    $output = get_class($e) . ' : ' . $e->getMessage();
+}
+chmod($locked, 0700);
+hz_check($code === 0 && str_contains($output, 'Impossible de supprimer'), 'I2 : unlink en échec -> avertissement, SUCCESS');
+if (is_file($locked . '/snap.json')) {
+    unlink($locked . '/snap.json');
+}
+rmdir($locked);
+
 foreach (['a', 'common', 'new'] as $suffix) {
     delete_option('options_hz_snap_' . $suffix);
     delete_option('_options_hz_snap_' . $suffix);

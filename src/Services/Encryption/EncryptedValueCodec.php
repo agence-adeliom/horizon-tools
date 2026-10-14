@@ -66,4 +66,13 @@ final class EncryptedValueCodec
             return null;
         }
     }
+
+    /**
+     * Vrai si la valeur est un jeton chiffré que la clé courante ne sait pas lire (autre clé ou
+     * jeton corrompu). Une valeur vide, en clair ou lisible renvoie faux.
+     */
+    public function isUnreadableToken(string $value): bool
+    {
+        return self::isEncrypted($value) && $this->decrypt($value) === null;
+    }
 }

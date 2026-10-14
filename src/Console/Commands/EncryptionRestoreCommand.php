@@ -53,15 +53,34 @@ class EncryptionRestoreCommand extends Command
             )
         );
 
-        // Un instantané restauré devient périmé : on ne le laisse pas traîner (il contient des valeurs chiffrées).
-        if (!$this->option('keep')) {
-            unlink($path);
-        }
-
         foreach ($result['skipped'] as $location) {
             $this->line('  ignorée : ' . $location);
         }
 
+        $this->cleanUp($path, $result['skipped'] !== []);
+
         return self::SUCCESS;
+    }
+
+    /**
+     * Un instantané restauré devient périmé : on ne le laisse pas traîner (il contient des valeurs
+     * chiffrées). Il est conservé avec --keep, ou si des entrées ont été ignorées (elles pourront
+     * être restaurées à la main). Un échec de suppression n’est qu’un avertissement.
+     */
+    private function cleanUp(string $path, bool $hasSkipped): void
+    {
+        if ($this->option('keep')) {
+            return;
+        }
+
+        if ($hasSkipped) {
+            $this->warn(sprintf('Instantané conservé (entrées ignorées) : %s. À supprimer une fois traité.', $path));
+
+            return;
+        }
+
+        if (!@unlink($path)) {
+            $this->warn(sprintf('Impossible de supprimer l’instantané %s : à supprimer à la main.', $path));
+        }
     }
 }

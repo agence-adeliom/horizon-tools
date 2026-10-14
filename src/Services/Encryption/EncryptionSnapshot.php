@@ -130,16 +130,19 @@ final class EncryptionSnapshot
 
             $current = $repository->read($saved->table, $saved->objectId, $saved->key);
 
-            if ($current !== null && $current !== '' && $codec->decrypt($current) !== null) {
+            // Valeur lisible (ou en clair) : celle de la base importée prime.
+            if ($current !== null && $current !== '' && !$codec->isUnreadableToken($current)) {
                 $result['kept'][] = $saved->location();
 
                 continue;
             }
 
-            // Les ID de posts, termes et utilisateurs ne sont pas stables d’un environnement à l’autre :
-            // une ligne de métadonnée absente n’est jamais recréée (elle pourrait viser un autre objet).
-            // Seules les options, sans identifiant d’objet, sont recréées.
-            if ($current === null && $saved->table !== 'options') {
+            // Métadonnées : les ID de posts, termes et utilisateurs ne sont pas stables d’un environnement
+            // à l’autre. On n’écrit que par-dessus une valeur chiffrée illisible, seule preuve que la ligne
+            // portait bien ce champ chiffré ; une ligne absente ou vide n’est jamais touchée (elle pourrait
+            // viser un autre objet, ou avoir été vidée volontairement).
+            // Options : sans identifiant d’objet, une valeur absente ou vide reste recréable.
+            if ($saved->table !== 'options' && ($current === null || !$codec->isUnreadableToken($current))) {
                 $result['skipped'][] = $saved->location();
 
                 continue;

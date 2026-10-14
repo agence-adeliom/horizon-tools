@@ -31,4 +31,13 @@ $otherKey = new EncryptedValueCodec(new Encrypter(Encrypter::generateKey('AES-25
 hz_check($otherKey->decrypt($stored) === null, 'autre clé : indéchiffrable, renvoie null');
 hz_check($codec->decrypt('hz_enc:v1:corrompu') === null, 'payload corrompu : renvoie null');
 
+// Relecture finale I1 : jeton chiffré illisible avec la clé courante.
+$unreadable = static fn(string $value): bool => method_exists($codec, 'isUnreadableToken') && $codec->isUnreadableToken($value);
+hz_check($unreadable($otherKey->encrypt('x')), 'isUnreadableToken : jeton d’une autre clé -> vrai');
+hz_check($unreadable('hz_enc:v1:corrompu'), 'isUnreadableToken : jeton corrompu -> vrai');
+hz_check(
+    method_exists($codec, 'isUnreadableToken') && !$unreadable($stored) && !$unreadable('') && !$unreadable('valeur-en-clair'),
+    'isUnreadableToken : jeton lisible, vide ou clair -> faux'
+);
+
 hz_done();
