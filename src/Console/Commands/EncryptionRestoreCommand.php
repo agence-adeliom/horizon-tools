@@ -11,7 +11,7 @@ use Illuminate\Console\Command;
 
 class EncryptionRestoreCommand extends Command
 {
-    protected $signature = 'encryption:restore {--path= : Fichier d’instantané (défaut : storage/app/horizon-tools/encryption-snapshot.json)}';
+    protected $signature = 'encryption:restore {--path= : Fichier d’instantané (défaut : dossier temporaire du système, voir le chemin affiché)}';
     protected $description = 'Remet les valeurs chiffrées sauvegardées à la place des valeurs illisibles, après un import de base (db:pull)';
 
     public function handle(EncryptedValueRepository $repository): int

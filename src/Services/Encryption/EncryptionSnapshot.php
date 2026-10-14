@@ -10,6 +10,10 @@ namespace Adeliom\HorizonTools\Services\Encryption;
  * Cas visé : une clé par environnement. Après un db:pull, les valeurs de la prod sont
  * illisibles en local ; on remet à leur place les valeurs locales sauvegardées juste
  * avant l'import. L'instantané ne contient que des valeurs chiffrées.
+ *
+ * Le chemin par défaut est dans le dossier temporaire du système : hors de toute racine web
+ * et de tout dépôt. Le hash d'ABSPATH évite les collisions entre projets d'un même serveur.
+ * L'instantané ne doit vivre que le temps d'un import.
  */
 final class EncryptionSnapshot
 {
@@ -17,7 +21,7 @@ final class EncryptionSnapshot
 
     public static function defaultPath(): string
     {
-        return storage_path('app/horizon-tools/encryption-snapshot.json');
+        return sys_get_temp_dir() . '/horizon-tools-' . substr(md5(ABSPATH), 0, 12) . '/encryption-snapshot.json';
     }
 
     public static function capture(EncryptedValueRepository $repository, EncryptedValueCodec $codec, string $path): int
@@ -28,7 +32,7 @@ final class EncryptionSnapshot
 
         $directory = dirname($path);
 
-        if (!is_dir($directory) && !mkdir($directory, 0770, true) && !is_dir($directory)) {
+        if (!is_dir($directory) && !mkdir($directory, 0700, true) && !is_dir($directory)) {
             throw new \RuntimeException(sprintf('Impossible de créer le dossier %s', $directory));
         }
 

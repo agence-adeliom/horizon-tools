@@ -11,7 +11,7 @@ use Illuminate\Console\Command;
 
 class EncryptionSnapshotCommand extends Command
 {
-    protected $signature = 'encryption:snapshot {--path= : Fichier d’instantané (défaut : storage/app/horizon-tools/encryption-snapshot.json)}';
+    protected $signature = 'encryption:snapshot {--path= : Fichier d’instantané (défaut : dossier temporaire du système, voir le chemin affiché)}';
     protected $description = 'Sauvegarde les valeurs chiffrées lisibles, à lancer avant un import de base (db:pull)';
 
     public function handle(EncryptedValueRepository $repository): int
