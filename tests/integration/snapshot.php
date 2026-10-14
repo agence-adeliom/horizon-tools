@@ -25,7 +25,7 @@ update_option('_options_hz_snap_new', 'field_hz_snap_new');
 hz_check(SnapshotStore::capture($repo, $codec, $path) >= 3, 'capture : au moins 3 valeurs sauvegardées');
 hz_check(!str_contains((string) file_get_contents($path), 'local-a'), 'instantané : aucune valeur en clair');
 
-// Simulation de l'import : valeur prod illisible, valeur prod lisible (clé commune), valeur absente en prod
+// Simulation de l’import : valeur prod illisible, valeur prod lisible (clé commune), valeur absente en prod
 update_option('options_hz_snap_a', $prod->encrypt('prod-a'));
 update_option('options_hz_snap_common', $codec->encrypt('prod-common'));
 delete_option('options_hz_snap_new');

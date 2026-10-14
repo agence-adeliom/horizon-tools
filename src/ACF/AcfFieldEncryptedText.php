@@ -17,6 +17,9 @@ final class AcfFieldEncryptedText extends \acf_field
 {
     public const TYPE = 'encrypted_text';
 
+    /** Remontée bornée des parents dans isInRows() (garde-fou contre une boucle). */
+    private const MAX_PARENT_DEPTH = 20;
+
     /**
      * Champs dont la valeur stockée n’a pas pu être déchiffrée pendant la requête,
      * indexés par « postId|clé de champ ».
@@ -297,9 +300,7 @@ final class AcfFieldEncryptedText extends \acf_field
     {
         $parent = $field['parent'] ?? null;
 
-        // Remontée bornée : un parent qui n’est pas un champ (groupe de champs, clé « group_… » ou ID
-        // de post acf-field-group) arrête la recherche.
-        for ($depth = 0; $depth < 20 && $parent && !(is_string($parent) && !acf_is_field_key($parent)); $depth++) {
+        for ($depth = 0; $depth < self::MAX_PARENT_DEPTH && $this->isParentField($parent); $depth++) {
             $parentField = acf_get_field($parent);
 
             if (!is_array($parentField)) {
@@ -314,6 +315,17 @@ final class AcfFieldEncryptedText extends \acf_field
         }
 
         return false;
+    }
+
+    /**
+     * Vrai si le parent peut être un champ : un parent vide ou une clé qui n’est pas une clé de
+     * champ (groupe de champs « group_… ») arrête la remontée. Un ID numérique est passé à
+     * acf_get_field() : celui d’un groupe de champs (post acf-field-group) n’y est pas trouvé, et
+     * isInRows() s’arrête aussi.
+     */
+    private function isParentField(mixed $parent): bool
+    {
+        return !empty($parent) && !(is_string($parent) && !acf_is_field_key($parent));
     }
 
     /**

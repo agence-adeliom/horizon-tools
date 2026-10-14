@@ -30,6 +30,9 @@ final class EncryptedValueRepository
     private const META_TYPES = ['postmeta' => 'post', 'termmeta' => 'term', 'usermeta' => 'user'];
 
     /**
+     * Valeurs entières chiffrées. Le LIKE est insensible à la casse (interclassement MySQL
+     * usuel) : chaque ligne est revérifiée avec EncryptedValueCodec::isEncrypted().
+     *
      * @return list<StoredEncryptedValue>
      */
     public function all(): array
@@ -44,6 +47,10 @@ final class EncryptedValueRepository
         );
 
         foreach ($rows as $row) {
+            if (!EncryptedValueCodec::isEncrypted($row->option_value)) {
+                continue;
+            }
+
             $values[] = new StoredEncryptedValue(
                 'options',
                 0,
@@ -63,6 +70,10 @@ final class EncryptedValueRepository
             );
 
             foreach ($rows as $row) {
+                if (!EncryptedValueCodec::isEncrypted($row->meta_value)) {
+                    continue;
+                }
+
                 $objectId = (int) $row->object_id;
                 $values[] = new StoredEncryptedValue(
                     $table,
@@ -194,6 +205,36 @@ final class EncryptedValueRepository
         return $changed && update_option($name, $replaced);
     }
 
+    public function read(string $table, int $objectId, string $key): ?string
+    {
+        if ($table === 'options') {
+            $value = get_option($key, null);
+
+            return is_string($value) ? $value : null;
+        }
+
+        $type = $this->metaType($table);
+
+        if (!metadata_exists($type, $objectId, $key)) {
+            return null;
+        }
+
+        return (string) get_metadata($type, $objectId, $key, true);
+    }
+
+    /**
+     * @return bool vrai si la valeur a été écrite (faux en cas d’échec, ou si elle était déjà identique)
+     */
+    public function write(string $table, int $objectId, string $key, string $value): bool
+    {
+        if ($table === 'options') {
+            return update_option($key, $value);
+        }
+
+        // update_metadata() déséchappe sa valeur : wp_slash() la préserve à l’identique.
+        return update_metadata($this->metaType($table), $objectId, wp_slash($key), wp_slash($value)) !== false;
+    }
+
     /**
      * @return list<string>
      */
@@ -244,36 +285,6 @@ final class EncryptedValueRepository
         }
 
         return $value;
-    }
-
-    public function read(string $table, int $objectId, string $key): ?string
-    {
-        if ($table === 'options') {
-            $value = get_option($key, null);
-
-            return is_string($value) ? $value : null;
-        }
-
-        $type = $this->metaType($table);
-
-        if (!metadata_exists($type, $objectId, $key)) {
-            return null;
-        }
-
-        return (string) get_metadata($type, $objectId, $key, true);
-    }
-
-    /**
-     * @return bool vrai si la valeur a été écrite (faux en cas d’échec, ou si elle était déjà identique)
-     */
-    public function write(string $table, int $objectId, string $key, string $value): bool
-    {
-        if ($table === 'options') {
-            return update_option($key, $value);
-        }
-
-        // update_metadata() déséchappe sa valeur : wp_slash() la préserve à l’identique.
-        return update_metadata($this->metaType($table), $objectId, wp_slash($key), wp_slash($value)) !== false;
     }
 
     private function metaType(string $table): string

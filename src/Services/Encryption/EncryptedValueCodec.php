@@ -10,9 +10,9 @@ use Illuminate\Contracts\Encryption\StringEncrypter;
 /**
  * Chiffre et déchiffre les valeurs des champs « Texte chiffré ».
  *
- * S'appuie sur l'Encrypter Laravel d'Acorn (APP_KEY, AES-256-CBC + HMAC) : la clé
+ * S’appuie sur l’Encrypter Laravel d’Acorn (APP_KEY, AES-256-CBC + HMAC) : la clé
  * vit dans le .env, la valeur chiffrée en base. Il faut donc les deux pour lire.
- * Le préfixe versionné distingue une valeur chiffrée d'une valeur héritée en clair
+ * Le préfixe versionné distingue une valeur chiffrée d’une valeur héritée en clair
  * et permet de retrouver toutes les valeurs chiffrées en base.
  */
 final class EncryptedValueCodec
@@ -24,7 +24,7 @@ final class EncryptedValueCodec
     }
 
     /**
-     * Codec branché sur l'Encrypter d'Acorn, ou null si APP_KEY est absente ou
+     * Codec branché sur l’Encrypter d’Acorn, ou null si APP_KEY est absente ou
      * invalide (MissingAppKeyException / RuntimeException à la résolution).
      */
     public static function make(): ?self

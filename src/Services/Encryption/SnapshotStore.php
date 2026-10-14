@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Adeliom\HorizonTools\Services\Encryption;
 
 /**
- * Sauvegarde / restauration des valeurs chiffrées locales autour d'un import de base.
+ * Sauvegarde / restauration des valeurs chiffrées locales autour d’un import de base.
  *
  * Cas visé : une clé par environnement. Après un db:pull, les valeurs de la prod sont
  * illisibles en local ; on remet à leur place les valeurs locales sauvegardées juste
- * avant l'import. L'instantané ne contient que des valeurs chiffrées.
+ * avant l’import. L’instantané ne contient que des valeurs chiffrées.
  *
  * Le chemin par défaut est dans le dossier temporaire du système : hors de toute racine web
- * et de tout dépôt. Le hash d'ABSPATH évite les collisions entre projets d'un même serveur.
- * L'instantané ne doit vivre que le temps d'un import.
+ * et de tout dépôt. Le hash d’ABSPATH évite les collisions entre projets d’un même serveur.
+ * L’instantané ne doit vivre que le temps d’un import.
  */
 final class SnapshotStore
 {
@@ -39,8 +39,7 @@ final class SnapshotStore
                 : array_values(
                     array_filter(
                         $repository->all(),
-                        static fn(StoredEncryptedValue $value): bool => EncryptedValueCodec::isEncrypted($value->value) &&
-                            $codec->decrypt($value->value) !== null
+                        static fn(StoredEncryptedValue $value): bool => $codec->decrypt($value->value) !== null
                     )
                 );
 

@@ -16,6 +16,8 @@ update_option('options_hz_repo_check', $codec->encrypt('opt-secret'));
 update_option('_options_hz_repo_check', 'field_hz_repo_check');
 update_post_meta($postId, 'hz_repo_check', $codec->encrypt('meta-secret'));
 update_option('hz_repo_plain', 'pas chiffré');
+// LIKE insensible à la casse : un préfixe en majuscules n’est pas une valeur chiffrée.
+update_option('hz_repo_upper', strtoupper(EncryptedValueCodec::PREFIX) . 'abc');
 
 $found = [];
 foreach ($repo->all() as $value) {
@@ -26,6 +28,7 @@ hz_check(isset($found['options:0:options_hz_repo_check']), 'option chiffrée tro
 hz_check(($found['options:0:options_hz_repo_check']->reference ?? null) === 'field_hz_repo_check', 'référence ACF de l’option lue');
 hz_check(isset($found['postmeta:' . $postId . ':hz_repo_check']), 'post meta chiffrée trouvée');
 hz_check(!isset($found['options:0:hz_repo_plain']), 'valeur en clair ignorée');
+hz_check(!isset($found['options:0:hz_repo_upper']), 'préfixe en majuscules ignoré (LIKE insensible à la casse)');
 
 hz_check($repo->read('options', 0, 'options_hz_repo_absent') === null, 'read() : ligne absente → null');
 hz_check($repo->write('postmeta', $postId, 'hz_repo_check', 'hz_enc:v1:remplacé') === true, 'write() sur une meta -> vrai');
@@ -124,5 +127,6 @@ delete_option('hz_repo_widget_check');
 delete_option('options_hz_repo_check');
 delete_option('_options_hz_repo_check');
 delete_option('hz_repo_plain');
+delete_option('hz_repo_upper');
 delete_post_meta($postId, 'hz_repo_check');
 hz_done();

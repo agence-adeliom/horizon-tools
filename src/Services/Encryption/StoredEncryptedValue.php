@@ -8,7 +8,7 @@ namespace Adeliom\HorizonTools\Services\Encryption;
  * Une valeur chiffrée telle que stockée en base, repérée par une clé naturelle
  * (table, objet, clé) qui reste valable d’une base à l’autre après un db:pull.
  */
-final class StoredEncryptedValue
+final readonly class StoredEncryptedValue
 {
     /**
      * @param string      $table     une de EncryptedValueRepository::TABLES
@@ -16,11 +16,11 @@ final class StoredEncryptedValue
      * @param string|null $reference valeur de la meta de référence ACF « _<clé> » (clé du champ)
      */
     public function __construct(
-        public readonly string $table,
-        public readonly int $objectId,
-        public readonly string $key,
-        public readonly string $value,
-        public readonly ?string $reference = null
+        public string $table,
+        public int $objectId,
+        public string $key,
+        public string $value,
+        public ?string $reference = null
     ) {
     }
 

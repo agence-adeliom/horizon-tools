@@ -54,7 +54,7 @@ class EncryptionStatus extends Command
         }
 
         $this->table(['Table', 'Objet', 'Clé', 'État'], $rows);
-        $this->line(
+        $this->info(
             sprintf('%d valeur(s) chiffrée(s), dont %d illisible(s) avec la clé courante.', count($rows), $unreadable + $unreadableEmbedded)
         );
 

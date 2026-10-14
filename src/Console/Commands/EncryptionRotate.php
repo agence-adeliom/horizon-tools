@@ -24,7 +24,7 @@ class EncryptionRotate extends Command
         $codec = EncryptedValueCodec::make();
 
         if ($codec === null) {
-            $this->error('APP_KEY absente ou invalide.');
+            $this->error('APP_KEY absente ou invalide : rechiffrement impossible.');
 
             return self::FAILURE;
         }

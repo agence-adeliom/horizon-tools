@@ -3,9 +3,9 @@
 // Pas de declare(strict_types=1) : WP-CLI eval-file le refuse (« must be the very first statement »).
 
 /*
- * Helpers des contrôles d'intégration, exécutés via `wp eval-file` dans un projet
+ * Helpers des contrôles d’intégration, exécutés via `wp eval-file` dans un projet
  * Horizon (WordPress + Acorn chargés). Pas de PHPUnit : ces contrôles ont besoin
- * d'ACF, de la base et de la configuration Acorn du projet.
+ * d’ACF, de la base et de la configuration Acorn du projet.
  */
 
 $GLOBALS['hz_failures'] = 0;
