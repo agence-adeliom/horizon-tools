@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Adeliom\HorizonTools\Providers;
 
+use Adeliom\HorizonTools\Console\Commands\EncryptionRotate;
+use Adeliom\HorizonTools\Console\Commands\EncryptionStatus;
 use Adeliom\HorizonTools\Console\Commands\ListBlocks;
 use Adeliom\HorizonTools\Console\Commands\ListPostTypes;
 use Adeliom\HorizonTools\Console\Commands\ListTaxonomies;
@@ -14,6 +16,11 @@ use Adeliom\HorizonTools\Console\Commands\MakePostType;
 use Adeliom\HorizonTools\Console\Commands\MakeRepository;
 use Adeliom\HorizonTools\Console\Commands\MakeTaxonomy;
 use Adeliom\HorizonTools\Console\Commands\MakeTemplate;
+use Adeliom\HorizonTools\Services\Encryption\EncryptedValueCodec;
+use Adeliom\HorizonTools\Services\Encryption\EncryptedValueRepository;
+use Adeliom\HorizonTools\Services\Encryption\StoredEncryptedValue;
+use Illuminate\Console\Events\CommandStarting;
+use Illuminate\Support\Facades\Event;
 use Roots\Acorn\Exceptions\SkipProviderException;
 use Roots\Acorn\Sage\SageServiceProvider;
 
@@ -33,9 +40,44 @@ class CommandsServiceProvider extends SageServiceProvider
                 ListBlocks::class,
                 ListPostTypes::class,
                 ListTaxonomies::class,
+                EncryptionStatus::class,
+                EncryptionRotate::class,
             ]);
         } catch (\Exception $e) {
             throw new SkipProviderException($e->getMessage());
         }
+
+        Event::listen(CommandStarting::class, static function (CommandStarting $event): void {
+            if ($event->command !== 'key:generate' || $event->input->hasParameterOption('--show')) {
+                return;
+            }
+
+            $codec = EncryptedValueCodec::make();
+
+            if ($codec === null) {
+                return;
+            }
+
+            $readable = array_filter(
+                app(EncryptedValueRepository::class)->all(),
+                static fn(StoredEncryptedValue $value): bool => $codec->decrypt($value->value) !== null
+            );
+
+            if ($readable === []) {
+                return;
+            }
+
+            $event->output->writeln(
+                sprintf(
+                    '<error>key:generate refusé : %d valeur(s) chiffrée(s) avec la clé actuelle deviendraient illisibles.</error>',
+                    count($readable)
+                )
+            );
+            $event->output->writeln(
+                'Pour changer de clé : ancienne clé dans APP_PREVIOUS_KEYS, nouvelle dans APP_KEY (`wp acorn key:generate --show` pour en générer une), puis `wp acorn encryption:rotate`.'
+            );
+
+            exit(1);
+        });
     }
 }
