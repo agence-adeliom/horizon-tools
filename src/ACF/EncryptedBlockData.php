@@ -245,8 +245,8 @@ final class EncryptedBlockData
 
     /**
      * Filtre acf/pre_render_fields : début du rendu de champs. Si c’est le formulaire d’un bloc
-     * (champs préfixés « acf-block_… », pro/blocks.php l. 1012, 1146, 1672), load_value renvoie
-     * la valeur chiffrée illisible telle quelle (voir AcfFieldEncryptedText::load_value).
+     * (voir isBlockFormField()), load_value renvoie la valeur chiffrée illisible telle quelle
+     * (voir AcfFieldEncryptedText::load_value).
      *
      * Le cache des valeurs du bloc est vidé au début et à la fin : une valeur lue avant (vide)
      * ne doit pas masquer la valeur chiffrée dans le formulaire, ni l’inverse dans l’aperçu.
@@ -260,7 +260,7 @@ final class EncryptedBlockData
 
         if (is_string($postId) && is_array($fields) && self::isBlockPostId($postId)) {
             foreach ($fields as $field) {
-                if (is_array($field) && str_starts_with((string) ($field['prefix'] ?? ''), 'acf-block_')) {
+                if (is_array($field) && self::isBlockFormField($field)) {
                     $blockId = $postId;
                     break;
                 }
@@ -297,6 +297,20 @@ final class EncryptedBlockData
     public static function isRenderingForm(mixed $postId): bool
     {
         return is_string($postId) && in_array($postId, self::$renderingForms, true);
+    }
+
+    /**
+     * Vrai si le champ est rendu dans le formulaire d’un bloc ACF.
+     *
+     * ACF 6.8.10, pro/blocks.php (l. 1012, 1146, 1672) : le formulaire d’un bloc passe par
+     * acf_prefix_fields($fields, "acf-{$block['id']}") avant acf_render_fields, et l’id de
+     * bloc est toujours préfixé « block_ » (acf_ensure_block_id_prefix, l. 840).
+     *
+     * @param array<string, mixed> $field
+     */
+    public static function isBlockFormField(array $field): bool
+    {
+        return str_starts_with((string) ($field['prefix'] ?? ''), 'acf-block_');
     }
 
     /**

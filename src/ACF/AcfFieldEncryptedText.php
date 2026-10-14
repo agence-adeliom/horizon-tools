@@ -383,25 +383,11 @@ final class AcfFieldEncryptedText extends \acf_field
      */
     public function prepare_field($field): array
     {
-        if ($this->isRenderedInBlock($field)) {
+        if (EncryptedBlockData::isBlockFormField($field)) {
             $field['revealable'] = 1;
         }
 
         return $field;
-    }
-
-    /**
-     * Vrai si le champ est rendu dans un bloc ACF.
-     *
-     * ACF 6.8.10, pro/blocks.php (l. 1012, 1146, 1672) : le formulaire d’un bloc passe par
-     * acf_prefix_fields($fields, "acf-{$block['id']}") avant acf_render_fields, et l’id de
-     * bloc est toujours préfixé « block_ » (acf_ensure_block_id_prefix, l. 840).
-     *
-     * @param array<string, mixed> $field
-     */
-    private function isRenderedInBlock(array $field): bool
-    {
-        return str_starts_with((string) ($field['prefix'] ?? ''), 'acf-block_');
     }
 
     /**
