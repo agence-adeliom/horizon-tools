@@ -17,6 +17,14 @@ final class AcfFieldEncryptedText extends \acf_field
 {
     public const TYPE = 'encrypted_text';
 
+    /**
+     * Champs dont la valeur stockée n’a pas pu être déchiffrée pendant la requête,
+     * indexés par « postId|clé de champ ».
+     *
+     * @var array<string, true>
+     */
+    private static array $unreadable = [];
+
     public function initialize(): void
     {
         $this->name = self::TYPE;
@@ -67,7 +75,13 @@ final class AcfFieldEncryptedText extends \acf_field
         $codec = EncryptedValueCodec::make();
 
         if ($codec === null) {
-            return EncryptedValueCodec::isEncrypted($value) ? '' : $value;
+            if (!EncryptedValueCodec::isEncrypted($value)) {
+                return $value;
+            }
+
+            $this->markUnreadable($postId, $field, 'APP_KEY absente');
+
+            return '';
         }
 
         $plain = $codec->decrypt($value);
@@ -76,31 +90,38 @@ final class AcfFieldEncryptedText extends \acf_field
             return $plain;
         }
 
-        // Indéchiffrable (clé perdue ou changée, db:pull…) : vide plutôt qu’une erreur en
-        // front, mais jamais en silence — journal PHP + avertissement dans le champ en admin.
-        $marker = sprintf('%s|%s', (string) $postId, (string) ($field['key'] ?? ''));
-
-        if (!isset(self::$unreadable[$marker])) {
-            self::$unreadable[$marker] = true;
-            error_log(
-                sprintf(
-                    '[horizon-tools] Champ chiffré « %s » (%s) illisible avec APP_KEY. Voir `wp acorn encryption:status`.',
-                    $field['name'] ?? '',
-                    (string) $postId
-                )
-            );
-        }
+        $this->markUnreadable($postId, $field, 'illisible avec APP_KEY');
 
         return '';
     }
 
     /**
-     * Champs dont la valeur stockée n’a pas pu être déchiffrée pendant la requête,
-     * indexés par « postId|clé de champ ».
+     * Mémorise une valeur illisible et la journalise une seule fois par requête.
      *
-     * @var array<string, true>
+     * Vide plutôt qu’une erreur en front, mais jamais en silence : journal PHP
+     * (+ avertissement dans le champ en admin).
+     *
+     * @param int|string           $postId
+     * @param array<string, mixed> $field
      */
-    private static array $unreadable = [];
+    private function markUnreadable($postId, array $field, string $reason): void
+    {
+        $marker = sprintf('%s|%s', (string) $postId, (string) ($field['key'] ?? ''));
+
+        if (isset(self::$unreadable[$marker])) {
+            return;
+        }
+
+        self::$unreadable[$marker] = true;
+        error_log(
+            sprintf(
+                '[horizon-tools] Champ chiffré « %s » (%s) : %s. Voir `wp acorn encryption:status`.',
+                $field['name'] ?? '',
+                (string) $postId,
+                $reason
+            )
+        );
+    }
 
     /**
      * @param array<string, mixed> $field
@@ -141,6 +162,11 @@ final class AcfFieldEncryptedText extends \acf_field
         }
 
         if (!is_string($value) || $value === '') {
+            return $value;
+        }
+
+        // Déjà chiffrée (« conserver » sur la valeur stockée) : rien à refaire, même sans clé.
+        if (EncryptedValueCodec::isEncrypted($value)) {
             return $value;
         }
 

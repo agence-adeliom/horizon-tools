@@ -39,6 +39,24 @@ hz_check(get_field('hz_encrypted_check', 'options') === '', 'valeur d’une autr
 update_field('field_hz_encrypted_check', '', 'options');
 hz_check(get_option('options_hz_encrypted_check') === '', 'update_field(…, \'\') efface la valeur');
 
+// Sans clé : lecture
+update_field('field_hz_encrypted_check', 'avant-perte-cle', 'options');
+$storedBefore = get_option('options_hz_encrypted_check');
+config(['app.key' => '']);
+app()->forgetInstance('encrypter');
+acf_flush_value_cache('options', 'hz_encrypted_check');
+hz_check(get_field('hz_encrypted_check', 'options') === '', 'sans APP_KEY : valeur chiffrée lue comme chaîne vide');
+
+// Sans clé : écriture refusée, aucun clair en base
+$threw = false;
+try {
+    update_field('field_hz_encrypted_check', 'nouveau', 'options');
+} catch (\RuntimeException $e) {
+    $threw = true;
+}
+hz_check($threw, 'sans APP_KEY : écriture refusée (RuntimeException)');
+hz_check(get_option('options_hz_encrypted_check') === $storedBefore, 'sans APP_KEY : valeur en base inchangée, pas de clair');
+
 delete_option('options_hz_encrypted_check');
 delete_option('_options_hz_encrypted_check');
 hz_done();
