@@ -11,12 +11,12 @@ use Illuminate\Console\Command;
 
 class EncryptionRestoreCommand extends Command
 {
-    protected $signature = 'encryption:restore {--path= : Fichier d’instantané (défaut : dossier temporaire du système, voir le chemin affiché)}';
+    protected $signature = 'encryption:restore {--file= : Fichier d’instantané (défaut : dossier temporaire du système, voir le chemin affiché)}';
     protected $description = 'Remet les valeurs chiffrées sauvegardées à la place des valeurs illisibles, après un import de base (db:pull)';
 
     public function handle(EncryptedValueRepository $repository): int
     {
-        $path = $this->option('path') ?: EncryptionSnapshot::defaultPath();
+        $path = $this->option('file') ?: EncryptionSnapshot::defaultPath();
 
         if (!is_file($path)) {
             $this->info(sprintf('Aucun instantané (%s) : rien à restaurer.', $path));

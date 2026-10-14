@@ -11,7 +11,7 @@ use Illuminate\Console\Command;
 
 class EncryptionSnapshotCommand extends Command
 {
-    protected $signature = 'encryption:snapshot {--path= : Fichier d’instantané (défaut : dossier temporaire du système, voir le chemin affiché)}';
+    protected $signature = 'encryption:snapshot {--file= : Fichier d’instantané (défaut : dossier temporaire du système, voir le chemin affiché)}';
     protected $description = 'Sauvegarde les valeurs chiffrées lisibles, à lancer avant un import de base (db:pull)';
 
     public function handle(EncryptedValueRepository $repository): int
@@ -26,7 +26,7 @@ class EncryptionSnapshotCommand extends Command
             return self::SUCCESS;
         }
 
-        $path = $this->option('path') ?: EncryptionSnapshot::defaultPath();
+        $path = $this->option('file') ?: EncryptionSnapshot::defaultPath();
         $count = EncryptionSnapshot::capture($repository, $codec, $path);
         $this->info(sprintf('%d valeur(s) chiffrée(s) sauvegardée(s) dans %s', $count, $path));
 
