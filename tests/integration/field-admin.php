@@ -46,6 +46,11 @@ $render = static function (string $key): string {
 $html = $render('field_hz_enc_admin');
 hz_check(!str_contains($html, 'sk_secret_xyz'), 'non affichable : le clair n’est pas dans le HTML');
 hz_check(str_contains($html, 'name="acf[field_hz_enc_admin][clear]"'), 'non affichable : case « Effacer » présente');
+hz_check(str_contains($html, 'hz-encrypted-text__toggle'), 'non affichable : bouton « Afficher » présent (saisie en cours)');
+hz_check(
+    (bool) preg_match('/name="acf\[field_hz_enc_admin\]\[value\]"\s+value=""/', $html),
+    'non affichable : input toujours vide (value="")'
+);
 
 $html = $render('field_hz_enc_admin_rev');
 hz_check(str_contains($html, 'value="sk_visible_xyz"'), 'affichable : valeur préremplie');

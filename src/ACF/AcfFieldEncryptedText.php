@@ -97,12 +97,10 @@ final class AcfFieldEncryptedText extends \acf_field
                 <?php disabled(!empty($field['disabled'])); ?>
                 style="flex:1;"
             />
-            <?php if ($revealable): ?>
-                <button type="button" class="button hz-encrypted-text__toggle" aria-pressed="false"><?php esc_html_e(
-                    'Afficher',
-                    'horizon-tools'
-                ); ?></button>
-            <?php endif; ?>
+            <button type="button" class="button hz-encrypted-text__toggle" aria-pressed="false"><?php esc_html_e(
+                'Afficher',
+                'horizon-tools'
+            ); ?></button>
         </div>
         <?php if (($hasValue && !$revealable) || $unreadable): ?>
             <label style="display:inline-block;margin-top:6px;">

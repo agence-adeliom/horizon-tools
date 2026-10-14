@@ -453,7 +453,7 @@ EncryptedText::make('Jeton CRM', 'crmToken')
 
 Par défaut, la valeur enregistrée est préremplie et masquée (saisie de type mot de passe) : le bouton « Afficher » permet de la lire dans l’administration. Vider le champ et enregistrer efface la valeur.
 
-`->writeOnly()` (« écriture seule ») retire le bouton « Afficher » et ne renvoie jamais la valeur au navigateur : le champ reste vide, avec le texte « •••••••• (valeur enregistrée — laisser vide pour la conserver) ». Un champ vide conserve la valeur ; la case « Effacer la valeur enregistrée » sert à la supprimer.
+`->writeOnly()` (« écriture seule ») ne renvoie jamais la valeur au navigateur (le bouton « Afficher » ne révèle que la saisie en cours) : le champ reste vide, avec le texte « •••••••• (valeur enregistrée — laisser vide pour la conserver) ». Un champ vide conserve la valeur ; la case « Effacer la valeur enregistrée » sert à la supprimer.
 
 Dans un répéteur ou un contenu flexible (même imbriqué, par exemple dans un groupe d’une ligne), `->writeOnly()` est ignoré : le champ est affichable. « Vide = conserver » relirait la valeur par un nom indexé (`repeteur_0_cle`) qui change de ligne quand les lignes sont réordonnées ou supprimées. Un groupe seul ne change rien : `->writeOnly()` y est respecté.
 
