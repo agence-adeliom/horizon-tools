@@ -211,6 +211,11 @@ final class AcfFieldEncryptedText extends \acf_field
      */
     public function update_value($value, $postId, $field): mixed
     {
+        // Bloc ACF (valeurs stockées dans post_content) : jamais d’exception ni de wp_unslash.
+        if ($this->isBlockPostId($postId)) {
+            return EncryptedBlockData::encryptValue($value, (string) ($field['name'] ?? ''));
+        }
+
         // Envoi du formulaire d’administration : ['value' => …, 'clear' => '1'].
         if (is_array($value)) {
             if (!empty($value['clear'])) {
@@ -298,8 +303,9 @@ final class AcfFieldEncryptedText extends \acf_field
     }
 
     /**
-     * Dans un bloc ACF, la valeur est stockée dans les attributs du bloc (post_content)
-     * sans passer par update_value : elle serait enregistrée en clair. On l'empêche.
+     * Dans un bloc ACF, le champ est toujours affichable : les attributs du bloc sont
+     * renvoyés tels quels par l’éditeur, une saisie vide ne peut donc pas signifier
+     * « conserver ». Le chiffrement est assuré par EncryptedBlockData.
      *
      * @param array<string, mixed> $field
      *
@@ -308,14 +314,21 @@ final class AcfFieldEncryptedText extends \acf_field
     public function prepare_field($field): array
     {
         if ($this->isRenderedInBlock($field)) {
-            $field['instructions'] = __(
-                'Champ chiffré indisponible dans un bloc : à placer dans une page d’options, un type de contenu, une taxonomie ou un profil.',
-                'horizon-tools'
-            );
-            $field['disabled'] = 1;
+            $field['revealable'] = 1;
         }
 
         return $field;
+    }
+
+    /**
+     * Vrai si la valeur appartient à un bloc ACF stocké dans post_content : identifiant
+     * « block_… » (ACF 6.8.10, includes/acf-wp-functions.php l. 192, acf_decode_post_id).
+     *
+     * @param int|string $postId
+     */
+    private function isBlockPostId($postId): bool
+    {
+        return is_string($postId) && acf_decode_post_id($postId)['type'] === 'block';
     }
 
     /**

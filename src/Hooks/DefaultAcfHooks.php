@@ -6,6 +6,7 @@ namespace Adeliom\HorizonTools\Hooks;
 
 use Adeliom\HorizonTools\ACF\AcfFieldEncryptedText;
 use Adeliom\HorizonTools\ACF\AcfFieldTextWithTags;
+use Adeliom\HorizonTools\ACF\EncryptedBlockData;
 use Adeliom\HorizonTools\Services\TextService;
 
 /**
@@ -30,5 +31,7 @@ class DefaultAcfHooks extends AbstractHook
         }
 
         acf_register_field_type(AcfFieldEncryptedText::class);
+        // Blocs ACF : valeurs stockées dans les attributs du bloc (post_content), hors update_value
+        add_filter('acf/pre_save_block', [EncryptedBlockData::class, 'encryptAttributes'], 10, 1);
     }
 }

@@ -126,15 +126,15 @@ foreach (['field_hz_enc_admin' => 'hz_enc_admin', 'field_hz_enc_admin_rev' => 'h
 
 $type = acf_get_field_type('encrypted_text');
 
-// Blocs ACF : stockage dans post_content, hors update_value.
+// Blocs ACF : stockage dans post_content, chiffré par EncryptedBlockData (voir block.php).
 // Mécanisme ACF 6.8.10 : pro/blocks.php (l. 1012, 1146, 1672) appelle acf_prefix_fields($fields, "acf-{$block['id']}")
 // avant acf_render_fields ; l’id de bloc porte toujours le préfixe « block_ » (acf_ensure_block_id_prefix, l. 840).
 $blockField = acf_get_field('field_hz_enc_admin');
 $blockField['prefix'] = 'acf-block_abc123';
 $prepared = $type->prepare_field($blockField);
 hz_check(
-    is_array($prepared) && str_contains((string) ($prepared['instructions'] ?? ''), 'bloc') && !empty($prepared['disabled']),
-    'dans un bloc : avertissement affiché et champ désactivé'
+    is_array($prepared) && empty($prepared['disabled']) && !empty($prepared['revealable']),
+    'dans un bloc : champ affichable et non désactivé'
 );
 $prepared = $type->prepare_field(acf_get_field('field_hz_enc_admin'));
 hz_check(empty($prepared['disabled']), 'hors bloc : champ non désactivé');
