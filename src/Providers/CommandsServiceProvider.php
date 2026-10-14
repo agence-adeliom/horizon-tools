@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Adeliom\HorizonTools\Providers;
 
 use Adeliom\HorizonTools\Console\Commands\EncryptionRotate;
+use Adeliom\HorizonTools\Console\Commands\EncryptionRestoreCommand;
+use Adeliom\HorizonTools\Console\Commands\EncryptionSnapshotCommand;
 use Adeliom\HorizonTools\Console\Commands\EncryptionStatus;
 use Adeliom\HorizonTools\Console\Commands\ListBlocks;
 use Adeliom\HorizonTools\Console\Commands\ListPostTypes;
@@ -42,6 +44,8 @@ class CommandsServiceProvider extends SageServiceProvider
                 ListTaxonomies::class,
                 EncryptionStatus::class,
                 EncryptionRotate::class,
+                EncryptionSnapshotCommand::class,
+                EncryptionRestoreCommand::class,
             ]);
         } catch (\Exception $e) {
             throw new SkipProviderException($e->getMessage());
