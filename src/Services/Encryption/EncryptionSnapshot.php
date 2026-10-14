@@ -24,6 +24,12 @@ final class EncryptionSnapshot
         return sys_get_temp_dir() . '/horizon-tools-' . substr(md5(ABSPATH), 0, 12) . '/encryption-snapshot.json';
     }
 
+    /**
+     * Ne capture que les valeurs entières de all() (options, métadonnées). Les jetons embarqués
+     * dans un texte (blocs ACF de post_content, révisions comprises, et options comme
+     * widget_block) sont exclus : le contenu des pages voyage avec la base importée et ses
+     * identifiants ne sont pas stables d’un environnement à l’autre.
+     */
     public static function capture(EncryptedValueRepository $repository, ?EncryptedValueCodec $codec, string $path): int
     {
         // Sans clé : instantané vide, pour ne jamais laisser en place un ancien fichier périmé.

@@ -46,6 +46,32 @@ class EncryptionRotate extends Command
             $rotated++;
         }
 
+        foreach ($repository->contentTokens() as $item) {
+            $plain = $codec->decrypt($item['token']);
+
+            if ($plain === null) {
+                $unreadable[] = sprintf('posts:%d:post_content', $item['postId']);
+
+                continue;
+            }
+
+            $repository->replaceInContent($item['postId'], $item['token'], $codec->encrypt($plain));
+            $rotated++;
+        }
+
+        foreach ($repository->embeddedOptionTokens() as $item) {
+            $plain = $codec->decrypt($item['token']);
+
+            if ($plain === null) {
+                $unreadable[] = sprintf('options:0:%s (contenu)', $item['option']);
+
+                continue;
+            }
+
+            $repository->replaceInOption($item['option'], $item['token'], $codec->encrypt($plain));
+            $rotated++;
+        }
+
         wp_cache_flush();
         $this->info(sprintf('%d valeur(s) rechiffrée(s) avec APP_KEY.', $rotated));
 

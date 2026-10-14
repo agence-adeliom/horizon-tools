@@ -62,10 +62,18 @@ class CommandsServiceProvider extends SageServiceProvider
                 return;
             }
 
+            $repository = app(EncryptedValueRepository::class);
             $readable = array_filter(
-                app(EncryptedValueRepository::class)->all(),
+                $repository->all(),
                 static fn(StoredEncryptedValue $value): bool => $codec->decrypt($value->value) !== null
             );
+
+            // Jetons embarqués : blocs ACF de post_content (révisions comprises) et options comme widget_block.
+            $embedded = array_filter(
+                [...$repository->contentTokens(), ...$repository->embeddedOptionTokens()],
+                static fn(array $item): bool => $codec->decrypt($item['token']) !== null
+            );
+            $readable = [...$readable, ...$embedded];
 
             if ($readable === []) {
                 return;

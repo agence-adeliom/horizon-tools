@@ -32,6 +32,18 @@ class EncryptionStatus extends Command
             $rows[] = [$value->table, $value->objectId ?: '—', $value->key, $readable ? 'lisible' : 'ILLISIBLE'];
         }
 
+        foreach ($repository->contentTokens() as $item) {
+            $readable = $codec->decrypt($item['token']) !== null;
+            $unreadable += $readable ? 0 : 1;
+            $rows[] = ['posts', $item['postId'], 'post_content', $readable ? 'lisible' : 'ILLISIBLE'];
+        }
+
+        foreach ($repository->embeddedOptionTokens() as $item) {
+            $readable = $codec->decrypt($item['token']) !== null;
+            $unreadable += $readable ? 0 : 1;
+            $rows[] = ['options', '—', $item['option'] . ' (contenu)', $readable ? 'lisible' : 'ILLISIBLE'];
+        }
+
         if ($rows === []) {
             $this->info('Clé présente. Aucune valeur chiffrée en base.');
 
