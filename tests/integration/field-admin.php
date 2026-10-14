@@ -6,7 +6,13 @@ use Adeliom\HorizonTools\Services\Encryption\EncryptedValueCodec;
 
 require __DIR__ . '/bootstrap.php';
 
-$base = ['key' => 'field_hz_enc_admin', 'name' => 'hz_enc_admin', 'label' => 'Clé API', 'type' => 'encrypted_text'];
+$base = [
+    'key' => 'field_hz_enc_admin',
+    'name' => 'hz_enc_admin',
+    'label' => 'Clé API',
+    'type' => 'encrypted_text',
+    'revealable' => 0,
+];
 acf_add_local_field_group([
     'key' => 'group_hz_enc_admin',
     'title' => 'Contrôle admin',
@@ -44,6 +50,16 @@ hz_check(str_contains($html, 'name="acf[field_hz_enc_admin][clear]"'), 'non affi
 $html = $render('field_hz_enc_admin_rev');
 hz_check(str_contains($html, 'value="sk_visible_xyz"'), 'affichable : valeur préremplie');
 hz_check(str_contains($html, 'hz-encrypted-text__toggle'), 'affichable : bouton « Afficher » présent');
+
+// Champ sans réglage « revealable » (défini en code sans le wrapper) : affichable, prérempli.
+$bare = ['key' => 'field_hz_enc_admin_bare', 'name' => 'hz_enc_admin', 'label' => 'Sans réglage', 'type' => 'encrypted_text'];
+$bare['value'] = 'sk_secret_xyz';
+$bare['placeholder'] = '';
+$bare['name'] = 'acf[field_hz_enc_admin_bare]';
+ob_start();
+acf_get_field_type('encrypted_text')->render_field($bare);
+$html = (string) ob_get_clean();
+hz_check(str_contains($html, 'value="sk_secret_xyz"'), 'sans réglage : valeur préremplie (affichable par défaut)');
 
 // Soumission du formulaire : vide = conserver (non affichable)
 acf_update_value(['value' => ''], 'options', acf_get_field('field_hz_enc_admin'));

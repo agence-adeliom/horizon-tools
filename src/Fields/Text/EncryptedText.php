@@ -29,12 +29,13 @@ class EncryptedText extends Field
     protected ?string $type = 'encrypted_text';
 
     /**
-     * Affiche la valeur (masquée, avec un bouton « Afficher ») dans l’administration.
-     * Par défaut, la valeur enregistrée n’est jamais renvoyée au navigateur.
+     * Par défaut, la valeur est affichable dans l’administration (masquée, avec un bouton « Afficher »).
+     * `writeOnly()` ne la renvoie jamais au navigateur : champ en écriture seule, vide = conserver.
+     * Sans effet dans un bloc, où ce champ est indisponible.
      */
-    public function revealable(bool $revealable = true): static
+    public function writeOnly(bool $writeOnly = true): static
     {
-        $this->settings['revealable'] = $revealable;
+        $this->settings['revealable'] = !$writeOnly;
 
         return $this;
     }

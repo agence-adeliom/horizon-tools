@@ -32,7 +32,7 @@ final class AcfFieldEncryptedText extends \acf_field
         $this->category = 'basic';
         $this->defaults = [
             'placeholder' => '',
-            'revealable' => 0,
+            'revealable' => 1,
         ];
     }
 
@@ -43,7 +43,10 @@ final class AcfFieldEncryptedText extends \acf_field
     {
         acf_render_field_setting($field, [
             'label' => __('Valeur affichable', 'horizon-tools'),
-            'instructions' => __('Permet d’afficher la valeur en clair dans l’administration.', 'horizon-tools'),
+            'instructions' => __(
+                'Affiche la valeur en clair dans l’administration. Décocher pour ne jamais renvoyer la valeur au navigateur (saisie en écriture seule).',
+                'horizon-tools'
+            ),
             'name' => 'revealable',
             'type' => 'true_false',
             'ui' => 1,
@@ -55,7 +58,7 @@ final class AcfFieldEncryptedText extends \acf_field
      */
     public function render_field($field): void
     {
-        $revealable = !empty($field['revealable']);
+        $revealable = $this->isRevealable($field);
         $hasValue = is_string($field['value']) && $field['value'] !== '';
         $unreadable = $this->isUnreadable($field);
 
@@ -224,7 +227,7 @@ final class AcfFieldEncryptedText extends \acf_field
             if ($value === '') {
                 $stored = $this->storedValue($postId, $field);
 
-                if (empty($field['revealable']) || $this->isStoredUnreadable($stored)) {
+                if (!$this->isRevealable($field) || $this->isStoredUnreadable($stored)) {
                     $value = $stored;
                 }
             }
@@ -247,6 +250,16 @@ final class AcfFieldEncryptedText extends \acf_field
         }
 
         return $codec->encrypt($value);
+    }
+
+    /**
+     * Un champ sans réglage (défini en code sans le wrapper) est affichable.
+     *
+     * @param array<string, mixed> $field
+     */
+    private function isRevealable(array $field): bool
+    {
+        return !isset($field['revealable']) || !empty($field['revealable']);
     }
 
     /**
