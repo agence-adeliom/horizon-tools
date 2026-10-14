@@ -1,0 +1,415 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Adeliom\HorizonTools\ACF;
+
+use Adeliom\HorizonTools\Services\Encryption\EncryptedValueCodec;
+
+/**
+ * Champ ACF texte dont la valeur est chiffrée en base.
+ *
+ * Chiffré à l’écriture (update_value), déchiffré à la lecture (load_value) : le code
+ * du thème manipule toujours le clair via get_field(). Il faut la clé (APP_KEY, dans
+ * le .env) ET la base pour retrouver la valeur.
+ */
+final class AcfFieldEncryptedText extends \acf_field
+{
+    public const TYPE = 'encrypted_text';
+
+    /** Remontée bornée des parents dans isInRows() (garde-fou contre une boucle). */
+    private const MAX_PARENT_DEPTH = 20;
+
+    /**
+     * Champs dont la valeur stockée n’a pas pu être déchiffrée pendant la requête,
+     * indexés par « postId|clé de champ ».
+     *
+     * @var array<string, true>
+     */
+    private static array $unreadable = [];
+
+    public function initialize(): void
+    {
+        $this->name = self::TYPE;
+        $this->label = __('Texte chiffré', 'horizon-tools');
+        $this->category = 'basic';
+        $this->defaults = [
+            'placeholder' => '',
+            'revealable' => 1,
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $field
+     */
+    public function render_field_settings($field): void
+    {
+        acf_render_field_setting($field, [
+            'label' => __('Valeur affichable', 'horizon-tools'),
+            'instructions' => __(
+                'Affiche la valeur en clair dans l’administration. Décocher pour ne jamais renvoyer la valeur au navigateur (saisie en écriture seule). Sans effet dans un bloc, un répéteur ou un contenu flexible.',
+                'horizon-tools'
+            ),
+            'name' => 'revealable',
+            'type' => 'true_false',
+            'ui' => 1,
+        ]);
+    }
+
+    /**
+     * @param array<string, mixed> $field
+     */
+    public function render_field($field): void
+    {
+        $revealable = $this->isRevealable($field);
+        $hasValue = is_string($field['value']) && $field['value'] !== '';
+        $unreadable = $this->isUnreadable($field);
+
+        if (EncryptedValueCodec::make() === null) {
+            printf(
+                '<p class="acf-notice -error"><strong>%s</strong></p>',
+                esc_html__('APP_KEY absente : ce champ chiffré ne peut être ni lu ni enregistré.', 'horizon-tools')
+            );
+        } elseif ($unreadable) {
+            printf(
+                '<p class="acf-notice -warning hz-encrypted-text__unreadable"><strong>%s</strong></p>',
+                esc_html__(
+                    'Une valeur est enregistrée mais illisible avec la clé actuelle (APP_KEY changée ou base importée d’un autre environnement). Ressaisir la valeur, ou restaurer l’ancienne clé.',
+                    'horizon-tools'
+                )
+            );
+        }
+
+        $placeholder =
+            $hasValue && !$revealable
+                ? __('•••••••• (valeur enregistrée — laisser vide pour la conserver)', 'horizon-tools')
+                : (string) $field['placeholder'];
+        ?>
+        <div class="hz-encrypted-text" style="display:flex;gap:6px;align-items:center;">
+            <input
+                type="password"
+                id="<?php echo esc_attr($field['id'] ?? ''); ?>"
+                name="<?php echo esc_attr($field['name']); ?>[value]"
+                value="<?php echo $revealable ? esc_attr((string) $field['value']) : ''; ?>"
+                placeholder="<?php echo esc_attr($placeholder); ?>"
+                autocomplete="new-password"
+                spellcheck="false"
+                <?php disabled(!empty($field['disabled'])); ?>
+                style="flex:1;"
+            />
+            <button type="button" class="button hz-encrypted-text__toggle" aria-pressed="false"><?php esc_html_e(
+                'Afficher',
+                'horizon-tools'
+            ); ?></button>
+        </div>
+        <?php if (($hasValue && !$revealable) || $unreadable): ?>
+            <label style="display:inline-block;margin-top:6px;">
+                <input type="checkbox" name="<?php echo esc_attr($field['name']); ?>[clear]" value="1" />
+                <?php esc_html_e('Effacer la valeur enregistrée', 'horizon-tools'); ?>
+            </label>
+        <?php endif; ?>
+        <script>
+        if (!window._hzEncryptedTextInit) {
+            window._hzEncryptedTextInit = true;
+            document.addEventListener('click', function (e) {
+                var button = e.target.closest('.hz-encrypted-text__toggle');
+                if (!button) return;
+                var input = button.parentElement.querySelector('input');
+                var reveal = input.type === 'password';
+                input.type = reveal ? 'text' : 'password';
+                button.setAttribute('aria-pressed', reveal ? 'true' : 'false');
+                button.textContent = reveal ? <?php echo wp_json_encode(
+                    __('Masquer', 'horizon-tools')
+                ); ?> : <?php echo wp_json_encode(__('Afficher', 'horizon-tools')); ?>;
+            });
+        }
+        </script>
+        <?php
+    }
+
+    /**
+     * @param mixed                $value
+     * @param int|string           $postId
+     * @param array<string, mixed> $field
+     */
+    public function load_value($value, $postId, $field): mixed
+    {
+        if (!is_string($value) || $value === '') {
+            return $value;
+        }
+
+        $codec = EncryptedValueCodec::make();
+
+        if ($codec === null) {
+            if (!EncryptedValueCodec::isEncrypted($value)) {
+                return $value;
+            }
+
+            $this->markUnreadable($postId, $field, 'APP_KEY absente');
+
+            return $this->unreadableValue($value, $postId);
+        }
+
+        $plain = $codec->decrypt($value);
+
+        if ($plain !== null) {
+            return $plain;
+        }
+
+        $this->markUnreadable($postId, $field, 'illisible avec APP_KEY');
+
+        return $this->unreadableValue($value, $postId);
+    }
+
+    /**
+     * Valeur renvoyée pour une valeur chiffrée illisible : vide, sauf dans le formulaire d’un
+     * bloc où la valeur chiffrée elle-même préremplit le champ. Elle figure déjà dans
+     * post_content, envoyé au navigateur : rien de plus n’est exposé. Le prochain
+     * enregistrement du bloc la renvoie telle quelle (EncryptedBlockData::encryptValue la
+     * conserve) au lieu de l’effacer ; la case « Effacer » reste proposée.
+     *
+     * @param int|string $postId
+     */
+    private function unreadableValue(string $stored, $postId): string
+    {
+        return EncryptedBlockData::isRenderingForm($postId) ? $stored : '';
+    }
+
+    /**
+     * Mémorise une valeur illisible et la journalise une seule fois par requête.
+     *
+     * Vide plutôt qu’une erreur en front, mais jamais en silence : journal PHP
+     * (+ avertissement dans le champ en admin).
+     *
+     * @param int|string           $postId
+     * @param array<string, mixed> $field
+     */
+    private function markUnreadable($postId, array $field, string $reason): void
+    {
+        $marker = sprintf('%s|%s', (string) $postId, (string) ($field['key'] ?? ''));
+
+        if (isset(self::$unreadable[$marker])) {
+            return;
+        }
+
+        self::$unreadable[$marker] = true;
+        error_log(
+            sprintf(
+                '[horizon-tools] Champ chiffré « %s » (%s) : %s. Voir `wp acorn encryption:status`.',
+                $field['name'] ?? '',
+                (string) $postId,
+                $reason
+            )
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $field
+     */
+    private function isUnreadable(array $field): bool
+    {
+        $suffix = '|' . (string) ($field['key'] ?? '');
+
+        foreach (array_keys(self::$unreadable) as $marker) {
+            if (str_ends_with($marker, $suffix)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param mixed                $value
+     * @param int|string           $postId
+     * @param array<string, mixed> $field
+     */
+    public function update_value($value, $postId, $field): mixed
+    {
+        // Bloc ACF (valeurs stockées dans post_content) : jamais d’exception ni de wp_unslash.
+        // Le préfixe « block_ » est réservé aux blocs par ACF (acf_ensure_block_id_prefix, acf_decode_post_id).
+        if (EncryptedBlockData::isBlockPostId($postId)) {
+            return EncryptedBlockData::encryptValue($value, (string) ($field['name'] ?? ''));
+        }
+
+        // Envoi du formulaire d’administration : ['value' => …, 'clear' => '1'].
+        if (is_array($value)) {
+            if (!empty($value['clear'])) {
+                return '';
+            }
+
+            // ACF reçoit $_POST échappé par WordPress (magic quotes) : on ne le déséchappe pas
+            // ailleurs pour la valeur en clair, sinon elle serait chiffrée avec ses barres obliques.
+            $value = wp_unslash((string) ($value['value'] ?? ''));
+
+            // Valeur jamais renvoyée au navigateur : un champ laissé vide signifie
+            // « conserver ». En mode affichable, le champ est prérempli : vide = effacer,
+            // sauf si la valeur stockée est illisible (le champ est alors vide malgré elle).
+            if ($value === '') {
+                $stored = $this->storedValue($postId, $field);
+
+                if (!$this->isRevealable($field) || $this->isStoredUnreadable($stored)) {
+                    $value = $stored;
+                }
+            }
+        }
+
+        if (!is_string($value) || $value === '') {
+            return $value;
+        }
+
+        // Déjà chiffrée (« conserver » sur la valeur stockée) : rien à refaire, même sans clé.
+        if (EncryptedValueCodec::isEncrypted($value)) {
+            return $value;
+        }
+
+        $codec = EncryptedValueCodec::make();
+
+        if ($codec === null) {
+            // Dernier rempart (validate_value bloque déjà le formulaire) : jamais de clair en base.
+            throw new \RuntimeException(sprintf('APP_KEY absente : enregistrement du champ chiffré « %s » refusé.', $field['name'] ?? ''));
+        }
+
+        return $codec->encrypt($value);
+    }
+
+    /**
+     * Un champ sans réglage (défini en code sans le wrapper) est affichable. Dans une ligne de
+     * répéteur ou de contenu flexible, le champ est toujours affichable (réglage ignoré).
+     *
+     * @param array<string, mixed> $field
+     */
+    private function isRevealable(array $field): bool
+    {
+        return !isset($field['revealable']) || !empty($field['revealable']) || $this->isInRows($field);
+    }
+
+    /**
+     * Vrai si le champ est dans une ligne de répéteur ou de contenu flexible (parent direct ou ancêtre).
+     *
+     * ACF 6.8.10 (pro/fields/class-acf-field-repeater.php l. 554, class-acf-field-flexible-content.php
+     * l. 1025) enregistre un sous-champ sous le nom indexé « parent_0_nom ». « Vide = conserver » relirait
+     * la valeur par ce nom : quand les lignes sont réordonnées ou supprimées, elle passerait à une autre
+     * ligne. Un groupe seul ne compte pas (nom stable « groupe_nom »).
+     *
+     * @param array<string, mixed> $field
+     */
+    private function isInRows(array $field): bool
+    {
+        $parent = $field['parent'] ?? null;
+
+        for ($depth = 0; $depth < self::MAX_PARENT_DEPTH && $this->isParentField($parent); $depth++) {
+            $parentField = acf_get_field($parent);
+
+            if (!is_array($parentField)) {
+                return false;
+            }
+
+            if (in_array($parentField['type'] ?? null, ['repeater', 'flexible_content'], true)) {
+                return true;
+            }
+
+            $parent = $parentField['parent'] ?? null;
+        }
+
+        return false;
+    }
+
+    /**
+     * Vrai si le parent peut être un champ : un parent vide ou une clé qui n’est pas une clé de
+     * champ (groupe de champs « group_… ») arrête la remontée. Un ID numérique est passé à
+     * acf_get_field() : celui d’un groupe de champs (post acf-field-group) n’y est pas trouvé, et
+     * isInRows() s’arrête aussi.
+     */
+    private function isParentField(mixed $parent): bool
+    {
+        return !empty($parent) && !(is_string($parent) && !acf_is_field_key($parent));
+    }
+
+    /**
+     * Vrai si la valeur brute est chiffrée mais ne peut pas être déchiffrée (clé absente ou autre clé).
+     */
+    private function isStoredUnreadable(string $stored): bool
+    {
+        $codec = EncryptedValueCodec::make();
+
+        return $codec === null ? EncryptedValueCodec::isEncrypted($stored) : $codec->isUnreadableToken($stored);
+    }
+
+    /**
+     * @param bool|string          $valid
+     * @param mixed                $value
+     * @param array<string, mixed> $field
+     * @param string               $input
+     */
+    public function validate_value($valid, $value, $field, $input): bool|string
+    {
+        if ($valid !== true) {
+            return $valid;
+        }
+
+        // « Effacer » : rien à chiffrer.
+        if (is_array($value) && !empty($value['clear'])) {
+            return $valid;
+        }
+
+        $submitted = is_array($value) ? (string) ($value['value'] ?? '') : (string) $value;
+
+        // Valeur déjà chiffrée (formulaire de bloc prérempli avec une valeur illisible ou sans clé) :
+        // conservée telle quelle par update_value, sinon la validation du bloc (pro/blocks.php
+        // l. 1951-1955) bloquerait l’enregistrement de la page.
+        if ($submitted !== '' && !EncryptedValueCodec::isEncrypted($submitted) && EncryptedValueCodec::make() === null) {
+            return __('Clé de chiffrement (APP_KEY) absente : impossible d’enregistrer cette valeur.', 'horizon-tools');
+        }
+
+        return $valid;
+    }
+
+    /**
+     * API REST d’ACF (groupe de champs avec show_in_rest) : la valeur formatée serait le clair.
+     * Un champ chiffré n’y est jamais exposé, sa valeur est null.
+     *
+     * ACF 6.8.10, includes/rest-api/acf-rest-api-functions.php l. 247 :
+     * apply_filters('acf/rest/format_value_for_rest', $value_formatted, $post_id, $field, $value, $format),
+     * appliqué aussi aux sous-champs (groupe, répéteur, contenu flexible, clone).
+     *
+     * @param mixed $formatted
+     * @param mixed $postId
+     * @param mixed $field
+     */
+    public static function hideFromRest($formatted, $postId = null, $field = null): mixed
+    {
+        return is_array($field) && ($field['type'] ?? null) === self::TYPE ? null : $formatted;
+    }
+
+    /**
+     * Dans un bloc ACF, le champ est toujours affichable : les attributs du bloc sont
+     * renvoyés tels quels par l’éditeur, une saisie vide ne peut donc pas signifier
+     * « conserver ». Le chiffrement est assuré par EncryptedBlockData.
+     *
+     * @param array<string, mixed> $field
+     *
+     * @return array<string, mixed>
+     */
+    public function prepare_field($field): array
+    {
+        if (EncryptedBlockData::isBlockFormField($field)) {
+            $field['revealable'] = 1;
+        }
+
+        return $field;
+    }
+
+    /**
+     * Valeur brute actuellement en base (chiffrée), sans passer par load_value.
+     *
+     * @param int|string           $postId
+     * @param array<string, mixed> $field
+     */
+    private function storedValue($postId, array $field): string
+    {
+        $stored = acf_get_metadata_by_field($postId, $field);
+
+        return is_string($stored) ? $stored : '';
+    }
+}

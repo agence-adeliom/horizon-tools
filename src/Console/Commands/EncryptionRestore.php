@@ -1,0 +1,91 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Adeliom\HorizonTools\Console\Commands;
+
+use Adeliom\HorizonTools\Services\Encryption\EncryptedValueCodec;
+use Adeliom\HorizonTools\Services\Encryption\EncryptedValueRepository;
+use Adeliom\HorizonTools\Services\Encryption\SnapshotStore;
+use Illuminate\Console\Command;
+
+class EncryptionRestore extends Command
+{
+    protected $signature = 'encryption:restore {--file= : Fichier d’instantané (défaut : dossier temporaire du système, voir le chemin affiché)} {--keep : Conserve le fichier d’instantané après une restauration réussie}';
+    protected $description = 'Remet les valeurs chiffrées sauvegardées à la place des valeurs illisibles, après un import de base (db:pull)';
+
+    public function handle(EncryptedValueRepository $repository): int
+    {
+        $path = $this->option('file') ?: SnapshotStore::defaultPath();
+
+        if (!is_file($path)) {
+            $this->info(sprintf('Aucun instantané (%s) : rien à restaurer.', $path));
+
+            return self::SUCCESS;
+        }
+
+        $codec = EncryptedValueCodec::make();
+
+        if ($codec === null) {
+            $this->error('APP_KEY absente ou invalide : restauration impossible.');
+
+            return self::FAILURE;
+        }
+
+        try {
+            $result = SnapshotStore::restore($repository, $codec, $path);
+        } catch (\RuntimeException $e) {
+            $this->error($e->getMessage());
+
+            return self::FAILURE;
+        }
+
+        $this->info(
+            sprintf(
+                '%d valeur(s) restaurée(s), %d conservée(s) (déjà lisibles), %d ignorée(s).',
+                count($result['restored']),
+                count($result['kept']),
+                count($result['skipped'])
+            )
+        );
+
+        foreach ($result['skipped'] as $location) {
+            $this->line('  ignorée : ' . $location);
+        }
+
+        if ($result['failed'] !== []) {
+            $this->error(sprintf('%d valeur(s) non restaurée(s) (écriture en échec), laissée(s) en l’état :', count($result['failed'])));
+
+            foreach ($result['failed'] as $location) {
+                $this->line('  non écrite : ' . $location);
+            }
+        }
+
+        $this->cleanUp($path, $result['skipped'] !== [] || $result['failed'] !== []);
+
+        return $result['failed'] === [] ? self::SUCCESS : self::FAILURE;
+    }
+
+    /**
+     * Un instantané restauré devient périmé : on ne le laisse pas traîner (il contient des valeurs
+     * chiffrées). Il est conservé avec --keep, ou si des entrées ont été ignorées ou n’ont pas pu
+     * être écrites (elles pourront être restaurées à la main). Un échec de suppression n’est qu’un
+     * avertissement.
+     */
+    private function cleanUp(string $path, bool $hasLeftovers): void
+    {
+        if ($this->option('keep')) {
+            return;
+        }
+
+        if ($hasLeftovers) {
+            $this->warn(sprintf('Instantané conservé (entrées ignorées ou non écrites) : %s. À supprimer une fois traité.', $path));
+
+            return;
+        }
+
+        if (!@unlink($path)) {
+            $this->warn(sprintf('Impossible de supprimer l’instantané %s : à supprimer à la main.', $path));
+        }
+    }
+}
