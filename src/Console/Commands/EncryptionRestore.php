@@ -6,17 +6,17 @@ namespace Adeliom\HorizonTools\Console\Commands;
 
 use Adeliom\HorizonTools\Services\Encryption\EncryptedValueCodec;
 use Adeliom\HorizonTools\Services\Encryption\EncryptedValueRepository;
-use Adeliom\HorizonTools\Services\Encryption\EncryptionSnapshot;
+use Adeliom\HorizonTools\Services\Encryption\SnapshotStore;
 use Illuminate\Console\Command;
 
-class EncryptionRestoreCommand extends Command
+class EncryptionRestore extends Command
 {
     protected $signature = 'encryption:restore {--file= : Fichier d’instantané (défaut : dossier temporaire du système, voir le chemin affiché)} {--keep : Conserve le fichier d’instantané après une restauration réussie}';
     protected $description = 'Remet les valeurs chiffrées sauvegardées à la place des valeurs illisibles, après un import de base (db:pull)';
 
     public function handle(EncryptedValueRepository $repository): int
     {
-        $path = $this->option('file') ?: EncryptionSnapshot::defaultPath();
+        $path = $this->option('file') ?: SnapshotStore::defaultPath();
 
         if (!is_file($path)) {
             $this->info(sprintf('Aucun instantané (%s) : rien à restaurer.', $path));
@@ -33,7 +33,7 @@ class EncryptionRestoreCommand extends Command
         }
 
         try {
-            $result = EncryptionSnapshot::restore($repository, $codec, $path);
+            $result = SnapshotStore::restore($repository, $codec, $path);
         } catch (\RuntimeException $e) {
             $this->error($e->getMessage());
 

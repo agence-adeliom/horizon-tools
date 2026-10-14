@@ -15,7 +15,7 @@ namespace Adeliom\HorizonTools\Services\Encryption;
  * et de tout dépôt. Le hash d'ABSPATH évite les collisions entre projets d'un même serveur.
  * L'instantané ne doit vivre que le temps d'un import.
  */
-final class EncryptionSnapshot
+final class SnapshotStore
 {
     private const VERSION = 1;
 
