@@ -16,7 +16,7 @@ use Extended\ACF\Fields\Settings\Wrapper;
  *
  * Wrapper du type ACF `encrypted_text` : valeur chiffrée en base avec APP_KEY,
  * get_field() renvoie le clair. Utilisable dans les pages d’options, types de
- * contenu, taxonomies et profils — pas dans les blocs.
+ * contenu, taxonomies, profils et blocs ACF. Jamais exposé par l’API REST (null).
  */
 class EncryptedText extends Field
 {
@@ -31,7 +31,8 @@ class EncryptedText extends Field
     /**
      * Par défaut, la valeur est affichable dans l’administration (masquée, avec un bouton « Afficher »).
      * `writeOnly()` ne la renvoie jamais au navigateur : champ en écriture seule, vide = conserver.
-     * Sans effet dans un bloc, où ce champ est indisponible.
+     * Ignoré (champ affichable) dans un bloc, ainsi que dans un répéteur ou un contenu flexible,
+     * même imbriqué : la valeur conservée y serait relue par un nom indexé qui change de ligne.
      */
     public function writeOnly(bool $writeOnly = true): static
     {

@@ -162,6 +162,130 @@ hz_check($valid === true, 'sans clé : « Effacer » accepté');
 $valid = $type->validate_value(true, ['value' => 'plain'], acf_get_field('field_hz_enc_admin'), 'acf[field_hz_enc_admin]');
 hz_check(is_string($valid) && str_contains($valid, 'APP_KEY'), 'sans clé : nouveau clair toujours refusé');
 
+// Clé rétablie (les contrôles « sans clé » ci-dessus l’ont retirée).
+config(['app.key' => $savedKey]);
+app()->forgetInstance('encrypter');
+
+// Relecture finale I3 : writeOnly ignoré dans un répéteur ou un contenu flexible (vide = conserver relirait
+// la valeur par son nom indexé, qui change de ligne quand les lignes bougent). Un groupe seul ne suffit pas.
+acf_add_local_field_group([
+    'key' => 'group_hz_enc_rows',
+    'title' => 'Contrôle lignes',
+    'fields' => [
+        [
+            'key' => 'field_hz_enc_rep',
+            'name' => 'hz_enc_rep',
+            'label' => 'Répéteur',
+            'type' => 'repeater',
+            'sub_fields' => [
+                ['key' => 'field_hz_enc_rep_secret', 'name' => 'secret', 'label' => 'Clé', 'type' => 'encrypted_text', 'revealable' => 0],
+                [
+                    'key' => 'field_hz_enc_rep_grp',
+                    'name' => 'grp',
+                    'label' => 'Groupe',
+                    'type' => 'group',
+                    'sub_fields' => [
+                        [
+                            'key' => 'field_hz_enc_rep_grp_secret',
+                            'name' => 'secret',
+                            'label' => 'Clé',
+                            'type' => 'encrypted_text',
+                            'revealable' => 0,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        [
+            'key' => 'field_hz_enc_flex',
+            'name' => 'hz_enc_flex',
+            'label' => 'Flexible',
+            'type' => 'flexible_content',
+            'layouts' => [
+                [
+                    'key' => 'layout_hz_enc_flex',
+                    'name' => 'ligne',
+                    'label' => 'Ligne',
+                    'sub_fields' => [
+                        [
+                            'key' => 'field_hz_enc_flex_secret',
+                            'name' => 'secret',
+                            'label' => 'Clé',
+                            'type' => 'encrypted_text',
+                            'revealable' => 0,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        [
+            'key' => 'field_hz_enc_grp',
+            'name' => 'hz_enc_grp',
+            'label' => 'Groupe seul',
+            'type' => 'group',
+            'sub_fields' => [
+                ['key' => 'field_hz_enc_grp_secret', 'name' => 'secret', 'label' => 'Clé', 'type' => 'encrypted_text', 'revealable' => 0],
+            ],
+        ],
+    ],
+    'location' => [[['param' => 'options_page', 'operator' => '==', 'value' => 'hz-enc-admin']]],
+]);
+
+$rowCases = [
+    'field_hz_enc_rep_secret' => ['hz_enc_rep_0_secret', true, 'répéteur'],
+    'field_hz_enc_rep_grp_secret' => ['hz_enc_rep_0_grp_secret', true, 'groupe dans un répéteur'],
+    'field_hz_enc_flex_secret' => ['hz_enc_flex_0_secret', true, 'contenu flexible'],
+    'field_hz_enc_grp_secret' => ['hz_enc_grp_secret', false, 'groupe seul'],
+];
+foreach ($rowCases as $key => [$indexedName, $forced, $label]) {
+    $field = acf_get_field($key);
+    $field['name'] = $indexedName;
+    acf_update_value('sk_ligne_' . $key, 'options', $field);
+    $stored = get_option('options_' . $indexedName);
+
+    $shown = $field;
+    $shown['value'] = acf_get_value('options', $field);
+    $shown['name'] = 'acf[' . $key . ']';
+    ob_start();
+    $type->render_field($shown);
+    $prefilled = str_contains((string) ob_get_clean(), 'value="sk_ligne_' . $key . '"');
+
+    acf_update_value(wp_slash(['value' => '']), 'options', $field);
+    $after = get_option('options_' . $indexedName);
+
+    if ($forced) {
+        hz_check($prefilled, 'I3 ' . $label . ' : writeOnly ignoré, valeur préremplie');
+        hz_check($after === '', 'I3 ' . $label . ' : soumission vide -> valeur effacée');
+    } else {
+        hz_check(!$prefilled, 'I3 ' . $label . ' : writeOnly respecté, valeur non renvoyée');
+        hz_check($after === $stored, 'I3 ' . $label . ' : soumission vide -> valeur conservée');
+    }
+
+    delete_option('options_' . $indexedName);
+}
+
+// Relecture finale I4 : jamais de valeur déchiffrée dans l’API REST (formats light et standard, sous-champs compris).
+$restField = acf_get_field('field_hz_enc_admin_rev');
+hz_check(
+    acf_format_value_for_rest('sk_rest', 'options', $restField) === null &&
+        acf_format_value_for_rest('sk_rest', 'options', $restField, 'standard') === null,
+    'I4 : REST -> null pour un champ chiffré'
+);
+update_field('field_hz_enc_rep', [['field_hz_enc_rep_secret' => 'sk_rest_rep']], 'options');
+acf_flush_value_cache('options', 'hz_enc_rep');
+$restRows = acf_format_value_for_rest(
+    acf_get_value('options', acf_get_field('field_hz_enc_rep')),
+    'options',
+    acf_get_field('field_hz_enc_rep')
+);
+hz_check(
+    is_array($restRows) && array_key_exists('secret', $restRows[0] ?? []) && $restRows[0]['secret'] === null,
+    'I4 : REST -> null pour un sous-champ de répéteur'
+);
+update_field('field_hz_enc_rep', [], 'options');
+delete_option('options_hz_enc_rep_0_secret');
+delete_option('_options_hz_enc_rep_0_secret');
+
 foreach (['hz_enc_admin', 'hz_enc_admin_rev'] as $name) {
     delete_option('options_' . $name);
     delete_option('_options_' . $name);

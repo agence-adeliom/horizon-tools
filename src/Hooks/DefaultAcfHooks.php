@@ -38,5 +38,7 @@ class DefaultAcfHooks extends AbstractHook
         // Formulaire de bloc : une valeur chiffrée illisible est conservée au lieu d’être effacée
         add_filter('acf/pre_render_fields', [EncryptedBlockData::class, 'beginFieldsRender'], 10, 2);
         add_action('acf/render_fields', [EncryptedBlockData::class, 'endFieldsRender'], 10, 0);
+        // API REST : jamais de valeur déchiffrée (priorité maximale : dernier mot après tout autre filtre)
+        add_filter('acf/rest/format_value_for_rest', [AcfFieldEncryptedText::class, 'hideFromRest'], PHP_INT_MAX, 3);
     }
 }

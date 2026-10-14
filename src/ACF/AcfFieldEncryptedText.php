@@ -44,7 +44,7 @@ final class AcfFieldEncryptedText extends \acf_field
         acf_render_field_setting($field, [
             'label' => __('Valeur affichable', 'horizon-tools'),
             'instructions' => __(
-                'Affiche la valeur en clair dans l’administration. Décocher pour ne jamais renvoyer la valeur au navigateur (saisie en écriture seule).',
+                'Affiche la valeur en clair dans l’administration. Décocher pour ne jamais renvoyer la valeur au navigateur (saisie en écriture seule). Sans effet dans un bloc, un répéteur ou un contenu flexible.',
                 'horizon-tools'
             ),
             'name' => 'revealable',
@@ -273,13 +273,47 @@ final class AcfFieldEncryptedText extends \acf_field
     }
 
     /**
-     * Un champ sans réglage (défini en code sans le wrapper) est affichable.
+     * Un champ sans réglage (défini en code sans le wrapper) est affichable. Dans une ligne de
+     * répéteur ou de contenu flexible, le champ est toujours affichable (réglage ignoré).
      *
      * @param array<string, mixed> $field
      */
     private function isRevealable(array $field): bool
     {
-        return !isset($field['revealable']) || !empty($field['revealable']);
+        return !isset($field['revealable']) || !empty($field['revealable']) || $this->isInRows($field);
+    }
+
+    /**
+     * Vrai si le champ est dans une ligne de répéteur ou de contenu flexible (parent direct ou ancêtre).
+     *
+     * ACF 6.8.10 (pro/fields/class-acf-field-repeater.php l. 554, class-acf-field-flexible-content.php
+     * l. 1025) enregistre un sous-champ sous le nom indexé « parent_0_nom ». « Vide = conserver » relirait
+     * la valeur par ce nom : quand les lignes sont réordonnées ou supprimées, elle passerait à une autre
+     * ligne. Un groupe seul ne compte pas (nom stable « groupe_nom »).
+     *
+     * @param array<string, mixed> $field
+     */
+    private function isInRows(array $field): bool
+    {
+        $parent = $field['parent'] ?? null;
+
+        // Remontée bornée : un parent qui n’est pas un champ (groupe de champs, clé « group_… » ou ID
+        // de post acf-field-group) arrête la recherche.
+        for ($depth = 0; $depth < 20 && $parent && !(is_string($parent) && !acf_is_field_key($parent)); $depth++) {
+            $parentField = acf_get_field($parent);
+
+            if (!is_array($parentField)) {
+                return false;
+            }
+
+            if (in_array($parentField['type'] ?? null, ['repeater', 'flexible_content'], true)) {
+                return true;
+            }
+
+            $parent = $parentField['parent'] ?? null;
+        }
+
+        return false;
     }
 
     /**
@@ -319,6 +353,23 @@ final class AcfFieldEncryptedText extends \acf_field
         }
 
         return $valid;
+    }
+
+    /**
+     * API REST d’ACF (groupe de champs avec show_in_rest) : la valeur formatée serait le clair.
+     * Un champ chiffré n’y est jamais exposé, sa valeur est null.
+     *
+     * ACF 6.8.10, includes/rest-api/acf-rest-api-functions.php l. 247 :
+     * apply_filters('acf/rest/format_value_for_rest', $value_formatted, $post_id, $field, $value, $format),
+     * appliqué aussi aux sous-champs (groupe, répéteur, contenu flexible, clone).
+     *
+     * @param mixed $formatted
+     * @param mixed $postId
+     * @param mixed $field
+     */
+    public static function hideFromRest($formatted, $postId = null, $field = null): mixed
+    {
+        return is_array($field) && ($field['type'] ?? null) === self::TYPE ? null : $formatted;
     }
 
     /**
