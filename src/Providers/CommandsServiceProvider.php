@@ -18,9 +18,7 @@ use Adeliom\HorizonTools\Console\Commands\MakePostType;
 use Adeliom\HorizonTools\Console\Commands\MakeRepository;
 use Adeliom\HorizonTools\Console\Commands\MakeTaxonomy;
 use Adeliom\HorizonTools\Console\Commands\MakeTemplate;
-use Adeliom\HorizonTools\Services\Encryption\EncryptedValueCodec;
-use Adeliom\HorizonTools\Services\Encryption\EncryptedValueRepository;
-use Adeliom\HorizonTools\Services\Encryption\StoredEncryptedValue;
+use Adeliom\HorizonTools\Console\Listeners\PreventKeyGenerate;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Support\Facades\Event;
 use Roots\Acorn\Exceptions\SkipProviderException;
@@ -30,6 +28,9 @@ class CommandsServiceProvider extends SageServiceProvider
 {
     public function boot(): void
     {
+        // Avant les commandes : un SkipProviderException ne doit pas désactiver le blocage.
+        Event::listen(CommandStarting::class, [PreventKeyGenerate::class, 'handle']);
+
         try {
             $this->commands([
                 MakeBlock::class,
@@ -50,46 +51,5 @@ class CommandsServiceProvider extends SageServiceProvider
         } catch (\Exception $e) {
             throw new SkipProviderException($e->getMessage());
         }
-
-        Event::listen(CommandStarting::class, static function (CommandStarting $event): void {
-            if ($event->command !== 'key:generate' || $event->input->hasParameterOption('--show')) {
-                return;
-            }
-
-            $codec = EncryptedValueCodec::make();
-
-            if ($codec === null) {
-                return;
-            }
-
-            $repository = app(EncryptedValueRepository::class);
-            $readable = array_filter(
-                $repository->all(),
-                static fn(StoredEncryptedValue $value): bool => $codec->decrypt($value->value) !== null
-            );
-
-            // Jetons embarqués : blocs ACF de post_content (révisions comprises) et options comme widget_block.
-            $embedded = array_filter(
-                [...$repository->contentTokens(), ...$repository->embeddedOptionTokens()],
-                static fn(array $item): bool => $codec->decrypt($item['token']) !== null
-            );
-            $readable = [...$readable, ...$embedded];
-
-            if ($readable === []) {
-                return;
-            }
-
-            $event->output->writeln(
-                sprintf(
-                    '<error>key:generate refusé : %d valeur(s) chiffrée(s) avec la clé actuelle deviendraient illisibles.</error>',
-                    count($readable)
-                )
-            );
-            $event->output->writeln(
-                'Pour changer de clé : ancienne clé dans APP_PREVIOUS_KEYS, nouvelle dans APP_KEY (`wp acorn key:generate --show` pour en générer une), puis `wp acorn encryption:rotate`.'
-            );
-
-            exit(1);
-        });
     }
 }

@@ -2,14 +2,21 @@
 
 // Pas de declare(strict_types=1) : WP-CLI eval-file le refuse (« must be the very first statement »).
 
+use Adeliom\HorizonTools\Console\Listeners\PreventKeyGenerate;
 use Adeliom\HorizonTools\Services\Encryption\EncryptedValueCodec;
+use Illuminate\Console\Events\CommandStarting;
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\Artisan;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\BufferedOutput;
 
 require __DIR__ . '/bootstrap.php';
 
 /*
- * Commandes encryption:snapshot, encryption:rotate et encryption:status lancées par Artisan.
+ * Commandes encryption:snapshot, encryption:rotate et encryption:status lancées par Artisan,
+ * et blocage de key:generate.
  * Attention : encryption:rotate rechiffre toutes les valeurs de la base avec APP_KEY.
  */
 
@@ -107,4 +114,64 @@ hz_check(str_contains($output, 'encryption:restore'), 'M6 : option illisible -> 
 delete_option('options_hz_cmd_status');
 
 wp_delete_post($postId, true);
+
+/*
+ * F1 : key:generate refusé tant que des valeurs lisibles existent.
+ * Triple garde-fou, car la commande d’Acorn ajoute une ligne APP_KEY en tête du fichier
+ * d’environnement quand elle ne trouve pas la clé courante :
+ * - clé injectée en configuration (jamais celle du .env) ;
+ * - fichier d’environnement redirigé vers un fichier temporaire ;
+ * - la commande réelle n’est lancée que si le listener seul a bien refusé.
+ */
+$savedKey = config('app.key');
+$savedEnvFile = app()->environmentFile();
+$guardEnv = sys_get_temp_dir() . '/hz-keygen-guard.env';
+$guardContents = "APP_KEY=garde\n";
+file_put_contents($guardEnv, $guardContents);
+// environmentFilePath() = environmentPath() . '/' . environmentFile() : on remonte jusqu’à la racine.
+app()->loadEnvironmentFrom(str_repeat('../', substr_count(trim(app()->environmentPath(), '/'), '/') + 1) . ltrim($guardEnv, '/'));
+$redirected = realpath(app()->environmentFilePath()) === realpath($guardEnv);
+hz_check($redirected, 'F1 : fichier d’environnement redirigé vers un fichier temporaire');
+
+config(['app.key' => 'base64:' . base64_encode(Encrypter::generateKey('AES-256-CBC'))]);
+app()->forgetInstance('encrypter');
+update_option('hz_cmd_keygen', EncryptedValueCodec::make()->encrypt('valeur-lisible'), false);
+
+$listener = app(PreventKeyGenerate::class);
+$refused = false;
+
+try {
+    $listener->handle(new CommandStarting('key:generate', new ArrayInput([]), new BufferedOutput()));
+} catch (\RuntimeException $e) {
+    $refused = str_contains($e->getMessage(), 'key:generate refusé') && str_contains($e->getMessage(), 'APP_PREVIOUS_KEYS');
+}
+hz_check($refused, 'F1 : listener -> exception, message conservé');
+
+$showAllowed = true;
+
+try {
+    $listener->handle(new CommandStarting('key:generate', new ArrayInput(['--show' => true]), new BufferedOutput()));
+} catch (\Throwable) {
+    $showAllowed = false;
+}
+hz_check($showAllowed, 'F1 : listener -> --show permis');
+
+if ($refused && $redirected) {
+    $output = new BufferedOutput();
+    $code = app(Kernel::class)->handle(new StringInput('key:generate'), $output);
+    hz_check($code === 1 && str_contains($output->fetch(), 'key:generate refusé'), 'F1 : key:generate -> refusé, message affiché, code 1');
+    hz_check(file_get_contents($guardEnv) === $guardContents, 'F1 : key:generate non exécuté (fichier d’environnement intact)');
+
+    $output = new BufferedOutput();
+    $code = app(Kernel::class)->handle(new StringInput('key:generate --show'), $output);
+    hz_check($code === 0 && str_starts_with(trim($output->fetch()), 'base64:'), 'F1 : key:generate --show -> clé affichée, code 0');
+} else {
+    hz_check(false, 'F1 : commande réelle non lancée (garde-fou)');
+}
+
+delete_option('hz_cmd_keygen');
+config(['app.key' => $savedKey]);
+app()->forgetInstance('encrypter');
+app()->loadEnvironmentFrom($savedEnvFile);
+unlink($guardEnv);
 hz_done();
