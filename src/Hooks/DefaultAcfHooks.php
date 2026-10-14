@@ -33,5 +33,10 @@ class DefaultAcfHooks extends AbstractHook
         acf_register_field_type(AcfFieldEncryptedText::class);
         // Blocs ACF : valeurs stockées dans les attributs du bloc (post_content), hors update_value
         add_filter('acf/pre_save_block', [EncryptedBlockData::class, 'encryptAttributes'], 10, 1);
+        // Widgets « Bloc » : enregistrés sans content_save_pre
+        add_filter('pre_update_option_widget_block', [EncryptedBlockData::class, 'encryptWidgets'], 10, 1);
+        // Formulaire de bloc : une valeur chiffrée illisible est conservée au lieu d’être effacée
+        add_filter('acf/pre_render_fields', [EncryptedBlockData::class, 'beginFieldsRender'], 10, 2);
+        add_action('acf/render_fields', [EncryptedBlockData::class, 'endFieldsRender'], 10, 0);
     }
 }

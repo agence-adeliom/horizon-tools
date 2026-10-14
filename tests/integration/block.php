@@ -51,11 +51,15 @@ $save = static function (array $data): string {
     return acf_parse_save_blocks(wp_slash('<!-- wp:' . HZ_BLOCK . ' ' . $attrs . ' /-->'));
 };
 
-/** Attribut « data » du premier bloc d’un contenu slashé. */
+/** Attribut « data » du premier bloc de contrôle d’un contenu slashé. */
 $dataOf = static function (string $saved): array {
-    $blocks = parse_blocks(wp_unslash($saved));
+    foreach (parse_blocks(wp_unslash($saved)) as $block) {
+        if ($block['blockName'] === HZ_BLOCK) {
+            return (array) ($block['attrs']['data'] ?? []);
+        }
+    }
 
-    return (array) ($blocks[0]['attrs']['data'] ?? []);
+    return [];
 };
 
 /** Lecture comme au rendu du bloc : local meta + get_field(). */
@@ -178,11 +182,163 @@ if (is_wp_error($postId)) {
     wp_delete_post($postId, true);
 }
 
+// Widgets « Bloc » : WP_Widget_Block::update() n’applique pas content_save_pre. Toutes les écritures
+// passent par update_option('widget_block') : filtre appelé comme le fait update_option(), sans écrire.
+$blockComment = static function (array $data): string {
+    return '<!-- wp:' .
+        HZ_BLOCK .
+        ' ' .
+        wp_json_encode(['name' => HZ_BLOCK, 'data' => $data, 'mode' => 'edit'], JSON_UNESCAPED_SLASHES) .
+        ' /-->';
+};
+$instances = apply_filters(
+    'pre_update_option_widget_block',
+    [
+        2 => ['content' => $blockComment(['field_hz_blk' => ['value' => 'sk_widget_form']])],
+        3 => [
+            'content' =>
+                '<!-- wp:paragraph --><p>Texte</p><!-- /wp:paragraph -->' .
+                $blockComment(['hz_blk' => 'sk_widget_meta', '_hz_blk' => 'field_hz_blk']),
+        ],
+        '_multiwidget' => 1,
+    ],
+    [],
+    'widget_block'
+);
+$serialized = serialize($instances);
+hz_check(!str_contains($serialized, 'sk_widget_'), 'widget : aucun clair dans l’option widget_block');
+hz_check($read(wp_slash($instances[2]['content']), 'hz_blk') === 'sk_widget_form', 'widget (formulaire) : relu en clair');
+hz_check($read(wp_slash($instances[3]['content']), 'hz_blk') === 'sk_widget_meta', 'widget (format meta) : relu en clair');
+hz_check(
+    str_contains($instances[3]['content'], '<p>Texte</p>') && ($instances['_multiwidget'] ?? null) === 1,
+    'widget : reste du contenu intact'
+);
+hz_check(EncryptedBlockData::encryptWidgets(false) === false, 'widget : option absente inchangée');
+
+// Valeur illisible (APP_KEY changée) dans le formulaire du bloc : la valeur chiffrée préremplit le champ.
+// Formulaire rendu comme ACF (pro/blocks.php l. 1003-1015) : local meta, acf_prefix_fields, acf_render_fields.
+$foreign = new EncryptedValueCodec(
+    new Illuminate\Encryption\Encrypter(Illuminate\Encryption\Encrypter::generateKey('AES-256-CBC'), 'AES-256-CBC')
+);
+$foreignValue = $foreign->encrypt('secret-autre-cle');
+$foreignSub = $foreign->encrypt('sous-secret-autre-cle');
+$renderForm = static function (array $data): string {
+    acf_setup_meta($data, HZ_BLOCK_POST_ID, true);
+    // Lecture préalable (validation, aperçu) : met en cache une valeur vide.
+    get_field('hz_blk', HZ_BLOCK_POST_ID);
+    $fields = acf_get_block_fields(['name' => HZ_BLOCK]);
+    acf_prefix_fields($fields, 'acf-' . HZ_BLOCK_POST_ID);
+    ob_start();
+    acf_render_fields($fields, HZ_BLOCK_POST_ID, 'div', 'field');
+
+    return (string) ob_get_clean();
+};
+$html = $renderForm([
+    'hz_blk' => $foreignValue,
+    '_hz_blk' => 'field_hz_blk',
+    'hz_blk_grp' => '',
+    '_hz_blk_grp' => 'field_hz_blk_grp',
+    'hz_blk_grp_sub' => $foreignSub,
+    '_hz_blk_grp_sub' => 'field_hz_blk_sub',
+]);
+hz_check(str_contains($html, 'value="' . esc_attr($foreignValue) . '"'), 'illisible : la valeur chiffrée préremplit le champ du bloc');
+hz_check(str_contains($html, 'value="' . esc_attr($foreignSub) . '"'), 'illisible : idem pour un sous-champ de groupe');
+hz_check(str_contains($html, 'hz-encrypted-text__unreadable'), 'illisible : avertissement affiché');
+hz_check(str_contains($html, 'name="acf-block_test[field_hz_blk][clear]"'), 'illisible : case « Effacer » proposée');
+hz_check(!str_contains($html, 'secret-autre-cle'), 'illisible : aucun clair');
+acf_get_store('values')->reset();
+hz_check(get_field('hz_blk', HZ_BLOCK_POST_ID) === '', 'illisible : hors formulaire, get_field() renvoie toujours une chaîne vide');
 acf_reset_meta(HZ_BLOCK_POST_ID);
-foreach (['field_hz_blk_sub', 'field_hz_blk_grp', 'field_hz_blk'] as $key) {
+$saved = $save(['field_hz_blk' => ['value' => $foreignValue], 'field_hz_blk_grp' => ['field_hz_blk_sub' => ['value' => $foreignSub]]]);
+hz_check(($dataOf($saved)['hz_blk'] ?? null) === $foreignValue, 'illisible : réenregistrée telle quelle');
+hz_check(($dataOf($saved)['hz_blk_grp_sub'] ?? null) === $foreignSub, 'illisible : sous-champ réenregistré tel quel');
+
+// Sans clé : même conservation.
+$saved = $save(['field_hz_blk' => 'sk_avant_perte']);
+$ownValue = $dataOf($saved)['hz_blk'] ?? '';
+config(['app.key' => '']);
+app()->forgetInstance('encrypter');
+$html = $renderForm(['hz_blk' => $ownValue, '_hz_blk' => 'field_hz_blk']);
+acf_reset_meta(HZ_BLOCK_POST_ID);
+$saved = $save(['field_hz_blk' => ['value' => $ownValue]]);
+config(['app.key' => $savedKey]);
+app()->forgetInstance('encrypter');
+hz_check(str_contains($html, 'value="' . esc_attr($ownValue) . '"'), 'sans clé : la valeur chiffrée préremplit le champ du bloc');
+hz_check(($dataOf($saved)['hz_blk'] ?? null) === $ownValue, 'sans clé : réenregistrée telle quelle');
+
+// Bloc use_post_meta : valeurs enregistrées en post meta par acf_save_post au save_post
+// (pro/blocks.php l. 1795-1801 et 2136-2146), via un vrai wp_insert_post().
+const HZ_META_BLOCK = 'acf/hz-encrypted-meta';
+acf_register_block_type([
+    'name' => 'hz-encrypted-meta',
+    'title' => 'Contrôle champ chiffré (post meta)',
+    'mode' => 'edit',
+    'use_post_meta' => true,
+    'render_callback' => static function (): void {},
+]);
+acf_add_local_field_group([
+    'key' => 'group_hz_blkm',
+    'title' => 'Contrôle bloc chiffré (post meta)',
+    'fields' => [['key' => 'field_hz_blkm', 'name' => 'hz_blkm', 'label' => 'Clé API', 'type' => 'encrypted_text']],
+    'location' => [[['param' => 'block', 'operator' => '==', 'value' => HZ_META_BLOCK]]],
+]);
+$insertMetaBlock = static function (array $data): int|WP_Error {
+    $attrs = wp_json_encode(['name' => HZ_META_BLOCK, 'data' => $data, 'mode' => 'edit'], JSON_UNESCAPED_SLASHES);
+
+    return wp_insert_post(
+        wp_slash([
+            'post_title' => 'Contrôle bloc chiffré (post meta)',
+            'post_status' => 'draft',
+            'post_type' => 'post',
+            'post_content' => '<!-- wp:' . HZ_META_BLOCK . ' ' . $attrs . ' /-->',
+        ]),
+        true
+    );
+};
+$metaPosts = [];
+$postId = $insertMetaBlock(['field_hz_blkm' => ['value' => $tricky]]);
+if (is_wp_error($postId)) {
+    hz_check(false, 'use_post_meta : insertion (' . $postId->get_error_message() . ')');
+} else {
+    $metaPosts[] = $postId;
+    $raw = get_post_meta($postId, 'hz_blkm', true);
+    hz_check(EncryptedValueCodec::isEncrypted($raw), 'use_post_meta : post meta chiffrée');
+    hz_check(get_field('hz_blkm', $postId) === $tricky, 'use_post_meta : guillemets et barre oblique inverse intacts');
+}
+$postId = $insertMetaBlock(['hz_blkm' => 'sk_meta_format', '_hz_blkm' => 'field_hz_blkm']);
+if (!is_wp_error($postId)) {
+    $metaPosts[] = $postId;
+    hz_check(EncryptedValueCodec::isEncrypted(get_post_meta($postId, 'hz_blkm', true)), 'use_post_meta (format meta) : post meta chiffrée');
+}
+config(['app.key' => '']);
+app()->forgetInstance('encrypter');
+$threw = false;
+try {
+    $postId = $insertMetaBlock(['field_hz_blkm' => ['value' => 'sk_meta_nokey']]);
+} catch (\Throwable $e) {
+    $threw = true;
+}
+config(['app.key' => $savedKey]);
+app()->forgetInstance('encrypter');
+hz_check(!$threw && !is_wp_error($postId), 'use_post_meta sans clé : aucune exception');
+if (!$threw && !is_wp_error($postId)) {
+    $metaPosts[] = $postId;
+    hz_check(get_post_meta($postId, 'hz_blkm', true) === '', 'use_post_meta sans clé : valeur vide');
+    $allMeta = serialize(get_post_meta($postId)) . get_post_field('post_content', $postId);
+    hz_check(!str_contains($allMeta, 'sk_meta_nokey'), 'use_post_meta sans clé : aucun clair');
+}
+foreach ($metaPosts as $metaPost) {
+    wp_delete_post($metaPost, true);
+}
+
+acf_reset_meta(HZ_BLOCK_POST_ID);
+foreach (['field_hz_blk_sub', 'field_hz_blk_grp', 'field_hz_blk', 'field_hz_blkm'] as $key) {
     acf_remove_local_field($key);
 }
 acf_remove_local_field_group('group_hz_blk');
-acf_remove_block_type(HZ_BLOCK);
-unregister_block_type(HZ_BLOCK);
+acf_remove_local_field_group('group_hz_blkm');
+foreach ([HZ_BLOCK, HZ_META_BLOCK] as $blockName) {
+    acf_remove_block_type($blockName);
+    unregister_block_type($blockName);
+}
 hz_done();

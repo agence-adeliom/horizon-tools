@@ -146,7 +146,7 @@ final class AcfFieldEncryptedText extends \acf_field
 
             $this->markUnreadable($postId, $field, 'APP_KEY absente');
 
-            return '';
+            return $this->unreadableValue($value, $postId);
         }
 
         $plain = $codec->decrypt($value);
@@ -157,7 +157,21 @@ final class AcfFieldEncryptedText extends \acf_field
 
         $this->markUnreadable($postId, $field, 'illisible avec APP_KEY');
 
-        return '';
+        return $this->unreadableValue($value, $postId);
+    }
+
+    /**
+     * Valeur renvoyée pour une valeur chiffrée illisible : vide, sauf dans le formulaire d’un
+     * bloc où la valeur chiffrée elle-même préremplit le champ. Elle figure déjà dans
+     * post_content, envoyé au navigateur : rien de plus n’est exposé. Le prochain
+     * enregistrement du bloc la renvoie telle quelle (EncryptedBlockData::encryptValue la
+     * conserve) au lieu de l’effacer ; la case « Effacer » reste proposée.
+     *
+     * @param int|string $postId
+     */
+    private function unreadableValue(string $stored, $postId): string
+    {
+        return EncryptedBlockData::isRenderingForm($postId) ? $stored : '';
     }
 
     /**
@@ -212,7 +226,8 @@ final class AcfFieldEncryptedText extends \acf_field
     public function update_value($value, $postId, $field): mixed
     {
         // Bloc ACF (valeurs stockées dans post_content) : jamais d’exception ni de wp_unslash.
-        if ($this->isBlockPostId($postId)) {
+        // Le préfixe « block_ » est réservé aux blocs par ACF (acf_ensure_block_id_prefix, acf_decode_post_id).
+        if (EncryptedBlockData::isBlockPostId($postId)) {
             return EncryptedBlockData::encryptValue($value, (string) ($field['name'] ?? ''));
         }
 
@@ -318,17 +333,6 @@ final class AcfFieldEncryptedText extends \acf_field
         }
 
         return $field;
-    }
-
-    /**
-     * Vrai si la valeur appartient à un bloc ACF stocké dans post_content : identifiant
-     * « block_… » (ACF 6.8.10, includes/acf-wp-functions.php l. 192, acf_decode_post_id).
-     *
-     * @param int|string $postId
-     */
-    private function isBlockPostId($postId): bool
-    {
-        return is_string($postId) && acf_decode_post_id($postId)['type'] === 'block';
     }
 
     /**
