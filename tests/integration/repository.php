@@ -28,8 +28,19 @@ hz_check(isset($found['postmeta:' . $postId . ':hz_repo_check']), 'post meta chi
 hz_check(!isset($found['options:0:hz_repo_plain']), 'valeur en clair ignorée');
 
 hz_check($repo->read('options', 0, 'options_hz_repo_absent') === null, 'read() : ligne absente → null');
-$repo->write('postmeta', $postId, 'hz_repo_check', 'hz_enc:v1:remplacé');
+hz_check($repo->write('postmeta', $postId, 'hz_repo_check', 'hz_enc:v1:remplacé') === true, 'write() sur une meta -> vrai');
 hz_check($repo->read('postmeta', $postId, 'hz_repo_check') === 'hz_enc:v1:remplacé', 'write() puis read() sur une meta');
+hz_check($repo->write('options', 0, 'options_hz_repo_check', $codec->encrypt('opt-secret-2')) === true, 'write() sur une option -> vrai');
+
+// Écriture refusée (filtre qui renvoie l’ancienne valeur) : write() renvoie faux.
+$keepOld = static fn(mixed $new, mixed $old): mixed => $old;
+add_filter('pre_update_option_options_hz_repo_check', $keepOld, 10, 2);
+hz_check($repo->write('options', 0, 'options_hz_repo_check', $codec->encrypt('refusée')) === false, 'write() : option non écrite -> faux');
+remove_filter('pre_update_option_options_hz_repo_check', $keepOld, 10);
+$refuseMeta = static fn(mixed $check, int $objectId, string $key): mixed => $key === 'hz_repo_check' ? false : $check;
+add_filter('update_post_metadata', $refuseMeta, 10, 3);
+hz_check($repo->write('postmeta', $postId, 'hz_repo_check', 'hz_enc:v1:refusée') === false, 'write() : meta non écrite -> faux');
+remove_filter('update_post_metadata', $refuseMeta, 10);
 hz_check($repo->objectExists('postmeta', $postId) && !$repo->objectExists('postmeta', 999999999), 'objectExists()');
 
 $roundTrip = StoredEncryptedValue::fromArray($found['options:0:options_hz_repo_check']->toArray());

@@ -257,16 +257,17 @@ final class EncryptedValueRepository
         return (string) get_metadata($type, $objectId, $key, true);
     }
 
-    public function write(string $table, int $objectId, string $key, string $value): void
+    /**
+     * @return bool vrai si la valeur a été écrite (faux en cas d’échec, ou si elle était déjà identique)
+     */
+    public function write(string $table, int $objectId, string $key, string $value): bool
     {
         if ($table === 'options') {
-            update_option($key, $value);
-
-            return;
+            return update_option($key, $value);
         }
 
         // update_metadata() déséchappe sa valeur : wp_slash() la préserve à l’identique.
-        update_metadata($this->metaType($table), $objectId, wp_slash($key), wp_slash($value));
+        return update_metadata($this->metaType($table), $objectId, wp_slash($key), wp_slash($value)) !== false;
     }
 
     public function objectExists(string $table, int $objectId): bool

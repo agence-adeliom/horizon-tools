@@ -98,7 +98,8 @@ final class EncryptionSnapshot
     /**
      * L’instantané entier est validé avant la première écriture en base.
      *
-     * @return array{restored: list<string>, kept: list<string>, skipped: list<string>}
+     * @return array{restored: list<string>, kept: list<string>, skipped: list<string>, failed: list<string>}
+     *         failed : écriture en échec, valeur laissée en l’état
      *
      * @throws \JsonException
      * @throws \RuntimeException instantané illisible ou invalide (rien n’a été restauré)
@@ -119,7 +120,7 @@ final class EncryptionSnapshot
         }
 
         $entries = self::validate(json_decode($contents, true, 512, JSON_THROW_ON_ERROR), $path);
-        $result = ['restored' => [], 'kept' => [], 'skipped' => []];
+        $result = ['restored' => [], 'kept' => [], 'skipped' => [], 'failed' => []];
 
         foreach ($entries as $saved) {
             if ($codec->decrypt($saved->value) === null) {
@@ -148,7 +149,11 @@ final class EncryptionSnapshot
                 continue;
             }
 
-            $repository->write($saved->table, $saved->objectId, $saved->key, $saved->value);
+            if (!$repository->write($saved->table, $saved->objectId, $saved->key, $saved->value)) {
+                $result['failed'][] = $saved->location();
+
+                continue;
+            }
 
             $referenceKey = '_' . $saved->key;
 

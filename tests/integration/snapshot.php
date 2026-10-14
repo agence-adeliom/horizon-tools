@@ -172,6 +172,31 @@ wp_delete_post($metaPost, true);
 delete_option('options_hz_snap_blank');
 unlink($metaPath);
 
+// Écriture en échec pendant la restauration : entrée « failed », jamais comptée comme restaurée.
+update_option('options_hz_snap_fail', $codec->encrypt('fail-locale'));
+$failPath = $dir . '/fail.json';
+EncryptionSnapshot::capture($repo, $codec, $failPath);
+update_option('options_hz_snap_fail', $prod->encrypt('fail-prod'));
+$keepOld = static fn(mixed $new, mixed $old): mixed => $old;
+add_filter('pre_update_option_options_hz_snap_fail', $keepOld, 10, 2);
+$failResult = EncryptionSnapshot::restore($repo, $codec, $failPath);
+hz_check(
+    in_array('options:0:options_hz_snap_fail', $failResult['failed'], true) &&
+        !in_array('options:0:options_hz_snap_fail', $failResult['restored'], true),
+    'écriture en échec -> failed, pas restored'
+);
+$code = Illuminate\Support\Facades\Artisan::call('encryption:restore', ['--file' => $failPath]);
+$output = Illuminate\Support\Facades\Artisan::output();
+remove_filter('pre_update_option_options_hz_snap_fail', $keepOld, 10);
+hz_check(
+    $code === 1 && str_contains($output, 'non écrite : options:0:options_hz_snap_fail') && is_file($failPath),
+    'commande : écriture en échec -> listée, FAILURE, instantané conservé'
+);
+delete_option('options_hz_snap_fail');
+if (is_file($failPath)) {
+    unlink($failPath);
+}
+
 // Relecture finale I2 : des entrées ignorées -> l’instantané est conservé et son chemin affiché.
 $ghostPath = $dir . '/ghost.json';
 file_put_contents($ghostPath, json_encode(['version' => 1, 'values' => [$ghost]]));

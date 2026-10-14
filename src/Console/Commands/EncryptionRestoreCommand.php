@@ -57,24 +57,33 @@ class EncryptionRestoreCommand extends Command
             $this->line('  ignorée : ' . $location);
         }
 
-        $this->cleanUp($path, $result['skipped'] !== []);
+        if ($result['failed'] !== []) {
+            $this->error(sprintf('%d valeur(s) non restaurée(s) (écriture en échec), laissée(s) en l’état :', count($result['failed'])));
 
-        return self::SUCCESS;
+            foreach ($result['failed'] as $location) {
+                $this->line('  non écrite : ' . $location);
+            }
+        }
+
+        $this->cleanUp($path, $result['skipped'] !== [] || $result['failed'] !== []);
+
+        return $result['failed'] === [] ? self::SUCCESS : self::FAILURE;
     }
 
     /**
      * Un instantané restauré devient périmé : on ne le laisse pas traîner (il contient des valeurs
-     * chiffrées). Il est conservé avec --keep, ou si des entrées ont été ignorées (elles pourront
-     * être restaurées à la main). Un échec de suppression n’est qu’un avertissement.
+     * chiffrées). Il est conservé avec --keep, ou si des entrées ont été ignorées ou n’ont pas pu
+     * être écrites (elles pourront être restaurées à la main). Un échec de suppression n’est qu’un
+     * avertissement.
      */
-    private function cleanUp(string $path, bool $hasSkipped): void
+    private function cleanUp(string $path, bool $hasLeftovers): void
     {
         if ($this->option('keep')) {
             return;
         }
 
-        if ($hasSkipped) {
-            $this->warn(sprintf('Instantané conservé (entrées ignorées) : %s. À supprimer une fois traité.', $path));
+        if ($hasLeftovers) {
+            $this->warn(sprintf('Instantané conservé (entrées ignorées ou non écrites) : %s. À supprimer une fois traité.', $path));
 
             return;
         }

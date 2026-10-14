@@ -73,20 +73,27 @@ $blockUpdate = static function (string $query) use ($wpdb, $postId): string {
 };
 add_filter('query', $blockUpdate);
 
-// Valeurs déjà en base (autres que les trois cas ci-dessus, supposées lisibles) : seules elles doivent être comptées.
+// d) valeur entière dont l’écriture échoue : write() renvoie faux.
+update_option('hz_cmd_rot_blocked', $codec->encrypt('bloquée'), false);
+$blockWhole = static fn(mixed $new, mixed $old): mixed => $old;
+add_filter('pre_update_option_hz_cmd_rot_blocked', $blockWhole, 10, 2);
+
+// Valeurs déjà en base (autres que les quatre cas ci-dessus, supposées lisibles) : seules elles doivent être comptées.
 $repo = new Adeliom\HorizonTools\Services\Encryption\EncryptedValueRepository();
-$expected = count($repo->all()) + count($repo->contentTokens()) + count($repo->embeddedOptionTokens()) - 3;
+$expected = count($repo->all()) + count($repo->contentTokens()) + count($repo->embeddedOptionTokens()) - 4;
 
 [$code, $output] = $run('encryption:rotate');
 
 remove_filter('query', $blockUpdate);
 remove_filter('pre_update_option_hz_cmd_rot_widget', $blockOption, 10);
+remove_filter('pre_update_option_hz_cmd_rot_blocked', $blockWhole, 10);
 
 hz_check($code === 1, 'M5 : remplacement en échec -> FAILURE');
 hz_check(get_option('hz_cmd_rot_empty') === $emptyToken, 'M5 : jeton au clair vide -> non réécrit');
 hz_check(str_contains($output, 'options:0:hz_cmd_rot_empty'), 'M5 : jeton au clair vide -> listé');
 hz_check(str_contains($output, 'options:0:hz_cmd_rot_widget (contenu)'), 'M5 : option embarquée non remplacée -> listée');
 hz_check(str_contains($output, sprintf('posts:%d:post_content', $postId)), 'M5 : contenu non remplacé -> listé');
+hz_check(str_contains($output, 'options:0:hz_cmd_rot_blocked'), 'M5 : valeur entière non écrite -> listée');
 hz_check(
     preg_match('/(\d+) valeur\(s\) rechiffrée/', $output, $count) === 1 && (int) $count[1] === $expected,
     'M5 : échecs non comptés comme rechiffrés'
@@ -94,6 +101,7 @@ hz_check(
 
 delete_option('hz_cmd_rot_empty');
 delete_option('hz_cmd_rot_widget');
+delete_option('hz_cmd_rot_blocked');
 
 // M6 : conseil de status selon le type de valeurs illisibles.
 $wpdb->update(

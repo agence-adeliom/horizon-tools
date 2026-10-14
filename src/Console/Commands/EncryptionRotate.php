@@ -32,11 +32,7 @@ class EncryptionRotate extends Command
         $results = ['rotated' => [], 'unreadable' => [], 'failed' => []];
 
         foreach ($repository->all() as $value) {
-            $write = static function (string $token) use ($repository, $value): bool {
-                $repository->write($value->table, $value->objectId, $value->key, $token);
-
-                return true;
-            };
+            $write = static fn(string $token): bool => $repository->write($value->table, $value->objectId, $value->key, $token);
             $results[$this->rotateToken($codec, $value->value, $write)][] = $value->location();
         }
 
