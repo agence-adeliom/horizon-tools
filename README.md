@@ -484,7 +484,7 @@ Le champ fonctionne dans n’importe quel bloc ACF existant :
 
 **Changer de clé :** placer l’ancienne clé dans `APP_PREVIOUS_KEYS`, la nouvelle dans `APP_KEY`, lancer `encryption:rotate`, puis retirer `APP_PREVIOUS_KEYS`.
 
-**Clé différente par environnement :** après un `db:pull`, les valeurs de la prod sont illisibles en local. Avec `horizon-deployer-recipe` (hooks `transfer_before_import` / `transfer_after_import` disponibles depuis la 1.5.0), l’automatiser dans `deploy.php` :
+**Clé différente par environnement :** après un `db:pull`, les valeurs de la prod sont illisibles en local. Avec `horizon-deployer-recipe` ≥ 1.7.0 (version à publier), l’automatiser dans `deploy.php` :
 
 ```php
 set('transfer_before_import', ['acorn encryption:snapshot']);
@@ -502,4 +502,4 @@ Avec une clé commune à tous les environnements, rien à faire.
 - **Widget ACF classique (hors éditeur de blocs)** : non couvert. Seuls les widgets « Bloc » (`widget_block`) sont traités.
 - **Personnaliseur** : le brouillon de modifications (changeset) peut contenir la valeur en clair avant publication.
 - **REST_Save d’ACF** : ces chemins d’enregistrement ne sont pas couverts. Préférer les pages d’options ou les blocs.
-- **`unfiltered_html`** : pour un utilisateur sans la capacité `unfiltered_html`, un secret contenant `&` ou `<` peut être altéré (comportement standard d’ACF).
+- **`unfiltered_html`** : pour un utilisateur sans la capacité `unfiltered_html`, ACF filtre les données soumises (`wp_kses_post_deep`) avant l’enregistrement : un secret contenant `&` ou `<` peut être altéré dans les formulaires d’administration classiques (pages d’options, écrans d’édition des contenus, termes et utilisateurs). Les blocs ne sont pas concernés, le chiffrement s’y applique avant le filtre.
