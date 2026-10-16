@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/logo/horizon-tools-horizontal-negatif.svg">
+    <img src="docs/logo/horizon-tools-horizontal-couleur.svg" alt="Horizon Tools" width="420">
+  </picture>
+</p>
+
 # Introducing WordPress Horizon Tools 🚀
 
 Unleash the power of WordPress with WordPress Horizon Tools, your ultimate toolkit for elevating your development experience!
