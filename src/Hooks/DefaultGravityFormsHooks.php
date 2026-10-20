@@ -17,12 +17,29 @@ class DefaultGravityFormsHooks extends AbstractHook
     public const SETTING_OPTIONNAL_TEXT_DEFAULT = 'Facultatif';
     public const SETTING_OPTIONNAL_TEXT_TOOLTIP = 'Texte à afficher pour les champs optionnels. Par défaut, il s’agit de %DEFAULT%.';
 
+    /**
+     * Chaînes de Gravity Forms absentes de sa traduction française
+     */
+    private const MISSING_FRENCH_TRANSLATIONS = [
+        '{current} of {max} max characters' => '{current} sur {max} caractères maximum',
+    ];
+
     public function init(): void
     {
         if (FormService::isGravityFormsActive()) {
             add_filter('gform_form_settings_fields', [$this, 'handleFormSettings'], 10, 2);
             add_filter('gform_field_content', [$this, 'changeFieldLabels'], 10, 5);
+            add_filter('gettext_gravityforms', [$this, 'translateMissingFrenchStrings'], 10, 2);
         }
+    }
+
+    public function translateMissingFrenchStrings(string $translation, string $text): string
+    {
+        if ($translation !== $text || !isset(self::MISSING_FRENCH_TRANSLATIONS[$text]) || !str_starts_with(determine_locale(), 'fr')) {
+            return $translation;
+        }
+
+        return self::MISSING_FRENCH_TRANSLATIONS[$text];
     }
 
     public function handleFormSettings($settings, $form)
