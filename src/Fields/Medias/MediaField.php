@@ -48,9 +48,11 @@ class MediaField
         ];
 
         if ($hasImage) {
-            $imageField = ImageField::make()->conditionalLogic([ConditionalLogic::where(self::TYPE, '==', self::HAS_IMAGE)]);
+            $imageCondition = [ConditionalLogic::where(self::TYPE, '==', self::HAS_IMAGE)];
+            $imageField = ImageField::make()->conditionalLogic($imageCondition);
 
             $fields[] = $imageField;
+            array_push($fields, ...ImageField::accessibilityFields(ImageField::IMAGE, [self::TYPE, '==', self::HAS_IMAGE]));
         }
 
         if ($hasVideo) {
@@ -70,6 +72,7 @@ class MediaField
                 array_filter([
                     $isImagePosition ? self::imagePosition() : null,
                     ImageField::make()->conditionalLogic([ConditionalLogic::where(self::TYPE, '==', self::HAS_IMAGE)]),
+                    ...ImageField::accessibilityFields(ImageField::IMAGE, [self::TYPE, '==', self::HAS_IMAGE]),
                 ])
             );
     }
