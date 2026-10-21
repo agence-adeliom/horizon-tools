@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Adeliom\HorizonTools\Fields\Medias;
 
 use Adeliom\HorizonTools\Fields\Choices\TrueFalseField;
+use Adeliom\HorizonTools\Fields\Text\WysiwygField;
 use Extended\ACF\ConditionalLogic;
 use Extended\ACF\Fields\File;
 use Extended\ACF\Fields\Group;
@@ -17,6 +18,8 @@ class VideoField
 	final public const VIDEO_FILE = "file";
 	final public const IS_YOUTUBE = "is_youtube";
 	final public const ID_YOUTUBE = "id";
+	final public const CAPTIONS = "captions";
+	final public const TRANSCRIPT = "transcript";
 
 	/**
 	 * Vidéo
@@ -42,7 +45,18 @@ class VideoField
 					->required()
 					->conditionalLogic([
 						ConditionalLogic::where(self::IS_YOUTUBE, "!=", 1),
-					])
+					]),
+
+				File::make(__("Sous-titres (.vtt)", 'horizon-tools'), self::CAPTIONS)
+					->acceptedFileTypes(["vtt"])
+					->format("array")
+					->helperText(__("Obligatoires (accessibilité) si la vidéo contient de la parole. Pour une vidéo YouTube, les sous-titres se gèrent sur YouTube.", 'horizon-tools'))
+					->conditionalLogic([
+						ConditionalLogic::where(self::IS_YOUTUBE, "!=", 1),
+					]),
+
+				WysiwygField::minimal(__("Transcription", 'horizon-tools'), self::TRANSCRIPT)
+					->helperText(__("Texte de ce qui est dit et montré dans la vidéo. Obligatoire si la vidéo porte une information (accessibilité) ; inutile pour une vidéo décorative.", 'horizon-tools')),
 
 			]);
 	}
