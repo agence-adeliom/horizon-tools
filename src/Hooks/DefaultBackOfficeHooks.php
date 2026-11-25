@@ -11,11 +11,14 @@ use Livewire\Mechanisms\FrontendAssets\FrontendAssets as LivewireFrontendAssets;
 
 class DefaultBackOfficeHooks extends AbstractHook
 {
+    private const LOADER_HANDLE = 'horizon-block-editor-loader';
+
     public function init(): void
     {
         add_action('admin_head', [$this, 'injectLivewireStyles']);
         add_action('admin_head', [$this, 'injectLivewireScriptConfig']);
         add_action('enqueue_block_editor_assets', [$this, 'enqueueBlockEditorAssets']);
+        add_action('enqueue_block_assets', [$this, 'enqueueBlockCanvasAssets']);
     }
 
     public static function injectLivewireStyles(): void
@@ -40,10 +43,12 @@ class DefaultBackOfficeHooks extends AbstractHook
     }
 
     /**
-     * Enqueue block CSS assets and the Livewire/Alpine loader in the block editor outer frame.
+     * Enqueue block CSS assets and the Livewire/Alpine loader in the current asset collection.
      *
-     * ACF block previews render in the outer admin frame (not the Gutenberg iframe).
-     * enqueue_block_editor_assets targets exactly that context.
+     * Called on enqueue_block_editor_assets (outer admin frame), where ACF block previews render
+     * when the editor is not iframed (WordPress 6.x with blocks below API version 3). Since
+     * WordPress 7, the canvas is always an iframe: enqueueBlockCanvasAssets() replays this
+     * method for the iframe document.
      *
      * CSS is always enqueued. The Livewire loader is only injected when Livewire is available.
      */
@@ -158,16 +163,47 @@ class DefaultBackOfficeHooks extends AbstractHook
 
             $loaderJs = file_get_contents(__DIR__ . '/../../resources/scripts/block-editor-livewire-loader.js');
 
-            wp_register_script('horizon-block-editor-loader', false, [], null, true);
+            wp_register_script(self::LOADER_HANDLE, false, [], null, true);
             wp_add_inline_script(
-                'horizon-block-editor-loader',
+                self::LOADER_HANDLE,
                 'window.blockEditorLoaderConfig = ' . wp_json_encode($loaderConfig) . ';',
                 'before'
             );
-            wp_add_inline_script('horizon-block-editor-loader', $loaderJs);
-            wp_enqueue_script('horizon-block-editor-loader');
+            wp_add_inline_script(self::LOADER_HANDLE, $loaderJs);
+            wp_enqueue_script(self::LOADER_HANDLE);
         } catch (\Throwable) {
             // Livewire not fully available — CSS already enqueued above
+        }
+    }
+
+    /**
+     * Replay the block editor assets inside the editor canvas iframe.
+     *
+     * The iframe only receives what is enqueued on enqueue_block_assets, collected by
+     * _wp_get_iframed_editor_assets() in a separate WP_Scripts/WP_Styles queue. That action also
+     * fires on the front end and in the outer admin document (admin_enqueue_scripts): only the
+     * iframe collection of a block editor screen is kept.
+     */
+    public static function enqueueBlockCanvasAssets(): void
+    {
+        if (!is_admin() || doing_action('admin_enqueue_scripts') || !function_exists('get_current_screen')) {
+            return;
+        }
+
+        if (!get_current_screen()?->is_block_editor()) {
+            return;
+        }
+
+        // The iframe collection shares the outer frame's registered script objects: without this,
+        // wp_add_inline_script would also alter the outer loader (inline scripts printed twice) and
+        // wp_register_script would be a no-op. Deregistering only drops the key from the iframe copy.
+        wp_deregister_script(self::LOADER_HANDLE);
+        self::enqueueBlockEditorAssets();
+
+        // window.livewireScriptConfig is only printed in the outer frame (admin_head): the loader
+        // needs it in the iframe document too.
+        if (wp_script_is(self::LOADER_HANDLE) && class_exists(LivewireFrontendAssets::class)) {
+            wp_add_inline_script(self::LOADER_HANDLE, trim(strip_tags(LivewireFrontendAssets::scriptConfig())), 'before');
         }
     }
 

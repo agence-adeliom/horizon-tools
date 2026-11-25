@@ -13,8 +13,28 @@
  *   3. Load Livewire script; on load: call Livewire.start()
  *   4. Alpine.initTree() on existing [wire:id] elements (setTimeout 0)
  *   5. MutationObserver re-runs initTree() on AJAX-injected [wire:id] elements
+ *
+ * Runs in the outer admin frame (non-iframed editor, WordPress 6.x) and in the editor canvas
+ * iframe (always present since WordPress 7). Each document starts it at most once.
  */
 (function () {
+    // One loader per document, even if a theme also replays it in the iframe.
+    if (window.__horizonBlockEditorLoader) {
+        return;
+    }
+
+    // Inserter and pattern previews are iframes too and receive the same assets:
+    // only start in the editor canvas iframe (or in a top-level document).
+    var frameName = null;
+    try {
+        frameName = window.frameElement ? window.frameElement.name : null;
+    } catch (e) {}
+    if (frameName !== null && frameName !== 'editor-canvas') {
+        return;
+    }
+
+    window.__horizonBlockEditorLoader = true;
+
     var config = window.blockEditorLoaderConfig || {};
     var blockUrls = config.blockUrls || [];
     var livewireUrl = config.livewireUrl || '';
