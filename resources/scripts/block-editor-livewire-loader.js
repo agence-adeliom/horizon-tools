@@ -19,8 +19,15 @@
  *
  * Public signal for themes: window.horizonBlockEditor = { alpine: true, livewire: true } is set,
  * before anything starts, only in the documents where this loader starts Alpine and Livewire.
+ * The flag announces that the loader starts them in this document (asynchronously): it does not
+ * mean window.Alpine or window.Livewire is already available, so never call them on its strength.
+ *
  * A theme handler that mounts by hand a component Alpine already handles (render_block_preview
- * in editor.ts, for instance) should bail out: if (window.horizonBlockEditor?.alpine) return;
+ * in editor.ts, for instance) must read the flag in the block's own document, not in its own
+ * window: theme handlers run in the outer frame, where the loader also starts on WordPress 7,
+ * while the block may sit in the canvas iframe or in a preview iframe where nothing starts.
+ *   if ($block[0]?.ownerDocument?.defaultView?.horizonBlockEditor?.alpine) return;
+ * This stays correct in the non-iframed editor (WordPress 6.x) and with older horizon-tools.
  */
 (function () {
     // One loader per document, even if a theme also replays it in the iframe.

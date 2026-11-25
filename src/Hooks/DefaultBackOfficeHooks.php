@@ -189,7 +189,9 @@ class DefaultBackOfficeHooks extends AbstractHook
      * On a block editor screen, wp_should_load_block_editor_scripts_and_styles() is false only
      * then (the outer document gets true, see wp_common_block_scripts_and_styles()). The outer
      * document pass (admin_enqueue_scripts) is also excluded explicitly: a plugin filtering that
-     * flag cannot make this callback touch the outer loader.
+     * flag cannot make this callback touch the outer loader. A plugin forcing the flag to true
+     * after core (priority above 10) still deprives the iframe of the loader; the outer frame
+     * stays untouched.
      */
     public static function enqueueBlockCanvasAssets(): void
     {
