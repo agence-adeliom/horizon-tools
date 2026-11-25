@@ -22,6 +22,7 @@ require __DIR__ . '/bootstrap.php';
 const HZ_LOADER = 'horizon-block-editor-loader';
 const HZ_LOADER_MARKER = 'Block editor Livewire/Alpine loader.';
 const HZ_SCRIPT_CONFIG = 'window.livewireScriptConfig = {';
+const HZ_THEME_SIGNAL = 'window.horizonBlockEditor = { alpine: true, livewire: true };';
 
 if (!class_exists(LivewireFrontendAssets::class)) {
     echo 'Livewire absent : contrôle sans objet.' . PHP_EOL;
@@ -53,6 +54,7 @@ function hz_check_iframe(string $scripts, string $context): void
         "$context, iframe : blockEditorLoaderConfig présent une seule fois"
     );
     hz_check(substr_count($scripts, HZ_SCRIPT_CONFIG) === 1, "$context, iframe : livewireScriptConfig présent une seule fois");
+    hz_check(substr_count($scripts, HZ_THEME_SIGNAL) === 1, "$context, iframe : signal horizonBlockEditor pour les thèmes présent");
 
     $configPos = strpos($scripts, HZ_SCRIPT_CONFIG);
     $loaderPos = strpos($scripts, HZ_LOADER_MARKER);
@@ -77,6 +79,7 @@ function hz_check_parent(array $expectedBefore, string $context): void
     wp_scripts()->done = array_diff(wp_scripts()->done, [HZ_LOADER]);
 
     hz_check(substr_count($scripts, HZ_LOADER_MARKER) === 1, "$context, parent : loader imprimé une seule fois");
+    hz_check(substr_count($scripts, HZ_THEME_SIGNAL) === 1, "$context, parent : signal horizonBlockEditor pour les thèmes présent");
     hz_check(
         substr_count($scripts, HZ_SCRIPT_CONFIG) === 0,
         "$context, parent : pas de livewireScriptConfig doublé (admin_head s’en charge)"

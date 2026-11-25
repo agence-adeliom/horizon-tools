@@ -16,6 +16,11 @@
  *
  * Runs in the outer admin frame (non-iframed editor, WordPress 6.x) and in the editor canvas
  * iframe (always present since WordPress 7). Each document starts it at most once.
+ *
+ * Public signal for themes: window.horizonBlockEditor = { alpine: true, livewire: true } is set,
+ * before anything starts, only in the documents where this loader starts Alpine and Livewire.
+ * A theme handler that mounts by hand a component Alpine already handles (render_block_preview
+ * in editor.ts, for instance) should bail out: if (window.horizonBlockEditor?.alpine) return;
  */
 (function () {
     // One loader per document, even if a theme also replays it in the iframe.
@@ -44,6 +49,9 @@
     if (!livewireUrl) {
         return;
     }
+
+    // Alpine ships with Livewire: both are started by this loader in the current document.
+    window.horizonBlockEditor = { alpine: true, livewire: true };
 
     if (viteClientUrl) {
         document.head.appendChild(
