@@ -183,14 +183,19 @@ class DefaultBackOfficeHooks extends AbstractHook
      * _wp_get_iframed_editor_assets() in a separate WP_Scripts/WP_Styles queue. That action also
      * fires on the front end and in the outer admin document (admin_enqueue_scripts): only the
      * iframe collection of a block editor screen is kept.
+     *
+     * The collection is recognised by core's own marker: _wp_get_iframed_editor_assets() forces
+     * should_load_block_editor_scripts_and_styles to false while it fires enqueue_block_assets.
+     * On a block editor screen, wp_should_load_block_editor_scripts_and_styles() is false only
+     * then (the outer document gets true, see wp_common_block_scripts_and_styles()).
      */
     public static function enqueueBlockCanvasAssets(): void
     {
-        if (!is_admin() || doing_action('admin_enqueue_scripts') || !function_exists('get_current_screen')) {
+        if (!is_admin() || !function_exists('get_current_screen')) {
             return;
         }
 
-        if (!get_current_screen()?->is_block_editor()) {
+        if (!get_current_screen()?->is_block_editor() || wp_should_load_block_editor_scripts_and_styles()) {
             return;
         }
 
