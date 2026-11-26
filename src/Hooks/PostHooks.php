@@ -33,6 +33,13 @@ class PostHooks extends AbstractHook
         $post = get_post($id);
 
         if (is_object($post) && $post->post_type == 'post') {
+            // Article pas encore publié (brouillon, en attente, planifié…) : WordPress lui donne le lien ?p=<ID>,
+            // seul lien valable tant qu'il n'a pas de post_name définitif. Le préfixe donnerait /<prefix>// et
+            // l'aperçu tomberait en 404. Le permalien modifiable de l'éditeur ($leaveName) garde le préfixe.
+            if (!$leaveName && wp_force_plain_post_permalink($post)) {
+                return $post_link;
+            }
+
             return home_url(sprintf('/%s/%s/', $this->prefix, $leaveName ? '%postname%' : $post->post_name));
         }
 
