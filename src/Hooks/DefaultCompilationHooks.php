@@ -15,13 +15,19 @@ class DefaultCompilationHooks extends AbstractHook
 
     public function handleTag(string $tag, string $handle)
     {
-        $prefixThatAreModules = [AssetViewModel::HANDLE_PREFIX_VITE, AssetViewModel::HANDLE_PREFIX_MODULE];
+        // Script Vite mis en file par AssetViewModel (marqueur), ou handle préfixé (serveur de développement, entrée avec imports,
+        // contournement des thèmes).
+        $isModule = (bool) wp_scripts()->get_data($handle, AssetViewModel::SCRIPT_DATA_MODULE);
 
-        foreach ($prefixThatAreModules as $prefixThatAreModule) {
+        foreach ([AssetViewModel::HANDLE_PREFIX_VITE, AssetViewModel::HANDLE_PREFIX_MODULE] as $prefixThatAreModule) {
             if (str_starts_with($handle, $prefixThatAreModule)) {
-                $tag = str_replace('src=', 'type="module" src=', $tag);
+                $isModule = true;
                 break;
             }
+        }
+
+        if ($isModule && !str_contains($tag, 'type="module"')) {
+            $tag = str_replace('src=', 'type="module" src=', $tag);
         }
 
         return $tag;
