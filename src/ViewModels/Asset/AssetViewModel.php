@@ -28,6 +28,7 @@ class AssetViewModel
     public const HANDLE_PREFIX_VITE = 'vite_';
     public const HANDLE_PREFIX_BUD = 'bud_';
     public const HANDLE_PREFIX_MODULE = 'module_';
+    public const SCRIPT_DATA_MODULE = 'horizon_module';
 
     public function __construct(
         string $file,
@@ -232,6 +233,13 @@ class AssetViewModel
         if ($instance->isScript()) {
             if (!$instance->isImportedByJs) {
                 wp_enqueue_script($handle, $instance->getUrl(), $dependencies, $version, $args);
+
+                // Vite compile toujours des modules ES, avec ou sans import. Chargés comme scripts classiques,
+                // 2 bundles de la même page entrent en collision dans la portée globale. Le handle ne change pas :
+                // DefaultCompilationHooks lit ce marqueur pour ajouter type="module".
+                if ($instance->isVite()) {
+                    wp_script_add_data($handle, self::SCRIPT_DATA_MODULE, true);
+                }
             }
         } elseif ($instance->isStyle()) {
             wp_enqueue_style($handle, $instance->getUrl());
