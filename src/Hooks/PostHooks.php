@@ -21,9 +21,29 @@ class PostHooks extends AbstractHook
 
     public function add_rewrite_rules($wp_rewrite)
     {
+        $post = $this->prefix . '/([^/]+)';
+        $query = 'index.php?post_type=post&name=' . $wp_rewrite->preg_index(1);
+
+        // Un seul segment après le préfixe : les chemins plus longs retombent sur les règles de WordPress
+        // (catégories sous /<prefix>/category/ quand la structure contient le préfixe, /<prefix>/page/2/…).
         $new_rules = [
-            $this->prefix . '/(.+?)/?$' => 'index.php?post_type=post&name=' . $wp_rewrite->preg_index(1),
+            $post . '/?$' => $query,
         ];
+
+        // Structure sans le préfixe (/%postname%/) : WordPress n'a aucune règle sous /<prefix>/ pour les sous-chemins
+        // des liens préfixés par post_link. Quand la structure commence par le préfixe, il les génère déjà, à leur place.
+        if (!str_starts_with(ltrim((string) $wp_rewrite->front, '/'), $this->prefix . '/')) {
+            $feeds = '(' . implode('|', $wp_rewrite->feeds) . ')';
+
+            $cpage = $wp_rewrite->comments_pagination_base . '-([0-9]{1,})';
+
+            $new_rules += [
+                $post . '/feed/' . $feeds . '/?$' => $query . '&feed=' . $wp_rewrite->preg_index(2),
+                $post . '/' . $feeds . '/?$' => $query . '&feed=' . $wp_rewrite->preg_index(2),
+                $post . '/embed/?$' => $query . '&embed=true',
+                $post . '/' . $cpage . '/?$' => $query . '&cpage=' . $wp_rewrite->preg_index(2),
+            ];
+        }
 
         $wp_rewrite->rules = $new_rules + $wp_rewrite->rules;
     }
